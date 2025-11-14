@@ -484,6 +484,7 @@
       </section>
     </div>
   </main>
+
   <!-- Bootstrap JS (for toasts etc.) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -519,7 +520,42 @@
     });
   </script>
 
-  <!-- Main Admin App (modules) -->
+  <!-- Main Admin App (modules) – TAMA NA PATH DITO -->
   <script type="module" src="./js/admin.js"></script>
+
+  <!-- Extra module: load products from Supabase into the Record form dropdown -->
+  <script type="module">
+    import { dbSelect } from "./js/supabase.js";
+
+    async function populateRecordProducts() {
+      const select = document.getElementById("record-product");
+      if (!select) return;
+
+      select.innerHTML = '<option value="">Loading products...</option>';
+
+      try {
+        const { data, error } = await dbSelect("products", "id,name,category");
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          select.innerHTML = '<option value="">No products found</option>';
+          return;
+        }
+
+        select.innerHTML = '<option value="">Select product</option>';
+        data.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `${p.name} (${p.category})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Error loading products for record form", err);
+        select.innerHTML = '<option value="">Error loading products</option>';
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", populateRecordProducts);
+  </script>
 </body>
 </html>
