@@ -1,3 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aiaxcart Premium | Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #FFB0B5;
+            --secondary: #FFD3D6;
+            --dark: #382f2c;
+            --light: #fefaf7;
+        }
+        
+        body { 
+            background: var(--light); 
+            color: var(--dark); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+        }
+        
+        .logo { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center;
+        }
+        
+        header { 
+            background: var(--secondary); 
+            padding: 1.3rem 0 1.1rem 0; 
+            box-shadow: 0 6px 22px rgba(0,0,0,0.08);
+        }
+        
+        .header-content { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        
+        nav ul { 
+            display: flex; 
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 2.2rem;
+        }
+        
+        nav ul li a { 
+            color: var(--dark); 
+            text-decoration: none; 
+            font-weight: 500; 
+            padding: 0.6rem 1.4rem; 
+            border-radius: 10px;
+        }
+        
+        nav ul li a.active, nav ul li a:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .tabs { 
+            display: flex; 
+            gap: 0.95rem; 
+            margin: 2rem 0 1.5rem 0; 
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 0.85rem 1.55rem;
+            border: none;
+            background: #fff;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .tab.active { 
+            background: var(--primary);
+            color: white;
+        }
+        
+        .panel { 
+            display: none; 
+        }
+        
+        .panel.active { 
+            display: block; 
+        }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4,1fr); 
+            gap: 1.3rem; 
+            margin-bottom:2rem;
+        }
+        
+        .stat-card { 
+            background: #fff; 
+            padding: 2rem 0 1.25rem 0; 
+            border-radius: 13px; 
+            text-align:center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        
+        .stat-card h3 { 
+            font-size: 2.1rem; 
+            margin-bottom: 0.55rem; 
+            color: var(--primary);
+        }
+        
+        .card { 
+            background: #fff; 
+            border-radius: 13px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07); 
+            padding: 2.2rem 1.5rem; 
+            margin-bottom: 2rem;
+        }
+        
+        label { 
+            margin:1rem 0 0.45rem 0; 
+            display: block; 
+        }
+        
+        select, input[type="text"], input[type="number"], input[type="email"], input[type="date"] {
+            padding:0.65rem 0.9rem;
+            border-radius:8px;
+            border:1px solid #E8E8E8;
+            font-size:1rem;
+            width:100%;
+            font-family:inherit;
+        }
+        
+        .btn {
+            padding: 0.65rem 1.55rem;
+            border:none;
+            border-radius:9px;
+            font-weight:500;
+            font-size: 1rem;
+            cursor:pointer;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color:white;
+        }
+        
+        .btn-danger {
+            background: #F44336;
+            color:white;
+        }
+        
+        .btn-warning {
+            background: #FF9800;
+            color:white;
+        }
+        
+        .btn-success {
+            background: #43b87a;
+            color:white;
+        }
+        
+        .btn-small {
+            padding:0.3rem 0.8rem;
+            font-size:0.95rem;
+            margin-top:0.25rem;
+        }
+        
+        .stock-list {
+            display:flex;
+            flex-direction:column;
+            gap:1.2rem;
+        }
+        
+        .stock-card {
+            background:#fff5;
+            border-radius:8px;
+            padding:1rem 1.2rem;
+            box-shadow:0 1px 7px rgba(0,0,0,0.04);
+        }
+        
+        .stock-actions {
+            margin-top:0.5rem;
+        }
+        
+        .badge {
+            display:inline-block;
+            padding:0.18rem 0.9rem;
+            border-radius:12px;
+            font-size:0.90rem;
+            font-weight:500;
+        }
+        
+        .badge-premium {
+            background:#ffe3ed;
+            color:#CC348D;
+        }
+        
+        .badge-archived {
+            background:#e7e6ef;
+            color:#8c73b1;
+        }
+        
+        .toggle-row {
+            display:flex;
+            align-items:center;
+            gap:1.3rem;
+            margin-top:0.85rem;
+        }
+        
+        .error-message {
+            color:red;
+            margin-top:0.5rem;
+        }
+        
+        .success-message {
+            color:green;
+            margin-top:0.5rem;
+        }
+        
+        /* Modal Styles */
+        .owner-veri-overlay {
+            position:fixed;
+            top:0;
+            left:0;
+            width:100vw;
+            height:100vh;
+            background:rgba(0,0,0,0.37);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:9999;
+        }
+        
+        .modal-card {
+            position:relative;
+            background:white;
+            padding:2.7rem 2.5rem 1.5rem 2.5rem;
+            border-radius:16px;
+            min-width:325px;
+        }
+        
+        .close-btn {
+            position:absolute;
+            top:0.6rem;
+            right:0.7rem;
+            background:none;
+            border:none;
+            font-size:1.55rem;
+            color:#ff7a7a;
+            line-height:1;
+            cursor:pointer;
+        }
+        
+        /* Records Table */
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .records-table th, .records-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #E8E8E8;
+        }
+        
+        .records-table th {
+            background: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .records-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        @media(max-width:1000px) {
+            .stats-grid {
+                grid-template-columns:1fr 1fr;
+            }
+        }
+        
+        @media(max-width:700px) {
+            .stats-grid {
+                grid-template-columns:1fr;
+            }
+            .tabs {
+                gap:0.45rem;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo">🛒 Aiaxcart Premium</div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="admin.html" class="active">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Owner Verification Modal -->
+    <div class="owner-veri-overlay" id="ownerVeriOverlay">
+        <div class="modal-card">
+            <button onclick="closeOwnerModal()" class="close-btn">&times;</button>
+            <h2>🔐 Owner Verification</h2>
+            <input type="text" id="ownerUidInput" placeholder="Enter Owner UID" style="width:100%;margin-bottom:1.3rem;">
+            <button onclick="verifyOwnerUID()" style="background:var(--primary);color:white;padding:0.65rem 1.5rem;width:100%;border:none;border-radius:8px;">Verify Access</button>
+            <div id="ownerVeriMsg" style="color:red;margin-top:0.8rem;font-size:1.1em;"></div>
+        </div>
+    </div>
+
+    <div class="container" id="admin-dashboard" style="display:none;">
+        <h1 style="margin-top:2rem;">Admin Console</h1>
+        <div class="stats-grid">
+            <div class="stat-card"><h3 id="stat-products">0</h3><div>Products</div></div>
+            <div class="stat-card"><h3 id="stat-stock">0</h3><div>Available Stock</div></div>
+            <div class="stat-card"><h3 id="stat-pending">0</h3><div>Pending Orders</div></div>
+            <div class="stat-card"><h3 id="stat-revenue">₱0</h3><div>Total Revenue</div></div>
+        </div>
+        <div class="tabs">
+            <button class="tab active" data-tab="add-product">Add Product</button>
+            <button class="tab" data-tab="add-stock">Add Stock</button>
+            <button class="tab" data-tab="manage-stocks">Manage Stocks</button>
+            <button class="tab" data-tab="pending-orders">Pending Orders</button>
+            <button class="tab" data-tab="sold-accounts">Sold Accounts</button>
+            <button class="tab" data-tab="archived-stocks">Archived Stocks</button>
+            <button class="tab" data-tab="products">Products</button>
+            <button class="tab" data-tab="prices">Price Management</button>
+            <button class="tab" data-tab="store-rules">Store Rules</button>
+            <button class="tab" data-tab="records">Records</button>
+            <button class="tab" data-tab="reports">Reports</button>
+        </div>
+
+        <!-- Panels -->
+        <div id="panel-add-product" class="panel active">
+            <div class="card">
+                <h2>Add New Product</h2>
+                <form id="addProductForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Product Name
+                                <input type="text" id="product-name" class="form-control" required>
+                            </label>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Product ID (Key)
+                                <input type="text" id="product-key" class="form-control" required>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Category
+                                <select id="product-category" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="streaming">Streaming</option>
+                                    <option value="educational">Educational</option>
+                                    <option value="editing">Editing</option>
+                                    <option value="ai">AI</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Icon
+                                <input type="text" id="product-icon" class="form-control" placeholder="Emoji or Font Awesome class" required>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Initial Stock
+                                <input type="number" id="product-stock" class="form-control" value="0" min="0">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mt-4">Pricing Structure</h4>
+                    <div id="pricing-container">
+                        <div class="pricing-tier mb-3 p-3 border rounded">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label>Account Type
+                                        <input type="text" class="form-control account-type" placeholder="e.g., solo account" required>
+                                    </label>
+                                </div>
+                                <div class="col-md-8">
+                                    <label>Durations & Prices</label>
+                                    <div class="duration-prices">
+                                        <div class="duration-price row mb-2">
+                                            <div class="col-md-6">
+                                                <select class="form-select duration-select">
+                                                    <option value="7d">7 Days</option>
+                                                    <option value="14d">14 Days</option>
+                                                    <option value="1m">1 Month</option>
+                                                    <option value="2m">2 Months</option>
+                                                    <option value="3m">3 Months</option>
+                                                    <option value="4m">4 Months</option>
+                                                    <option value="5m">5 Months</option>
+                                                    <option value="6m">6 Months</option>
+                                                    <option value="8m">8 Months</option>
+                                                    <option value="10m">10 Months</option>
+                                                    <option value="12m">12 Months</option>
+                                                    <option value="24m">24 Months</option>
+                                                    <option value="nw">No Warranty</option>
+                                                    <option value="3m w">3 Months Warranty</option>
+                                                    <option value="6m w">6 Months Warranty</option>
+                                                    <option value="12m w">12 Months Warranty</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <input type="number" class="form-control price-input" placeholder="Price" min="0">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-sm remove-duration">×</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary btn-sm add-duration">Add Duration</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm mt-2 remove-tier">Remove Account Type</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary mt-3" id="add-pricing-tier">Add Account Type</button>
+                    <button type="submit" class="btn btn-primary mt-3">Add Product</button>
+                </form>
+                <div id="add-product-msg" class="mt-3"></div>
+            </div>
+        </div>
+
+        <div id="panel-add-stock" class="panel">
+            <div class="card">
+                <h2>Add Stock</h2>
+                <form id="addStockForm">
+                    <label>Product
+                        <select id="stock-product" class="form-select" required>
+                            <option value="">Select Product</option>
+                        </select>
+                    </label>
+                    <label>Account Type
+                        <select id="stock-type" class="form-select" required>
+                            <option value="">Select Account Type</option>
+                        </select>
+                    </label>
+                    <label>Duration
+                        <select id="stock-duration" class="form-select" required>
+                            <option value="">Select Duration</option>
+                        </select>
+                    </label>
+                    <label>Quantity <input type="number" id="stock-qty" class="form-control" value="1" min="1" required></label>
+                    <label>Email <input type="text" id="stock-email" class="form-control" required></label>
+                    <label>Password <input type="text" id="stock-password" class="form-control" required></label>
+                    <label>Profile <input type="text" id="stock-profile" class="form-control"></label>
+                    <label>PIN <input type="text" id="stock-pin" class="form-control"></label>
+                    <label>Auto-Archive (Days): <input type="number" id="stock-arch" class="form-control" value="30"></label>
+                    <label>Premium Until (date, optional): <input type="date" id="stock-premdate" class="form-control"></label>
+                    <button type="submit" class="btn btn-primary mt-3">Add Stock</button>
+                </form>
+                <div id="add-stock-msg" class="mt-3"></div>
+            </div>
+        </div>
+
+        <div id="panel-manage-stocks" class="panel">
+            <div class="card">
+                <h2>Manage Stocks</h2>
+                <div id="manage-stocks-list"></div>
+            </div>
+        </div>
+
+        <div id="panel-pending-orders" class="panel">
+            <div class="card">
+                <h2>Pending Orders</h2>
+                <div id="pending-orders-list"></div>
+            </div>
+        </div>
+
+        <div id="panel-sold-accounts" class="panel">
+            <div class="card">
+                <h2>Sold Accounts</h2>
+                <div id="sold-list"></div>
+            </div>
+        </div>
+
+        <div id="panel-archived-stocks" class="panel">
+            <div class="card">
+                <h2>Archived Stocks</h2>
+                <div id="archived-list"></div>
+            </div>
+        </div>
+
+        <div id="panel-products" class="panel">
+            <div class="card">
+                <h2>Products Management</h2>
+                <div id="products-list"></div>
+            </div>
+        </div>
+
+        <div id="panel-prices" class="panel">
+            <div class="card">
+                <h2>Price Management</h2>
+                <div class="mb-3">
+                    <label>Select Product
+                        <select id="price-product-select" class="form-select">
+                            <option value="">Select a product</option>
+                        </select>
+                    </label>
+                </div>
+                <div id="price-management-form" style="display: none;">
+                    <h4>Edit Prices for <span id="selected-product-name"></span></h4>
+                    <div id="current-prices-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-store-rules" class="panel">
+            <div class="card">
+                <h2>Store Rules</h2>
+                <div id="rules-list"></div>
+            </div>
+        </div>
+
+        <!-- RECORDS PANEL -->
+        <div id="panel-records" class="panel">
+            <div class="card">
+                <h2>Add Record</h2>
+                <form id="addRecordForm">
+                    <label>Order ID (Auto-generated for website orders)
+                        <input type="text" id="record-orderid" class="form-control" placeholder="Leave empty for auto-generation">
+                    </label>
+                    <label>Buyer Information
+                        <input type="text" id="record-buyer" class="form-control" placeholder="Buyer name or email" required>
+                    </label>
+                    <label>Source
+                        <select id="record-source" class="form-select" required>
+                            <option value="">Select Source</option>
+                            <option value="website">Website</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="telegram">Telegram</option>
+                            <option value="tiktok">TikTok</option>
+                        </select>
+                    </label>
+                    <label>Product
+                        <select id="record-product" class="form-select" required></select>
+                    </label>
+                    <label>Account Type
+                        <input type="text" id="record-type" class="form-control" required>
+                    </label>
+                    <label>Duration
+                        <input type="text" id="record-duration" class="form-control" required>
+                    </label>
+                    <label>Purchase Date
+                        <input type="date" id="record-purchasedate" class="form-control" required>
+                    </label>
+                    <label>Additional Days
+                        <input type="number" id="record-adddays" class="form-control" value="0" min="0">
+                    </label>
+                    <label>Account Details - Email
+                        <input type="text" id="record-email" class="form-control">
+                    </label>
+                    <label>Account Details - Password
+                        <input type="text" id="record-password" class="form-control">
+                    </label>
+                    <label>Account Details - Profile
+                        <input type="text" id="record-profile" class="form-control">
+                    </label>
+                    <label>Account Details - PIN
+                        <input type="text" id="record-pin" class="form-control">
+                    </label>
+                    <label>Price
+                        <input type="number" id="record-price" class="form-control" step="0.01" required>
+                    </label>
+                    <button type="submit" class="btn btn-primary mt-3">Add Record</button>
+                </form>
+                <div id="add-record-msg" class="mt-3"></div>
+            </div>
+
+            <div class="card">
+                <h2>Records List</h2>
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Buyer/Email</th>
+                            <th>Source</th>
+                            <th>Product</th>
+                            <th>Account Type</th>
+                            <th>Duration</th>
+                            <th>Purchase Date</th>
+                            <th>Expiration Date</th>
+                            <th>Additional Days</th>
+                            <th>Updated Expiration</th>
+                            <th>Account Details</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-table-body">
+                        <!-- Records will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-reports" class="panel">
+            <div class="card">
+                <h2>Reports</h2>
+                <div id="reports-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
+
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Duration mapping
+        const durationMap = {
+            '7d': '7 Days',
+            '14d': '14 Days', 
+            '1m': '1 Month',
+            '2m': '2 Months',
+            '3m': '3 Months',
+            '4m': '4 Months',
+            '5m': '5 Months',
+            '6m': '6 Months',
+            '8m': '8 Months',
+            '10m': '10 Months',
+            '12m': '12 Months',
+            '24m': '24 Months',
+            'nw': 'No Warranty',
+            '3m w': '3 Months Warranty',
+            '6m w': '6 Months Warranty',
+            '12m w': '12 Months Warranty'
+        };
+
+        // Complete product list with pricing (same as buyer site)
+        const PRODUCTS_DATA = [
+            // Entertainment
+            { 
+                id: 'netflix', 
+                name: 'Netflix Premium', 
+                category: 'entertainment', 
+                icon: '📺',
+                stock: 15,
+                pricing: {
+                    "solo profile": { '1m': 160, '2m': 280, '3m': 435, '4m': 565, '6m': 850, '8m': 1090, '12m': 1500 },
+                    "shared profile": { '1m': 80, '2m': 145, '3m': 205, '4m': 270, '6m': 410, '8m': 520, '12m': 800 }
+                }
+            },
+            { 
+                id: 'viu', 
+                name: 'Viu Premium', 
+                category: 'entertainment', 
+                icon: '🎬',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 70, '2m': 105, '3m': 145, '4m': 170, '6m': 205, '10m': 280, '12m': 310 },
+                    "shared account": { '1m': 30, '2m': 55, '3m': 75, '4m': 90, '6m': 120, '10m': 190, '12m': 220 }
+                }
+            },
+            // ... (include all the same products as in the buyer site)
+            // For brevity, I'm including just a few products here
+            // In the actual implementation, include all products from the buyer site
+        ];
+
+        // Owner Verification
+        const OWNER_UID = '767e5f7d-0c7a-4c32-80e3-b9613e0d37df';
+
+        // Application state
+        let products = [...PRODUCTS_DATA];
+        let stocks = [];
+        let orders = [];
+        let soldRecords = [];
+
+        function openOwnerModal() {
+            document.getElementById('ownerUidInput').value = '';
+            document.getElementById('ownerVeriMsg').textContent = '';
+            document.getElementById("ownerVeriOverlay").style.display = "flex";
+        }
+
+        function closeOwnerModal() {
+            document.getElementById("ownerVeriOverlay").style.display = "none";
+        }
+
+        function verifyOwnerUID() {
+            let uid = document.getElementById('ownerUidInput').value.trim();
+            if (uid === OWNER_UID) {
+                localStorage.setItem('ownerVerified', 'yes');
+                closeOwnerModal();
+                showAdminPanel();
+                showToast('Admin access granted!', 'success');
+            } else {
+                document.getElementById('ownerVeriMsg').textContent = '❌ Invalid UID.';
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('admin-dashboard').style.display = 'block';
+            updateStats();
+            loadProductsForAdmin();
+            showStocks();
+            showPending();
+            showSold();
+            showRules();
+            showRecords();
+            showReports();
+        }
+
+        // Utility Functions
+        function generateOrderId() {
+            return 'AXP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type === 'error' ? 'danger' : type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+
+        // Tab Switching
+        document.addEventListener("DOMContentLoaded", function() {
+            // Setup tab switching
+            let tabs = document.querySelectorAll(".tab");
+            let panels = document.querySelectorAll(".panel");
+            
+            tabs.forEach(tab => {
+                tab.onclick = function() {
+                    tabs.forEach(tb => tb.classList.remove("active"));
+                    panels.forEach(pl => pl.classList.remove("active"));
+                    tab.classList.add("active");
+                    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+                };
+            });
+
+            // Setup product form
+            setupProductForm();
+            setupStockForm();
+            setupRecordForm();
+
+            // Check owner verification
+            if (localStorage.getItem('ownerVerified') !== 'yes') {
+                openOwnerModal();
+            } else {
+                showAdminPanel();
+            }
+        });
+
+        function setupProductForm() {
+            // Add pricing tier
+            document.getElementById('add-pricing-tier').addEventListener('click', function() {
+                addPricingTier();
+            });
+
+            // Add duration to pricing tier
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-duration')) {
+                    addDurationToTier(e.target.closest('.pricing-tier'));
+                }
+                if (e.target.classList.contains('remove-duration')) {
+                    e.target.closest('.duration-price').remove();
+                }
+                if (e.target.classList.contains('remove-tier')) {
+                    e.target.closest('.pricing-tier').remove();
+                }
+            });
+
+            // Product form submission
+            document.getElementById('addProductForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addProduct();
+            });
+        }
+
+        function addPricingTier() {
+            const container = document.getElementById('pricing-container');
+            const newTier = document.createElement('div');
+            newTier.className = 'pricing-tier mb-3 p-3 border rounded';
+            newTier.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Account Type
+                            <input type="text" class="form-control account-type" placeholder="e.g., solo account" required>
+                        </label>
+                    </div>
+                    <div class="col-md-8">
+                        <label>Durations & Prices</label>
+                        <div class="duration-prices">
+                            <div class="duration-price row mb-2">
+                                <div class="col-md-6">
+                                    <select class="form-select duration-select">
+                                        ${Object.entries(durationMap).map(([key, value]) => 
+                                            `<option value="${key}">${value}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control price-input" placeholder="Price" min="0">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm remove-duration">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm add-duration">Add Duration</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm mt-2 remove-tier">Remove Account Type</button>
+            `;
+            container.appendChild(newTier);
+        }
+
+        function addDurationToTier(tier) {
+            const durationPrices = tier.querySelector('.duration-prices');
+            const newDuration = document.createElement('div');
+            newDuration.className = 'duration-price row mb-2';
+            newDuration.innerHTML = `
+                <div class="col-md-6">
+                    <select class="form-select duration-select">
+                        ${Object.entries(durationMap).map(([key, value]) => 
+                            `<option value="${key}">${value}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="number" class="form-control price-input" placeholder="Price" min="0">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-duration">×</button>
+                </div>
+            `;
+            durationPrices.appendChild(newDuration);
+        }
+
+        function addProduct() {
+            const name = document.getElementById('product-name').value;
+            const key = document.getElementById('product-key').value;
+            const category = document.getElementById('product-category').value;
+            const icon = document.getElementById('product-icon').value;
+            const stock = parseInt(document.getElementById('product-stock').value) || 0;
+
+            // Collect pricing data
+            const pricing = {};
+            document.querySelectorAll('.pricing-tier').forEach(tier => {
+                const accountType = tier.querySelector('.account-type').value.toLowerCase();
+                const durations = {};
+                
+                tier.querySelectorAll('.duration-price').forEach(durationPrice => {
+                    const duration = durationPrice.querySelector('.duration-select').value;
+                    const price = parseFloat(durationPrice.querySelector('.price-input').value);
+                    if (duration && !isNaN(price)) {
+                        durations[duration] = price;
+                    }
+                });
+                
+                if (accountType && Object.keys(durations).length > 0) {
+                    pricing[accountType] = durations;
+                }
+            });
+
+            // Create new product
+            const newProduct = {
+                id: key,
+                name: name,
+                category: category,
+                icon: icon,
+                stock: stock,
+                pricing: pricing
+            };
+
+            // Add to products array
+            products.push(newProduct);
+
+            // Reset form
+            document.getElementById('addProductForm').reset();
+            document.getElementById('pricing-container').innerHTML = '';
+            addPricingTier(); // Add one empty tier
+
+            // Show success message
+            document.getElementById('add-product-msg').innerHTML = 
+                '<div class="alert alert-success">Product added successfully!</div>';
+            
+            // Update displays
+            updateStats();
+            loadProductsForAdmin();
+
+            setTimeout(() => {
+                document.getElementById('add-product-msg').innerHTML = '';
+            }, 3000);
+        }
+
+        function setupStockForm() {
+            // Stock form submission
+            document.getElementById('addStockForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addStock();
+            });
+        }
+
+        function addStock() {
+            const productId = document.getElementById('stock-product').value;
+            const accountType = document.getElementById('stock-type').value;
+            const duration = document.getElementById('stock-duration').value;
+            const quantity = parseInt(document.getElementById('stock-qty').value) || 1;
+            const email = document.getElementById('stock-email').value;
+            const password = document.getElementById('stock-password').value;
+            const profile = document.getElementById('stock-profile').value;
+            const pin = document.getElementById('stock-pin').value;
+            const archiveDays = parseInt(document.getElementById('stock-arch').value) || 30;
+            const premiumUntil = document.getElementById('stock-premdate').value;
+
+            // Add stock items
+            for (let i = 0; i < quantity; i++) {
+                stocks.push({
+                    id: Date.now() + '-' + i,
+                    productId: productId,
+                    accountType: accountType,
+                    duration: duration,
+                    email: email,
+                    password: password,
+                    profile: profile,
+                    pin: pin,
+                    archiveAfter: archiveDays,
+                    premiumUntil: premiumUntil,
+                    status: 'available',
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            // Reset form
+            document.getElementById('addStockForm').reset();
+
+            // Show success message
+            document.getElementById('add-stock-msg').innerHTML = 
+                `<div class="alert alert-success">Added ${quantity} stock item(s) successfully!</div>`;
+            
+            // Update displays
+            updateStats();
+            showStocks();
+
+            setTimeout(() => {
+                document.getElementById('add-stock-msg').innerHTML = '';
+            }, 3000);
+        }
+
+        function setupRecordForm() {
+            // Set today's date as default for purchase date
+            document.getElementById("record-purchasedate").value = new Date().toISOString().split('T')[0];
+
+            // Record form submission
+            document.getElementById("addRecordForm").addEventListener('submit', function(e) {
+                e.preventDefault();
+                addRecord();
+            });
+        }
+
+        function addRecord() {
+            const orderId = document.getElementById("record-orderid").value || generateOrderId();
+            const buyer = document.getElementById("record-buyer").value;
+            const source = document.getElementById("record-source").value;
+            const productId = document.getElementById("record-product").value;
+            const accountType = document.getElementById("record-type").value;
+            const duration = document.getElementById("record-duration").value;
+            const purchaseDate = document.getElementById("record-purchasedate").value;
+            const additionalDays = Number(document.getElementById("record-adddays").value) || 0;
+            const email = document.getElementById("record-email").value;
+            const password = document.getElementById("record-password").value;
+            const profile = document.getElementById("record-profile").value;
+            const pin = document.getElementById("record-pin").value;
+            const price = Number(document.getElementById("record-price").value) || 0;
+
+            // Create record
+            const record = {
+                id: generateOrderId(),
+                orderId: orderId,
+                buyer: buyer,
+                source: source,
+                productId: productId,
+                accountType: accountType,
+                duration: duration,
+                purchaseDate: purchaseDate,
+                additionalDays: additionalDays,
+                email: email,
+                password: password,
+                profile: profile,
+                pin: pin,
+                price: price,
+                status: 'sold',
+                createdAt: new Date().toISOString()
+            };
+
+            soldRecords.push(record);
+
+            // Reset form
+            this.reset();
+            document.getElementById("record-purchasedate").value = new Date().toISOString().split('T')[0];
+            
+            // Show success message
+            document.getElementById("add-record-msg").innerHTML = 
+                '<div class="alert alert-success">Record added successfully!</div>';
+            
+            // Update displays
+            showRecords();
+            updateStats();
+
+            setTimeout(() => {
+                document.getElementById("add-record-msg").innerHTML = '';
+            }, 3000);
+        }
+
+        // Panel Display Functions
+        function updateStats() {
+            document.getElementById("stat-products").innerText = products.length;
+            document.getElementById("stat-stock").innerText = stocks.filter(s => s.status === 'available').length;
+            document.getElementById("stat-pending").innerText = orders.filter(o => o.status === 'pending').length;
+            
+            const totalRevenue = soldRecords.reduce((sum, record) => sum + (record.price || 0), 0);
+            document.getElementById("stat-revenue").innerText = "₱" + totalRevenue;
+        }
+
+        function loadProductsForAdmin() {
+            // Populate product dropdowns
+            const stockProductSelect = document.getElementById('stock-product');
+            const recordProductSelect = document.getElementById('record-product');
+            const priceProductSelect = document.getElementById('price-product-select');
+            
+            stockProductSelect.innerHTML = '<option value="">Select Product</option>';
+            recordProductSelect.innerHTML = '<option value="">Select Product</option>';
+            priceProductSelect.innerHTML = '<option value="">Select Product</option>';
+            
+            products.forEach(product => {
+                const option1 = document.createElement('option');
+                option1.value = product.id;
+                option1.textContent = product.name;
+                stockProductSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = product.id;
+                option2.textContent = product.name;
+                recordProductSelect.appendChild(option2);
+                
+                const option3 = document.createElement('option');
+                option3.value = product.id;
+                option3.textContent = product.name;
+                priceProductSelect.appendChild(option3);
+            });
+            
+            // Populate account types and durations when product is selected
+            stockProductSelect.addEventListener('change', function() {
+                const productId = this.value;
+                const product = products.find(p => p.id === productId);
+                const accountTypeSelect = document.getElementById('stock-type');
+                const durationSelect = document.getElementById('stock-duration');
+                
+                accountTypeSelect.innerHTML = '<option value="">Select Account Type</option>';
+                durationSelect.innerHTML = '<option value="">Select Duration</option>';
+                
+                if (product) {
+                    Object.keys(product.pricing).forEach(accountType => {
+                        const option = document.createElement('option');
+                        option.value = accountType;
+                        option.textContent = accountType;
+                        accountTypeSelect.appendChild(option);
+                    });
+                    
+                    accountTypeSelect.addEventListener('change', function() {
+                        durationSelect.innerHTML = '<option value="">Select Duration</option>';
+                        if (this.value && product.pricing[this.value]) {
+                            Object.keys(product.pricing[this.value]).forEach(duration => {
+                                const option = document.createElement('option');
+                                option.value = duration;
+                                option.textContent = durationMap[duration] || duration;
+                                durationSelect.appendChild(option);
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // Price management product selection
+            priceProductSelect.addEventListener('change', function() {
+                const productId = this.value;
+                if (productId) {
+                    document.getElementById("price-management-form").style.display = 'block';
+                    const product = products.find(p => p.id === productId);
+                    document.getElementById("selected-product-name").textContent = product.name;
+                    showProductPrices(product);
+                } else {
+                    document.getElementById("price-management-form").style.display = 'none';
+                }
+            });
+            
+            showProducts();
+        }
+
+        function showProducts() {
+            const container = document.getElementById("products-list");
+            container.innerHTML = '';
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p>No products found.</p>';
+                return;
+            }
+            
+            const productsHTML = products.map(product => `
+                <div class="stock-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div><b>${product.name}</b> (${product.category})</div>
+                            <div>ID: ${product.id} | Stock: ${product.stock} | Icon: ${product.icon}</div>
+                            <div class="mt-2">
+                                <small><strong>Pricing:</strong></small>
+                                ${Object.entries(product.pricing).map(([accountType, durations]) => `
+                                    <div class="ms-2">
+                                        <small>${accountType}: ${Object.entries(durations).map(([duration, price]) => 
+                                            `${durationMap[duration] || duration} - ₱${price}`
+                                        ).join(', ')}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="stock-actions">
+                            <button class="btn btn-warning btn-small" onclick="editProduct('${product.id}')">Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteProduct('${product.id}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = productsHTML;
+        }
+
+        function showProductPrices(product) {
+            const container = document.getElementById("current-prices-list");
+            container.innerHTML = '';
+            
+            if (!product.pricing || Object.keys(product.pricing).length === 0) {
+                container.innerHTML = '<p>No prices set for this product.</p>';
+                return;
+            }
+            
+            const pricesHTML = Object.entries(product.pricing).map(([accountType, durations]) => `
+                <div class="stock-card mb-3">
+                    <h5>${accountType.charAt(0).toUpperCase() + accountType.slice(1)}</h5>
+                    <div class="row">
+                        ${Object.entries(durations).map(([duration, price]) => `
+                            <div class="col-md-6 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${durationMap[duration] || duration}:</span>
+                                    <span class="fw-bold">₱${price}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="stock-actions mt-2">
+                        <button class="btn btn-warning btn-small" onclick="editProductPricing('${product.id}', '${accountType}')">Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteProductPricing('${product.id}', '${accountType}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = pricesHTML;
+        }
+
+        function showStocks() {
+            const container = document.getElementById("manage-stocks-list");
+            container.innerHTML = '';
+            
+            const availableStocks = stocks.filter(s => s.status === 'available');
+            
+            if (availableStocks.length === 0) {
+                container.innerHTML = '<p>No available stocks.</p>';
+                return;
+            }
+            
+            const stocksHTML = availableStocks.map(stock => {
+                const product = products.find(p => p.id === stock.productId);
+                return `
+                    <div class="stock-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div><b>${product ? product.name : 'Unknown Product'}</b></div>
+                                <div>${stock.accountType} (${durationMap[stock.duration] || stock.duration})</div>
+                                <div>Email: ${stock.email} | Auto-archive: ${stock.archiveAfter} days</div>
+                            </div>
+                            <div class="stock-actions">
+                                <button class="btn btn-success btn-small" onclick="markSold('${stock.id}')">Mark Sold</button>
+                                <button class="btn btn-warning btn-small" onclick="archiveStock('${stock.id}')">Archive</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteStock('${stock.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = stocksHTML;
+        }
+
+        function showRecords() {
+            const tbody = document.getElementById("records-table-body");
+            tbody.innerHTML = '';
+            
+            if (soldRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;">No records found.</td></tr>';
+                return;
+            }
+            
+            const recordsHTML = soldRecords.map(record => {
+                const product = products.find(p => p.id === record.productId);
+                return `
+                    <tr>
+                        <td>${record.orderId}</td>
+                        <td>${record.buyer}</td>
+                        <td>${record.source}</td>
+                        <td>${product ? product.name : 'Unknown'}</td>
+                        <td>${record.accountType}</td>
+                        <td>${durationMap[record.duration] || record.duration}</td>
+                        <td>${record.purchaseDate}</td>
+                        <td>${record.purchaseDate}</td>
+                        <td>${record.additionalDays}</td>
+                        <td>${record.purchaseDate}</td>
+                        <td>
+                            ${record.email ? `Email: ${record.email}<br>` : ''}
+                            ${record.password ? `Password: ${record.password}<br>` : ''}
+                            ${record.profile ? `Profile: ${record.profile}<br>` : ''}
+                            ${record.pin ? `PIN: ${record.pin}` : ''}
+                        </td>
+                        <td>₱${record.price}</td>
+                        <td>
+                            <button class="btn btn-warning btn-small" onclick="editRecord('${record.id}')">Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="removeRecord('${record.id}')">Remove</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tbody.innerHTML = recordsHTML;
+        }
+
+        // Action Functions
+        function markSold(stockId) {
+            if (!confirm('Are you sure you want to mark this stock as sold?')) return;
+            
+            const stock = stocks.find(s => s.id === stockId);
+            if (stock) {
+                stock.status = 'sold';
+                
+                // Create sold record
+                soldRecords.push({
+                    id: generateOrderId(),
+                    orderId: generateOrderId(),
+                    buyer: 'Manual Sale',
+                    source: 'manual',
+                    productId: stock.productId,
+                    accountType: stock.accountType,
+                    duration: stock.duration,
+                    purchaseDate: new Date().toISOString().split('T')[0],
+                    additionalDays: 0,
+                    email: stock.email,
+                    password: stock.password,
+                    profile: stock.profile,
+                    pin: stock.pin,
+                    price: 0, // You might want to calculate this based on product pricing
+                    status: 'sold',
+                    createdAt: new Date().toISOString()
+                });
+                
+                showToast('Stock marked as sold!', 'success');
+                showStocks();
+                updateStats();
+                showSold();
+            }
+        }
+
+        function archiveStock(stockId) {
+            if (!confirm('Are you sure you want to archive this stock?')) return;
+            
+            const stock = stocks.find(s => s.id === stockId);
+            if (stock) {
+                stock.status = 'archived';
+                showToast('Stock archived!', 'success');
+                showStocks();
+                updateStats();
+            }
+        }
+
+        function deleteStock(stockId) {
+            if (!confirm('Are you sure you want to delete this stock?')) return;
+            
+            stocks = stocks.filter(s => s.id !== stockId);
+            showToast('Stock deleted!', 'success');
+            showStocks();
+            updateStats();
+        }
+
+        function removeRecord(recordId) {
+            if (!confirm('Are you sure you want to remove this record?')) return;
+            
+            soldRecords = soldRecords.filter(r => r.id !== recordId);
+            showToast('Record removed!', 'success');
+            showRecords();
+            updateStats();
+        }
+
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                // Populate form with product data
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-key').value = product.id;
+                document.getElementById('product-category').value = product.category;
+                document.getElementById('product-icon').value = product.icon;
+                document.getElementById('product-stock').value = product.stock;
+                
+                // Clear existing pricing tiers
+                document.getElementById('pricing-container').innerHTML = '';
+                
+                // Add pricing tiers
+                Object.entries(product.pricing).forEach(([accountType, durations]) => {
+                    addPricingTier();
+                    const lastTier = document.querySelector('#pricing-container .pricing-tier:last-child');
+                    lastTier.querySelector('.account-type').value = accountType;
+                    
+                    // Clear existing durations
+                    lastTier.querySelector('.duration-prices').innerHTML = '';
+                    
+                    // Add durations
+                    Object.entries(durations).forEach(([duration, price]) => {
+                        addDurationToTier(lastTier);
+                        const lastDuration = lastTier.querySelector('.duration-price:last-child');
+                        lastDuration.querySelector('.duration-select').value = duration;
+                        lastDuration.querySelector('.price-input').value = price;
+                    });
+                });
+                
+                // Switch to add product tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.querySelector('[data-tab="add-product"]').classList.add('active');
+                document.getElementById('panel-add-product').classList.add('active');
+                
+                showToast('Product loaded for editing. Update and click "Add Product" to save changes.', 'info');
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            products = products.filter(p => p.id !== productId);
+            showToast('Product deleted!', 'success');
+            showProducts();
+            updateStats();
+        }
+
+        // These functions would be implemented similarly for other actions
+        function editProductPricing(productId, accountType) {
+            showToast('Edit pricing feature coming soon!', 'info');
+        }
+
+        function deleteProductPricing(productId, accountType) {
+            if (!confirm('Are you sure you want to delete this pricing tier?')) return;
+            
+            const product = products.find(p => p.id === productId);
+            if (product && product.pricing[accountType]) {
+                delete product.pricing[accountType];
+                showToast('Pricing tier deleted!', 'success');
+                showProductPrices(product);
+                showProducts();
+            }
+        }
+
+        function editRecord(recordId) {
+            showToast('Edit record feature coming soon!', 'info');
+        }
+
+        // Placeholder functions for other panels
+        function showPending() {
+            document.getElementById("pending-orders-list").innerHTML = '<p>No pending orders.</p>';
+        }
+
+        function showSold() {
+            document.getElementById("sold-list").innerHTML = '<p>No sold accounts yet.</p>';
+        }
+
+        function showRules() {
+            document.getElementById("rules-list").innerHTML = '<p>No rules found.</p>';
+        }
+
+        function showReports() {
+            document.getElementById("reports-list").innerHTML = '<p>No reports found.</p>';
+        }
 // ===== SUPABASE DATABASE FUNCTIONS =====
 // Add this after your existing JavaScript code, before the closing </script> tag
 
@@ -330,3 +1770,6 @@ async function loadProductsForAdmin() {
     // Rest of your existing loadProductsForAdmin code...
     // [Keep all the existing code for populating dropdowns, etc.]
 }
+  </script>
+</body>
+</html>
