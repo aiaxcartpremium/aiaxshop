@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aiaxcart Premium Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #FFB0B5;
+            --secondary: #FFD3D6;
+            --dark: #382f2c;
+            --light: #fefaf7;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: none;
+            transition: transform 0.2s;
+            margin-bottom: 1.5rem;
+            background: white;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin: 0 5px;
+            transition: all 0.3s;
+            font-weight: 500;
+            background: white;
+        }
+        
+        .category-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .product-card {
+            height: 100%;
+        }
+        
+        .product-img {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        
+        .buyer-profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+        
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        .modal-header {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff9da3;
+            border-color: #ff9da3;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(255, 176, 181, 0.25);
+        }
+        
+        .feedback-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .nav-link.active {
+            background-color: var(--primary) !important;
+            color: white !important;
+        }
+        
+        @media (max-width: 768px) {
+            .category-tab {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- Buyer Site -->
+    <div id="buyerSite">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light shadow-sm" style="background: #FFD3D6;">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-shopping-cart me-2"></i>Aiaxcart Premium Shop
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-section="home">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="rules">Rules</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="feedback">Feedback</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <div id="userAuth" class="hidden">
+                            <button class="btn btn-outline-primary me-2" id="loginBtn">Login</button>
+                            <button class="btn btn-primary" id="signupBtn">Sign Up</button>
+                        </div>
+                        <div id="userProfile" class="hidden">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user me-1"></i> <span id="userName">User</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" data-section="profile">My Account</a></li>
+                                    <li><a class="dropdown-item" href="#" data-section="orders">My Orders</a></li>
+                                    <li><a class="dropdown-item" href="#" data-section="report">Report Issue</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container my-4">
+            <!-- Home Section -->
+            <div id="homeSection" class="section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Premium Accounts</h2>
+                    <div class="d-flex overflow-auto pb-2">
+                        <div class="category-tab active" data-category="all">All Products</div>
+                        <div class="category-tab" data-category="entertainment">Entertainment</div>
+                        <div class="category-tab" data-category="streaming">Streaming</div>
+                        <div class="category-tab" data-category="educational">Educational</div>
+                        <div class="category-tab" data-category="editing">Editing</div>
+                        <div class="category-tab" data-category="ai">AI</div>
+                    </div>
+                </div>
+                
+                <div id="productsContainer" class="row">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Rules Section -->
+            <div id="rulesSection" class="section hidden">
+                <h2 class="mb-4">Shop Rules</h2>
+                <div id="rulesContainer">
+                    <!-- Rules will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div id="feedbackSection" class="section hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Customer Feedback</h2>
+                    <button class="btn btn-primary" id="addFeedbackBtn">
+                        <i class="fas fa-plus me-1"></i> Add Feedback
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div id="feedbackList">
+                            <!-- Feedback will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Submit Feedback</h5>
+                                <form id="feedbackForm">
+                                    <div class="mb-3">
+                                        <label for="feedbackName" class="form-label">Your Name</label>
+                                        <input type="text" class="form-control" id="feedbackName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="feedbackText" class="form-label">Your Feedback</label>
+                                        <textarea class="form-control" id="feedbackText" rows="4" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="feedbackImage" class="form-label">Image (Optional)</label>
+                                        <input type="file" class="form-control" id="feedbackImage" accept="image/*">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Submit Feedback</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div id="profileSection" class="section hidden">
+                <h2 class="mb-4">My Account</h2>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="buyer-profile-img" id="profileAvatar">JD</div>
+                                <h4 id="profileName">John Doe</h4>
+                                <p class="text-muted" id="profileEmail">john@example.com</p>
+                                <button class="btn btn-outline-primary btn-sm">Edit Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <ul class="nav nav-tabs" id="profileTabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#pendingOrders">Pending Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#confirmedOrders">Confirmed Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#deliveredAccounts">Delivered Accounts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#orderHistory">Order History</a>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content mt-3">
+                            <div class="tab-pane fade show active" id="pendingOrders">
+                                <div id="pendingOrdersList">
+                                    <!-- Pending orders will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="confirmedOrders">
+                                <div id="confirmedOrdersList">
+                                    <!-- Confirmed orders will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="deliveredAccounts">
+                                <div id="deliveredAccountsList">
+                                    <!-- Delivered accounts will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="orderHistory">
+                                <div id="orderHistoryList">
+                                    <!-- Order history will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Issue Section -->
+            <div id="reportSection" class="section hidden">
+                <h2 class="mb-4">Report an Issue</h2>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="reportForm">
+                                    <div class="mb-3">
+                                        <label for="reportOrderId" class="form-label">Order ID</label>
+                                        <select class="form-select" id="reportOrderId" required>
+                                            <option value="">Select an order</option>
+                                            <!-- Order options will be populated here -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reportProduct" class="form-label">Product Name</label>
+                                        <input type="text" class="form-control" id="reportProduct" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reportIssue" class="form-label">Issue Description</label>
+                                        <textarea class="form-control" id="reportIssue" rows="4" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reportScreenshot" class="form-label">Screenshot (Optional)</label>
+                                        <input type="file" class="form-control" id="reportScreenshot" accept="image/*">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit Report</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalTitle">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="product-img mb-3">
+                                <i class="fas fa-film" id="productModalIcon"></i>
+                            </div>
+                            <h4 id="productModalName">Product Name</h4>
+                            <p id="productModalDescription" class="text-muted">Product description goes here.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <form id="buyNowForm">
+                                <div class="mb-3">
+                                    <label for="accountType" class="form-label">Account Type</label>
+                                    <select class="form-select" id="accountType" required>
+                                        <option value="">Select account type</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="duration" class="form-label">Duration</label>
+                                    <select class="form-select" id="duration" required>
+                                        <option value="">Select duration</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Price</label>
+                                    <div class="fw-bold fs-4 text-primary" id="productPrice">₱0.00</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Available Stock</label>
+                                    <div class="fw-bold" id="availableStock">0</div>
+                                </div>
+                                <div id="inviteEmailField" class="mb-3 hidden">
+                                    <label for="gmail" class="form-label">Gmail Address</label>
+                                    <input type="email" class="form-control" id="gmail" placeholder="Enter valid Gmail address">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" id="checkoutBtn">Buy Now</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Checkout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="checkoutForm">
+                        <div class="mb-3">
+                            <label for="paymentMethod" class="form-label">Payment Method</label>
+                            <select class="form-select" id="paymentMethod" required>
+                                <option value="">Select payment method</option>
+                                <option value="gcash">GCash - 09625544105 (SMM)</option>
+                                <option value="maya">Maya - 09298943629 (AF)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="referenceNumber" class="form-label">Reference Number</label>
+                            <input type="text" class="form-control" id="referenceNumber" placeholder="Enter reference number">
+                        </div>
+                        <div class="mb-3">
+                            <label for="proofImage" class="form-label">Proof of Payment (Screenshot)</label>
+                            <input type="file" class="form-control" id="proofImage" accept="image/*">
+                        </div>
+                        <div class="alert alert-info">
+                            <small>After submitting, your order will be processed and you'll receive a confirmation.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal fade" id="signupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sign Up</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="signupForm">
+                        <div class="mb-3">
+                            <label for="signupName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="signupName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="signupEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="signupPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
+        
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Application State
+        let currentUser = null;
+        let currentProduct = null;
+        let currentOrderDetails = null;
+        
+        // Product list
+        const PRODUCTS = [
+            { key:"netflix", label:"Netflix", category:"entertainment", icon: "fas fa-film" },
+            { key:"viu", label:"Viu", category:"entertainment", icon: "fas fa-tv" },
+            { key:"vivamax", label:"Vivamax", category:"entertainment", icon: "fas fa-video" },
+            { key:"vivaone", label:"VivaOne", category:"entertainment", icon: "fas fa-play-circle" },
+            { key:"disney-plus", label:"Disney+", category:"entertainment", icon: "fas fa-magic" },
+            { key:"bilibili", label:"Bilibili", category:"entertainment", icon: "fas fa-gamepad" },
+            { key:"iqiyi", label:"iQIYI", category:"entertainment", icon: "fas fa-play" },
+            { key:"wetv", label:"WeTV", category:"entertainment", icon: "fas fa-desktop" },
+            { key:"loklok", label:"Loklok", category:"entertainment", icon: "fas fa-mobile-alt" },
+            { key:"iwanttfc", label:"iWantTFC", category:"entertainment", icon: "fas fa-globe" },
+            { key:"amazon-prime", label:"Amazon Prime", category:"entertainment", icon: "fas fa-shopping-bag" },
+            { key:"crunchyroll", label:"Crunchyroll", category:"entertainment", icon: "fas fa-dragon" },
+            { key:"hbo-max", label:"HBO Max", category:"entertainment", icon: "fas fa-crown" },
+            { key:"youku", label:"Youku", category:"entertainment", icon: "fas fa-film" },
+            { key:"nba-league-pass", label:"NBA League Pass", category:"entertainment", icon: "fas fa-basketball-ball" },
+            { key:"spotify", label:"Spotify", category:"streaming", icon: "fas fa-music" },
+            { key:"youtube", label:"YouTube", category:"streaming", icon: "fas fa-play-circle" },
+            { key:"apple-music", label:"Apple Music", category:"streaming", icon: "fas fa-music" },
+            { key:"studocu", label:"Studocu", category:"educational", icon: "fas fa-graduation-cap" },
+            { key:"scribd", label:"Scribd", category:"educational", icon: "fas fa-book" },
+            { key:"grammarly", label:"Grammarly", category:"educational", icon: "fas fa-spell-check" },
+            { key:"quillbot", label:"QuillBot", category:"educational", icon: "fas fa-pen-fancy" },
+            { key:"ms365", label:"MS365", category:"educational", icon: "fas fa-file-word" },
+            { key:"quizlet-plus", label:"Quizlet+", category:"educational", icon: "fas fa-question-circle" },
+            { key:"camscanner", label:"CamScanner", category:"educational", icon: "fas fa-camera" },
+            { key:"smallpdf", label:"Smallpdf", category:"educational", icon: "fas fa-file-pdf" },
+            { key:"turnitin-student", label:"Turnitin Student", category:"educational", icon: "fas fa-check-circle" },
+            { key:"turnitin-instructor", label:"Turnitin Instructor", category:"educational", icon: "fas fa-user-graduate" },
+            { key:"duolingo-super", label:"Duolingo Super", category:"educational", icon: "fas fa-language" },
+            { key:"canva", label:"Canva", category:"editing", icon: "fas fa-palette" },
+            { key:"picsart", label:"Picsart", category:"editing", icon: "fas fa-image" },
+            { key:"capcut", label:"CapCut", category:"editing", icon: "fas fa-cut" },
+            { key:"remini-web", label:"Remini Web", category:"editing", icon: "fas fa-wand-magic-sparkles" },
+            { key:"alight-motion", label:"Alight Motion", category:"editing", icon: "fas fa-film" },
+            { key:"chatgpt", label:"ChatGPT", category:"ai", icon: "fas fa-robot" },
+            { key:"gemini-ai", label:"Gemini AI", category:"ai", icon: "fas fa-brain" },
+            { key:"blackbox-ai", label:"Blackbox AI", category:"ai", icon: "fas fa-code" },
+            { key:"perplexity", label:"Perplexity", category:"ai", icon: "fas fa-search" }
+        ];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            loadInitialData();
+        });
+        
+        function initializeApp() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('aiaxcart_user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                showUserProfile();
+            } else {
+                showUserAuth();
+            }
+            
+            // Show home section by default
+            showSection('homeSection');
+        }
+        
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('[data-section]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section') + 'Section';
+                    showSection(sectionId);
+                });
+            });
+            
+            // Category tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const category = this.getAttribute('data-category');
+                    filterProducts(category);
+                });
+            });
+            
+            // User authentication
+            document.getElementById('loginBtn').addEventListener('click', showLoginModal);
+            document.getElementById('signupBtn').addEventListener('click', showSignupModal);
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            
+            // Product modal form
+            document.getElementById('buyNowForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleBuyNow();
+            });
+            
+            // Checkout form
+            document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleCheckout();
+            });
+            
+            // Feedback form
+            document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitFeedback();
+            });
+            
+            // Report form
+            document.getElementById('reportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitReport();
+            });
+            
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleLogin();
+            });
+            
+            // Signup form
+            document.getElementById('signupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleSignup();
+            });
+        }
+        
+        function loadInitialData() {
+            loadProducts();
+            loadRules();
+            loadFeedback();
+        }
+        
+        // UI Functions
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const correspondingNav = document.querySelector(`[data-section="${sectionId.replace('Section', '')}"]`);
+            if (correspondingNav) {
+                correspondingNav.classList.add('active');
+            }
+        }
+        
+        function showUserAuth() {
+            document.getElementById('userAuth').classList.remove('hidden');
+            document.getElementById('userProfile').classList.add('hidden');
+        }
+        
+        function showUserProfile() {
+            document.getElementById('userAuth').classList.add('hidden');
+            document.getElementById('userProfile').classList.remove('hidden');
+            document.getElementById('userName').textContent = currentUser.name;
+            
+            // Update profile section
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('profileAvatar').textContent = getInitials(currentUser.name);
+            
+            // Load user orders
+            loadUserOrders();
+        }
+        
+        function showLoginModal() {
+            const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            loginModal.show();
+        }
+        
+        function showSignupModal() {
+            const signupModal = new bootstrap.Modal(document.getElementById('signupModal'));
+            signupModal.show();
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type === 'error' ? 'danger' : type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+        
+        // Authentication Functions
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                // Use Supabase Auth for login
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                const user = {
+                    id: data.user.id,
+                    name: data.user.user_metadata?.name || email.split('@')[0],
+                    email: email
+                };
+                
+                currentUser = user;
+                localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+                
+                // Save to Supabase buyers table
+                await saveBuyerToSupabase(user);
+                
+                showUserProfile();
+                bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+                showToast('Login successful!', 'success');
+                
+            } catch (error) {
+                showToast('Login failed. Please try again.', 'error');
+            }
+        }
+        
+        async function handleSignup() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                // Use Supabase Auth for signup
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            name: name
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                const user = {
+                    id: data.user.id,
+                    name: name,
+                    email: email
+                };
+                
+                currentUser = user;
+                localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+                
+                // Save to Supabase buyers table
+                await saveBuyerToSupabase(user);
+                
+                showUserProfile();
+                bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+                showToast('Account created successfully!', 'success');
+                
+            } catch (error) {
+                showToast('Signup failed. Please try again.', 'error');
+            }
+        }
+        
+        function handleLogout() {
+            supabase.auth.signOut();
+            currentUser = null;
+            localStorage.removeItem('aiaxcart_user');
+            showUserAuth();
+            showToast('Logged out successfully', 'success');
+        }
+        
+        // Data Functions
+        async function loadProducts() {
+            try {
+                // First, check if products exist in Supabase
+                const { data: existingProducts, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('is_active', true);
+
+                if (error) throw error;
+
+                // If no products exist, insert the default products
+                if (!existingProducts || existingProducts.length === 0) {
+                    const productsToInsert = PRODUCTS.map(product => ({
+                        name: product.label,
+                        key: product.key,
+                        category: product.category,
+                        icon: product.icon,
+                        is_active: true
+                    }));
+
+                    const { data: newProducts, error: insertError } = await supabase
+                        .from('products')
+                        .insert(productsToInsert)
+                        .select();
+
+                    if (insertError) throw insertError;
+                    
+                    displayProducts(newProducts);
+                } else {
+                    displayProducts(existingProducts);
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showToast('Error loading products', 'error');
+            }
+        }
+        
+        function displayProducts(products) {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            
+            products.forEach(product => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 col-lg-3 mb-4';
+                col.innerHTML = `
+                    <div class="card product-card" data-product-id="${product.id}" data-product-key="${product.key}">
+                        <div class="card-body text-center">
+                            <div class="product-img mb-3">
+                                <i class="${product.icon}"></i>
+                            </div>
+                            <h5 class="card-title">${product.name}</h5>
+                            <p class="card-text text-muted small">${product.category}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-secondary">${product.category}</span>
+                                <span class="text-primary fw-bold" id="price-${product.key}">Loading...</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm mt-3 w-100 view-product-btn">View Details</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+                
+                // Load price for this product
+                loadProductPrice(product.key, product.id);
+            });
+            
+            // Add event listeners to view product buttons
+            document.querySelectorAll('.view-product-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.closest('.card').getAttribute('data-product-id');
+                    const productKey = this.closest('.card').getAttribute('data-product-key');
+                    openProductModal(parseInt(productId), productKey);
+                });
+            });
+        }
+        
+        async function loadProductPrice(productKey, productId) {
+            try {
+                const { data: prices, error } = await supabase
+                    .from('product_prices')
+                    .select('*')
+                    .eq('product_id', productId)
+                    .order('price', { ascending: true })
+                    .limit(1);
+
+                if (error) throw error;
+                
+                const priceElement = document.getElementById(`price-${productKey}`);
+                if (prices && prices.length > 0) {
+                    priceElement.textContent = `From ₱${prices[0].price}`;
+                } else {
+                    priceElement.textContent = 'Price N/A';
+                }
+            } catch (error) {
+                console.error('Error loading price:', error);
+                document.getElementById(`price-${productKey}`).textContent = 'Price N/A';
+            }
+        }
+        
+        function filterProducts(category) {
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(card => {
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const productCategory = card.querySelector('.badge').textContent.toLowerCase();
+                    if (productCategory === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        async function openProductModal(productId, productKey) {
+            try {
+                // Get product details
+                const { data: product, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
+
+                if (error) throw error;
+
+                currentProduct = product;
+
+                // Get prices for this product
+                const prices = await loadProductPrices(productId);
+
+                // Update modal content
+                document.getElementById('productModalTitle').textContent = product.name;
+                document.getElementById('productModalIcon').className = product.icon;
+                document.getElementById('productModalName').textContent = product.name;
+                document.getElementById('productModalDescription').textContent = product.category;
+
+                // Populate account types and durations
+                this.populateProductOptions(prices);
+
+                // Reset form
+                document.getElementById('buyNowForm').reset();
+                document.getElementById('inviteEmailField').classList.add('hidden');
+
+                // Show modal
+                const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+                productModal.show();
+
+            } catch (error) {
+                console.error('Error opening product modal:', error);
+                showToast('Error loading product details', 'error');
+            }
+        }
+        
+        async function loadProductPrices(productId) {
+            try {
+                const { data: prices, error } = await supabase
+                    .from('product_prices')
+                    .select('*')
+                    .eq('product_id', productId);
+
+                if (error) throw error;
+                return prices || [];
+            } catch (error) {
+                console.error('Error loading prices:', error);
+                return [];
+            }
+        }
+        
+        function populateProductOptions(prices) {
+            const accountTypeSelect = document.getElementById('accountType');
+            const durationSelect = document.getElementById('duration');
+
+            // Get unique account types and durations
+            const accountTypes = [...new Set(prices.map(p => p.account_type))];
+            const durations = [...new Set(prices.map(p => p.duration))];
+
+            accountTypeSelect.innerHTML = '<option value="">Select account type</option>';
+            durationSelect.innerHTML = '<option value="">Select duration</option>';
+
+            accountTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                accountTypeSelect.appendChild(option);
+            });
+
+            durations.forEach(duration => {
+                const option = document.createElement('option');
+                option.value = duration;
+                option.textContent = duration;
+                durationSelect.appendChild(option);
+            });
+
+            // Add event listeners for price updates
+            accountTypeSelect.addEventListener('change', () => this.updatePriceAndStock(prices));
+            durationSelect.addEventListener('change', () => this.updatePriceAndStock(prices));
+        }
+        
+        async function updatePriceAndStock(prices) {
+            const accountType = document.getElementById('accountType').value;
+            const duration = document.getElementById('duration').value;
+
+            if (accountType && duration) {
+                const price = prices.find(p => p.account_type === accountType && p.duration === duration);
+                if (price) {
+                    document.getElementById('productPrice').textContent = `₱${price.price.toFixed(2)}`;
+
+                    // Get stock count
+                    const stockCount = await getStockCount(this.currentProduct.id, accountType, duration);
+                    document.getElementById('availableStock').textContent = stockCount;
+
+                    // Show/hide invite email field
+                    if (accountType.toLowerCase().includes('invite')) {
+                        document.getElementById('inviteEmailField').classList.remove('hidden');
+                    } else {
+                        document.getElementById('inviteEmailField').classList.add('hidden');
+                    }
+                }
+            } else {
+                document.getElementById('productPrice').textContent = '₱0.00';
+                document.getElementById('availableStock').textContent = '0';
+            }
+        }
+        
+        async function getStockCount(productId, accountType, duration) {
+            try {
+                const { data: stocks, error } = await supabase
+                    .from('stocks')
+                    .select('id')
+                    .eq('product_id', productId)
+                    .eq('account_type', accountType)
+                    .eq('duration', duration)
+                    .eq('is_archived', false)
+                    .eq('is_sold', false);
+
+                if (error) throw error;
+                return stocks.length;
+            } catch (error) {
+                console.error('Error getting stock count:', error);
+                return 0;
+            }
+        }
+        
+        function handleBuyNow() {
+            if (!currentUser) {
+                showToast('Please login to continue', 'warning');
+                return;
+            }
+            
+            const accountType = document.getElementById('accountType').value;
+            const duration = document.getElementById('duration').value;
+            
+            if (!accountType || !duration) {
+                showToast('Please select account type and duration', 'warning');
+                return;
+            }
+            
+            // Validate invite email if needed
+            if (accountType.toLowerCase().includes('invite')) {
+                const gmail = document.getElementById('gmail').value;
+                if (!gmail || !isValidGmail(gmail)) {
+                    showToast('Please enter a valid Gmail address', 'warning');
+                    return;
+                }
+            }
+            
+            // Get price
+            const priceText = document.getElementById('productPrice').textContent;
+            const price = parseFloat(priceText.replace('₱', ''));
+            
+            currentOrderDetails = {
+                productId: currentProduct.id,
+                productName: currentProduct.name,
+                accountType: accountType,
+                duration: duration,
+                price: price,
+                inviteEmail: document.getElementById('gmail').value || null
+            };
+            
+            // Close product modal and open checkout
+            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+            const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+            checkoutModal.show();
+        }
+        
+        async function handleCheckout() {
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const referenceNumber = document.getElementById('referenceNumber').value;
+            const proofImage = document.getElementById('proofImage').files[0];
+            
+            if (!paymentMethod) {
+                showToast('Please select a payment method', 'warning');
+                return;
+            }
+            
+            try {
+                let proofImageUrl = null;
+                if (proofImage) {
+                    // Upload proof image to Supabase Storage
+                    const fileName = `payment-proofs/${Date.now()}-${proofImage.name}`;
+                    const { data, error } = await supabase.storage
+                        .from('aiaxcart')
+                        .upload(fileName, proofImage);
+                    
+                    if (error) throw error;
+                    
+                    // Get public URL
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('aiaxcart')
+                        .getPublicUrl(fileName);
+                    
+                    proofImageUrl = publicUrl;
+                }
+                
+                // Generate order ID
+                const orderId = generateOrderId();
+                
+                // Create order in Supabase
+                const { data: order, error } = await supabase
+                    .from('orders')
+                    .insert([{
+                        id: orderId,
+                        buyer_id: currentUser.id,
+                        product_id: currentOrderDetails.productId,
+                        account_type: currentOrderDetails.accountType,
+                        duration: currentOrderDetails.duration,
+                        price: currentOrderDetails.price,
+                        payment_method: paymentMethod,
+                        reference_number: referenceNumber,
+                        proof_image_url: proofImageUrl,
+                        invite_email: currentOrderDetails.inviteEmail,
+                        status: 'pending',
+                        created_at: new Date().toISOString()
+                    }])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                // Send Telegram notification (you would need to set up a Telegram bot)
+                // await sendTelegramNotification(order);
+
+                // Show success message
+                bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+                showToast(`Order submitted successfully! Your order ID is ${orderId}`, 'success');
+
+                // Reset form
+                document.getElementById('checkoutForm').reset();
+
+                // Update user orders
+                loadUserOrders();
+                
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showToast('Error submitting order', 'error');
+            }
+        }
+        
+        async function loadRules() {
+            try {
+                const { data: rules, error } = await supabase
+                    .from('rules')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+                this.displayRules(rules);
+            } catch (error) {
+                console.error('Error loading rules:', error);
+            }
+        }
+        
+        function displayRules(rules) {
+            const container = document.getElementById('rulesContainer');
+            container.innerHTML = '';
+            
+            const generalRules = rules.filter(rule => !rule.product_id);
+            
+            if (generalRules.length > 0) {
+                const generalCard = document.createElement('div');
+                generalCard.className = 'card mb-4';
+                generalCard.innerHTML = `
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">General Rules</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            ${generalRules.map(rule => `<li class="list-group-item">${rule.rule_text}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                container.appendChild(generalCard);
+            }
+        }
+        
+        async function loadFeedback() {
+            try {
+                const { data: feedback, error } = await supabase
+                    .from('feedback')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                this.displayFeedback(feedback);
+            } catch (error) {
+                console.error('Error loading feedback:', error);
+            }
+        }
+        
+        function displayFeedback(feedback) {
+            const container = document.getElementById('feedbackList');
+            container.innerHTML = '';
+            
+            feedback.forEach(item => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'card mb-3';
+                feedbackItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="feedback-avatar me-3">${getInitials(item.buyer_name)}</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${item.buyer_name}</h6>
+                                <p class="mb-2">${item.feedback_text}</p>
+                                ${item.photo_url ? `<img src="${item.photo_url}" class="img-fluid rounded mb-2" style="max-height: 200px;">` : ''}
+                                <small class="text-muted">${formatDate(item.created_at)}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(feedbackItem);
+            });
+        }
+        
+        async function submitFeedback() {
+            if (!currentUser) {
+                showToast('Please login to submit feedback', 'warning');
+                return;
+            }
+
+            const name = document.getElementById('feedbackName').value;
+            const text = document.getElementById('feedbackText').value;
+            const image = document.getElementById('feedbackImage').files[0];
+            
+            if (!name || !text) {
+                showToast('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            try {
+                let photoUrl = null;
+                if (image) {
+                    // Upload image to Supabase Storage
+                    const fileName = `feedback/${Date.now()}-${image.name}`;
+                    const { data, error } = await supabase.storage
+                        .from('aiaxcart')
+                        .upload(fileName, image);
+                    
+                    if (error) throw error;
+                    
+                    // Get public URL
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('aiaxcart')
+                        .getPublicUrl(fileName);
+                    
+                    photoUrl = publicUrl;
+                }
+
+                const { error } = await supabase
+                    .from('feedback')
+                    .insert([{
+                        buyer_id: currentUser.id,
+                        buyer_name: name,
+                        feedback_text: text,
+                        photo_url: photoUrl,
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (error) throw error;
+
+                showToast('Feedback submitted successfully!', 'success');
+                document.getElementById('feedbackForm').reset();
+                this.loadFeedback();
+
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                showToast('Error submitting feedback', 'error');
+            }
+        }
+        
+        async function loadUserOrders() {
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('buyer_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                this.displayUserOrders(orders);
+            } catch (error) {
+                console.error('Error loading user orders:', error);
+            }
+        }
+        
+        function displayUserOrders(orders) {
+            const pendingContainer = document.getElementById('pendingOrdersList');
+            const confirmedContainer = document.getElementById('confirmedOrdersList');
+            const deliveredContainer = document.getElementById('deliveredAccountsList');
+            const historyContainer = document.getElementById('orderHistoryList');
+            
+            pendingContainer.innerHTML = '';
+            confirmedContainer.innerHTML = '';
+            deliveredContainer.innerHTML = '';
+            historyContainer.innerHTML = '';
+            
+            orders.forEach(order => {
+                const orderElement = document.createElement('div');
+                orderElement.className = 'card mb-3';
+                orderElement.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">Order: ${order.id}</h6>
+                                <p class="mb-1 small">Account Type: ${order.account_type} • Duration: ${order.duration}</p>
+                                <p class="mb-0 fw-bold">₱${order.price}</p>
+                            </div>
+                            <div>
+                                <span class="order-status status-${order.status}">${order.status}</span>
+                                <div class="mt-2">
+                                    <small class="text-muted">${formatDate(order.created_at)}</small>
+                                </div>
+                            </div>
+                        </div>
+                        ${order.status === 'pending' ? `
+                        <div class="mt-3">
+                            <button class="btn btn-outline-danger btn-sm report-issue-btn" data-order-id="${order.id}">Report Issue</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                if (order.status === 'pending') {
+                    pendingContainer.appendChild(orderElement);
+                } else if (order.status === 'confirmed') {
+                    confirmedContainer.appendChild(orderElement);
+                } else if (order.status === 'delivered') {
+                    deliveredContainer.appendChild(orderElement);
+                }
+                
+                // All orders go to history
+                const historyElement = orderElement.cloneNode(true);
+                historyContainer.appendChild(historyElement);
+            });
+            
+            // Add event listeners to report issue buttons
+            document.querySelectorAll('.report-issue-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    showReportSection(orderId);
+                });
+            });
+        }
+        
+        function showReportSection(orderId) {
+            showSection('reportSection');
+            document.getElementById('reportOrderId').value = orderId;
+        }
+        
+        async function submitReport() {
+            if (!currentUser) {
+                showToast('Please login to submit a report', 'warning');
+                return;
+            }
+
+            const orderId = document.getElementById('reportOrderId').value;
+            const issue = document.getElementById('reportIssue').value;
+            const screenshot = document.getElementById('reportScreenshot').files[0];
+            
+            if (!orderId || !issue) {
+                showToast('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            try {
+                let screenshotUrl = null;
+                if (screenshot) {
+                    // Upload screenshot to Supabase Storage
+                    const fileName = `reports/${Date.now()}-${screenshot.name}`;
+                    const { data, error } = await supabase.storage
+                        .from('aiaxcart')
+                        .upload(fileName, screenshot);
+                    
+                    if (error) throw error;
+                    
+                    // Get public URL
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('aiaxcart')
+                        .getPublicUrl(fileName);
+                    
+                    screenshotUrl = publicUrl;
+                }
+
+                const { error } = await supabase
+                    .from('buyer_reports')
+                    .insert([{
+                        buyer_id: currentUser.id,
+                        order_id: orderId,
+                        issue_text: issue,
+                        screenshot_url: screenshotUrl,
+                        status: 'open',
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (error) throw error;
+
+                showToast('Report submitted successfully!', 'success');
+                document.getElementById('reportForm').reset();
+                showSection('profileSection');
+
+            } catch (error) {
+                console.error('Error submitting report:', error);
+                showToast('Error submitting report', 'error');
+            }
+        }
+        
+        // Utility Functions
+        function getInitials(name) {
+            return name.split(' ').map(part => part[0]).join('').toUpperCase();
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function isValidGmail(email) {
+            return /^[a-zA-Z0-9.]+@gmail\.com$/.test(email);
+        }
+        
+        function generateOrderId() {
+            const now = new Date();
+            return `AXP-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+        }
+        
+        // Supabase Integration Functions
+        async function saveBuyerToSupabase(buyer) {
+            try {
+                const { error } = await supabase
+                    .from('buyers')
+                    .upsert({
+                        id: buyer.id,
+                        name: buyer.name,
+                        email: buyer.email,
+                        created_at: new Date().toISOString()
+                    });
+
+                if (error) throw error;
+            } catch (error) {
+                console.error('Error saving buyer:', error);
+            }
+        }
+    </script>
+</body>
+</html>
