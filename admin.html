@@ -491,5 +491,39 @@
   <!-- Main Admin App (modules) -->
   <!-- VERY IMPORTANT: this path is from ROOT → /admin/js/admin.js -->
   <script type="module" src="./admin/js/admin.js"></script>
+  <!-- Fallback tab switching (works even if modules error) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var buttons = document.querySelectorAll(".sidebar button");
+      var panels = document.querySelectorAll(".panel-admin");
+
+      if (!buttons.length || !panels.length) return;
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var targetId = btn.getAttribute("data-target");
+          if (!targetId) return;
+
+          // active class sa buttons
+          buttons.forEach(function (b) {
+            b.classList.remove("active");
+          });
+          btn.classList.add("active");
+
+          // show/hide panels
+          panels.forEach(function (p) {
+            if (p.id === targetId) {
+              p.classList.add("active");
+            } else {
+              p.classList.remove("active");
+            }
+          });
+        });
+      });
+    });
+  </script>
+
+  <!-- Main Admin App (modules) -->
+  <script type="module" src="./admin/js/admin.js"></script>
 </body>
 </html>
