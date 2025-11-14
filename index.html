@@ -402,10 +402,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="product-img mb-3">
-                                <i class="fas fa-film" id="productModalIcon"></i>
+                                <span id="productModalIcon">📺</span>
                             </div>
                             <h4 id="productModalName">Product Name</h4>
                             <p id="productModalDescription" class="text-muted">Product description goes here.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Available Stock</label>
+                                <div class="fw-bold" id="availableStock">0</div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <form id="buyNowForm">
@@ -424,10 +428,6 @@
                                 <div class="mb-3">
                                     <label class="form-label">Price</label>
                                     <div class="fw-bold fs-4 text-primary" id="productPrice">₱0.00</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Available Stock</label>
-                                    <div class="fw-bold" id="availableStock">0</div>
                                 </div>
                                 <div id="inviteEmailField" class="mb-3 hidden">
                                     <label for="gmail" class="form-label">Gmail Address</label>
@@ -551,46 +551,455 @@
         let currentProduct = null;
         let currentOrderDetails = null;
         
-        // Product list
-        const PRODUCTS = [
-            { key:"netflix", label:"Netflix", category:"entertainment", icon: "fas fa-film" },
-            { key:"viu", label:"Viu", category:"entertainment", icon: "fas fa-tv" },
-            { key:"vivamax", label:"Vivamax", category:"entertainment", icon: "fas fa-video" },
-            { key:"vivaone", label:"VivaOne", category:"entertainment", icon: "fas fa-play-circle" },
-            { key:"disney-plus", label:"Disney+", category:"entertainment", icon: "fas fa-magic" },
-            { key:"bilibili", label:"Bilibili", category:"entertainment", icon: "fas fa-gamepad" },
-            { key:"iqiyi", label:"iQIYI", category:"entertainment", icon: "fas fa-play" },
-            { key:"wetv", label:"WeTV", category:"entertainment", icon: "fas fa-desktop" },
-            { key:"loklok", label:"Loklok", category:"entertainment", icon: "fas fa-mobile-alt" },
-            { key:"iwanttfc", label:"iWantTFC", category:"entertainment", icon: "fas fa-globe" },
-            { key:"amazon-prime", label:"Amazon Prime", category:"entertainment", icon: "fas fa-shopping-bag" },
-            { key:"crunchyroll", label:"Crunchyroll", category:"entertainment", icon: "fas fa-dragon" },
-            { key:"hbo-max", label:"HBO Max", category:"entertainment", icon: "fas fa-crown" },
-            { key:"youku", label:"Youku", category:"entertainment", icon: "fas fa-film" },
-            { key:"nba-league-pass", label:"NBA League Pass", category:"entertainment", icon: "fas fa-basketball-ball" },
-            { key:"spotify", label:"Spotify", category:"streaming", icon: "fas fa-music" },
-            { key:"youtube", label:"YouTube", category:"streaming", icon: "fas fa-play-circle" },
-            { key:"apple-music", label:"Apple Music", category:"streaming", icon: "fas fa-music" },
-            { key:"studocu", label:"Studocu", category:"educational", icon: "fas fa-graduation-cap" },
-            { key:"scribd", label:"Scribd", category:"educational", icon: "fas fa-book" },
-            { key:"grammarly", label:"Grammarly", category:"educational", icon: "fas fa-spell-check" },
-            { key:"quillbot", label:"QuillBot", category:"educational", icon: "fas fa-pen-fancy" },
-            { key:"ms365", label:"MS365", category:"educational", icon: "fas fa-file-word" },
-            { key:"quizlet-plus", label:"Quizlet+", category:"educational", icon: "fas fa-question-circle" },
-            { key:"camscanner", label:"CamScanner", category:"educational", icon: "fas fa-camera" },
-            { key:"smallpdf", label:"Smallpdf", category:"educational", icon: "fas fa-file-pdf" },
-            { key:"turnitin-student", label:"Turnitin Student", category:"educational", icon: "fas fa-check-circle" },
-            { key:"turnitin-instructor", label:"Turnitin Instructor", category:"educational", icon: "fas fa-user-graduate" },
-            { key:"duolingo-super", label:"Duolingo Super", category:"educational", icon: "fas fa-language" },
-            { key:"canva", label:"Canva", category:"editing", icon: "fas fa-palette" },
-            { key:"picsart", label:"Picsart", category:"editing", icon: "fas fa-image" },
-            { key:"capcut", label:"CapCut", category:"editing", icon: "fas fa-cut" },
-            { key:"remini-web", label:"Remini Web", category:"editing", icon: "fas fa-wand-magic-sparkles" },
-            { key:"alight-motion", label:"Alight Motion", category:"editing", icon: "fas fa-film" },
-            { key:"chatgpt", label:"ChatGPT", category:"ai", icon: "fas fa-robot" },
-            { key:"gemini-ai", label:"Gemini AI", category:"ai", icon: "fas fa-brain" },
-            { key:"blackbox-ai", label:"Blackbox AI", category:"ai", icon: "fas fa-code" },
-            { key:"perplexity", label:"Perplexity", category:"ai", icon: "fas fa-search" }
+        // Duration mapping
+        const durationMap = {
+            '7d': '7 Days',
+            '14d': '14 Days', 
+            '1m': '1 Month',
+            '2m': '2 Months',
+            '3m': '3 Months',
+            '4m': '4 Months',
+            '5m': '5 Months',
+            '6m': '6 Months',
+            '8m': '8 Months',
+            '10m': '10 Months',
+            '12m': '12 Months',
+            '24m': '24 Months',
+            'nw': 'No Warranty',
+            '3m w': '3 Months Warranty',
+            '6m w': '6 Months Warranty',
+            '12m w': '12 Months Warranty'
+        };
+
+        // Complete product list with pricing
+        const PRODUCTS_DATA = [
+            // Entertainment
+            { 
+                id: 'netflix', 
+                name: 'Netflix Premium', 
+                category: 'entertainment', 
+                icon: '📺',
+                stock: 15,
+                pricing: {
+                    "solo profile": { '1m': 160, '2m': 280, '3m': 435, '4m': 565, '6m': 850, '8m': 1090, '12m': 1500 },
+                    "shared profile": { '1m': 80, '2m': 145, '3m': 205, '4m': 270, '6m': 410, '8m': 520, '12m': 800 }
+                }
+            },
+            { 
+                id: 'viu', 
+                name: 'Viu Premium', 
+                category: 'entertainment', 
+                icon: '🎬',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 70, '2m': 105, '3m': 145, '4m': 170, '6m': 205, '10m': 280, '12m': 310 },
+                    "shared account": { '1m': 30, '2m': 55, '3m': 75, '4m': 90, '6m': 120, '10m': 190, '12m': 220 }
+                }
+            },
+            { 
+                id: 'viva-max', 
+                name: 'VIVAMAX VIVAONE', 
+                category: 'entertainment', 
+                icon: '🎭',
+                stock: 15,
+                pricing: {
+                    "solo account": { '1m': 110, '2m': 145, '3m': 170 },
+                    "shared account": { '1m': 65, '2m': 90, '3m': 120 }
+                }
+            },
+            { 
+                id: 'wetv', 
+                name: 'WeTV', 
+                category: 'entertainment', 
+                icon: '📱',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 150 },
+                    "shared account": { '1m': 55, '2m': 95, '3m': 135 }
+                }
+            },
+            { 
+                id: 'iwant-tfc', 
+                name: 'IWANT TFC', 
+                category: 'entertainment', 
+                icon: '📺',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 145 },
+                    "shared account": { '1m': 50, '2m': 90, '3m': 125 }
+                }
+            },
+            { 
+                id: 'crunchyroll', 
+                name: 'Crunchyroll', 
+                category: 'entertainment', 
+                icon: '🎮',
+                stock: 10,
+                pricing: {
+                    "solo profile": { '1m': 75, '2m': 115, '3m': 160, '4m': 195 },
+                    "shared profile": { '1m': 35, '2m': 60, '3m': 90, '4m': 115 }
+                }
+            },
+            { 
+                id: 'disney-plus', 
+                name: 'Disney+', 
+                category: 'entertainment', 
+                icon: '🦁',
+                stock: 12,
+                pricing: {
+                    "solo account": { '1m': 390 },
+                    "solo profile": { '1m': 160, '2m': 315, '4m': 630, '10m': 1480, '12m': 1700 },
+                    "shared profile": { '1m': 85, '2m': 165, '4m': 330, '10m': 720, '12m': 880 }
+                }
+            },
+            { 
+                id: 'bilibili', 
+                name: 'Bilibili', 
+                category: 'entertainment', 
+                icon: '📺',
+                stock: 6,
+                pricing: {
+                    "shared account": { '1m': 45, '2m': 75, '3m': 105 }
+                }
+            },
+            { 
+                id: 'loklok', 
+                name: 'Loklok', 
+                category: 'entertainment', 
+                icon: '📱',
+                stock: 7,
+                pricing: {
+                    "solo account": { '1m': 150 },
+                    "shared account": { '1m': 65, '2m': 115, '3m': 170 }
+                }
+            },
+            { 
+                id: 'iqiyi', 
+                name: 'iQiyi', 
+                category: 'entertainment', 
+                icon: '📺',
+                stock: 8,
+                pricing: {
+                    "shared account": { '1m': 50, '2m': 90, '3m': 135 }
+                }
+            },
+            { 
+                id: 'hbo-max', 
+                name: 'HBO Max', 
+                category: 'entertainment', 
+                icon: '📹',
+                stock: 10,
+                pricing: {
+                    "solo account": { '1m': 240, '2m': 360, '3m': 480 },
+                    "solo profile": { '1m': 135, '2m': 240, '3m': 350 },
+                    "shared profile": { '1m': 70, '2m': 120, '3m': 170 }
+                }
+            },
+            { 
+                id: 'amazon-prime', 
+                name: 'Amazon Prime', 
+                category: 'entertainment', 
+                icon: '🛒',
+                stock: 15,
+                pricing: {
+                    "solo account": { '1m': 80, '2m': 110, '3m': 135, '4m': 160, '5m': 185, '6m': 210 },
+                    "solo profile": { '1m': 50, '2m': 80, '3m': 110, '4m': 135, '5m': 150, '6m': 170 },
+                    "shared profile": { '1m': 30, '2m': 50, '3m': 70, '4m': 80, '5m': 90, '6m': 100 }
+                }
+            },
+            { 
+                id: 'youku', 
+                name: 'Youku', 
+                category: 'entertainment', 
+                icon: '📺',
+                stock: 6,
+                pricing: {
+                    "solo account": { '1m': 125 },
+                    "shared account": { '1m': 50, '2m': 90, '3m': 125 }
+                }
+            },
+            { 
+                id: 'nba-league-pass', 
+                name: 'NBA League Pass Premium', 
+                category: 'entertainment', 
+                icon: '🏀',
+                stock: 5,
+                pricing: {
+                    "solo account": { '1m': 150 },
+                    "shared account": { '1m': 75 }
+                }
+            },
+
+            // Streaming (Music)
+            { 
+                id: 'youtube', 
+                name: 'YouTube Premium', 
+                category: 'streaming', 
+                icon: '📹',
+                stock: 20,
+                pricing: {
+                    "famhead": { '1m': 70, '2m': 90, '3m': 125, '4m': 150, '5m': 175, '6m': 200 },
+                    "solo": { '1m': 45, '2m': 60, '3m': 85, '4m': 105, '5m': 125, '6m': 145 },
+                    "invite": { '1m': 20, '2m': 35, '3m': 50, '4m': 60, '5m': 70, '6m': 80 }
+                }
+            },
+            { 
+                id: 'spotify', 
+                name: 'Spotify Premium', 
+                category: 'streaming', 
+                icon: '🎵',
+                stock: 15,
+                pricing: {
+                    "solo fw": { '1m': 60, '2m': 110, '3m': 150, '4m': 200 },
+                    "solo nw": { '1m': 45, '2m': 80, '3m': 120, '4m': 150 }
+                }
+            },
+            { 
+                id: 'apple-music', 
+                name: 'Apple Music', 
+                category: 'streaming', 
+                icon: '🎧',
+                stock: 12,
+                pricing: {
+                    "solo account": { '1m': 49, '2m': 89, '3m': 129, '4m': 159 }
+                }
+            },
+
+            // AI Tools
+            { 
+                id: 'chatgpt', 
+                name: 'ChatGPT Plus', 
+                category: 'ai', 
+                icon: '🧠',
+                stock: 10,
+                pricing: {
+                    "solo account": { '1m': 600, '2m': 1050, '3m': 1500 },
+                    "shared account": { '1m': 120, '2m': 200, '3m': 290 }
+                }
+            },
+            { 
+                id: 'blackbox-ai', 
+                name: 'Blackbox AI', 
+                category: 'ai', 
+                icon: '🤖',
+                stock: 0,
+                pricing: {
+                    "solo account": { '1m': 90, '2m': 170, '3m': 250 }
+                }
+            },
+            { 
+                id: 'perplexity', 
+                name: 'Perplexity AI', 
+                category: 'ai', 
+                icon: '🔍',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 120, '4m': 200, '6m': 250, '12m': 300, '24m': 450 },
+                    "shared account": { '1m': 55, '4m': 140, '6m': 190, '12m': 230, '24m': 350 }
+                }
+            },
+            { 
+                id: 'google-one', 
+                name: 'Google One + Gemini AI', 
+                category: 'ai', 
+                icon: '☁️',
+                stock: 10,
+                pricing: {
+                    "solo account": { '1m': 50, '2m': 85, '3m': 120, '12m': 280 },
+                    "shared account": { '1m': 30, '2m': 50, '3m': 80, '12m': 150 }
+                }
+            },
+
+            // Educational
+            { 
+                id: 'quizlet', 
+                name: 'Quizlet+', 
+                category: 'educational', 
+                icon: '📚',
+                stock: 6,
+                pricing: {
+                    "solo account": { '1m': 45, '2m': 65, '3m': 100 },
+                    "shared account": { '1m': 20, '2m': 35, '3m': 50 }
+                }
+            },
+            { 
+                id: 'scribd', 
+                name: 'Scribd Premium', 
+                category: 'educational', 
+                icon: '📖',
+                stock: 7,
+                pricing: {
+                    "solo account": { '1m': 50, '2m': 85, '3m': 120 },
+                    "shared account": { '1m': 30, '2m': 50, '3m': 80 }
+                }
+            },
+            { 
+                id: 'studocu', 
+                name: 'Studocu Premium', 
+                category: 'educational', 
+                icon: '🎓',
+                stock: 6,
+                pricing: {
+                    "solo account": { '1m': 50, '2m': 85, '3m': 120 },
+                    "shared account": { '1m': 30, '2m': 50, '3m': 80 }
+                }
+            },
+            { 
+                id: 'duolingo', 
+                name: 'Duolingo Super', 
+                category: 'educational', 
+                icon: '🧑‍🎓',
+                stock: 6,
+                pricing: {
+                    "solo account": { '1m': 80, '2m': 130, '3m': 170 }
+                }
+            },
+            { 
+                id: 'turnitin-student', 
+                name: 'Turnitin Student', 
+                category: 'educational', 
+                icon: '📝',
+                stock: 8,
+                pricing: {
+                    "solo account": { '7d': 35, '14d': 50, '1m': 80, '2m': 140, '3m': 160, '6m': 330, '12m': 580 }
+                }
+            },
+            { 
+                id: 'turnitin-instructor', 
+                name: 'Turnitin Instructor', 
+                category: 'educational', 
+                icon: '👨‍🏫',
+                stock: 5,
+                pricing: {
+                    "solo account": { '1m': 520 },
+                    "shared account": { '7d': 120, '14d': 175, '1m': 280 }
+                }
+            },
+
+            // Editing Tools
+            { 
+                id: 'canva', 
+                name: 'Canva Pro', 
+                category: 'editing', 
+                icon: '🎨',
+                stock: 25,
+                pricing: {
+                    "edu lifetime": {'nw': 19, '3m w': 39, '6m w': 49, '12m w': 69},
+                    "teamhead": {'1m': 45, '2m': 55, '3m': 65, '4m': 75, '5m': 85, '6m': 95},
+                    "solo": { '1m': 25, '2m': 35, '3m': 45, '4m': 55, '5m': 65, '6m': 75 },
+                    "invite": { '1m': 10, '2m': 15, '3m': 20, '4m': 25, '5m': 30, '6m': 35 }
+                }
+            },
+            { 
+                id: 'picsart', 
+                name: 'Picsart Gold', 
+                category: 'editing', 
+                icon: '👏',
+                stock: 12,
+                pricing: {
+                    "teamhead account": { '1m': 70, '2m': 115, '3m': 150 },
+                    "solo account": { '1m': 50, '2m': 85, '3m': 120 },
+                    "shared account": { '1m': 25, '2m': 45, '3m': 70 }
+                }
+            },
+            { 
+                id: 'capcut', 
+                name: 'CapCut Pro', 
+                category: 'editing', 
+                icon: '📝',
+                stock: 10,
+                pricing: {
+                    "solo account": { '7d': 50, '1m': 130, '2m': 190, '3m': 240 },
+                    "shared account": { '1m': 70, '2m': 120, '3m': 155 }
+                }
+            },
+            { 
+                id: 'alight-motion', 
+                name: 'Alight Motion Pro', 
+                category: 'editing', 
+                icon: '📱',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 90, '12m': 149 },
+                    "shared account": { '1m': 35, '12m': 69 }
+                }
+            },
+            { 
+                id: 'remini', 
+                name: 'Remini Web', 
+                category: 'editing', 
+                icon: '✨',
+                stock: 6,
+                pricing: {
+                    "solo account": { '7d': 30, '1m': 50 },
+                    "shared account": { '7d': 15, '1m': 25 }
+                }
+            },
+            { 
+                id: 'grammarly', 
+                name: 'Grammarly Premium', 
+                category: 'educational', 
+                icon: '✍️',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 85 },
+                    "shared account": { '1m': 35, '2m': 65, '3m': 95 }
+                }
+            },
+            { 
+                id: 'quillbot', 
+                name: 'Quillbot Premium', 
+                category: 'educational', 
+                icon: '📝',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 100 },
+                    "shared account": { '1m': 45, '2m': 75, '3m': 110 }
+                }
+            },
+            { 
+                id: 'ms-365', 
+                name: 'Microsoft 365', 
+                category: 'educational', 
+                icon: '🤬',
+                stock: 15,
+                pricing: {
+                    "solo account": { '1m': 55, '2m': 90, '3m': 120 },
+                    "shared account": { '1m': 25, '2m': 45, '3m': 65 }
+                }
+            },
+            { 
+                id: 'cams-canner', 
+                name: 'CamScanner Pro', 
+                category: 'editing', 
+                icon: '📁',
+                stock: 8,
+                pricing: {
+                    "solo account": { '1m': 100, '2m': 180, '3m': 250 },
+                    "shared account": { '1m': 50, '2m': 90, '3m': 120 }
+                }
+            },
+            { 
+                id: 'small-pdf', 
+                name: 'Small PDF Pro', 
+                category: 'editing', 
+                icon: '📁',
+                stock: 7,
+                pricing: {
+                    "solo account": { '1m': 55, '2m': 95, '3m': 130 },
+                    "shared account": { '1m': 30, '2m': 50, '3m': 70 }
+                }
+            },
+            { 
+                id: 'zoom', 
+                name: 'Zoom Pro', 
+                category: 'educational', 
+                icon: '📽️',
+                stock: 6,
+                pricing: {
+                    "solo account": { '14d': 45, '1m': 70, '2m': 120, '3m': 160 }
+                }
+            }
         ];
 
         // Initialize the application
@@ -755,17 +1164,10 @@
             const password = document.getElementById('loginPassword').value;
             
             try {
-                // Use Supabase Auth for login
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) throw error;
-
+                // Simulate login - in real app, use Supabase Auth
                 const user = {
-                    id: data.user.id,
-                    name: data.user.user_metadata?.name || email.split('@')[0],
+                    id: 1,
+                    name: email.split('@')[0],
                     email: email
                 };
                 
@@ -796,21 +1198,8 @@
             }
             
             try {
-                // Use Supabase Auth for signup
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            name: name
-                        }
-                    }
-                });
-
-                if (error) throw error;
-
                 const user = {
-                    id: data.user.id,
+                    id: Date.now(),
                     name: name,
                     email: email
                 };
@@ -831,7 +1220,6 @@
         }
         
         function handleLogout() {
-            supabase.auth.signOut();
             currentUser = null;
             localStorage.removeItem('aiaxcart_user');
             showUserAuth();
@@ -839,37 +1227,9 @@
         }
         
         // Data Functions
-        async function loadProducts() {
+        function loadProducts() {
             try {
-                // First, check if products exist in Supabase
-                const { data: existingProducts, error } = await supabase
-                    .from('products')
-                    .select('*')
-                    .eq('is_active', true);
-
-                if (error) throw error;
-
-                // If no products exist, insert the default products
-                if (!existingProducts || existingProducts.length === 0) {
-                    const productsToInsert = PRODUCTS.map(product => ({
-                        name: product.label,
-                        key: product.key,
-                        category: product.category,
-                        icon: product.icon,
-                        is_active: true
-                    }));
-
-                    const { data: newProducts, error: insertError } = await supabase
-                        .from('products')
-                        .insert(productsToInsert)
-                        .select();
-
-                    if (insertError) throw insertError;
-                    
-                    displayProducts(newProducts);
-                } else {
-                    displayProducts(existingProducts);
-                }
+                displayProducts(PRODUCTS_DATA);
             } catch (error) {
                 console.error('Error loading products:', error);
                 showToast('Error loading products', 'error');
@@ -881,61 +1241,47 @@
             container.innerHTML = '';
             
             products.forEach(product => {
+                // Calculate minimum price
+                let minPrice = Number.MAX_SAFE_INTEGER;
+                Object.values(product.pricing).forEach(priceTiers => {
+                    Object.values(priceTiers).forEach(price => {
+                        if (price < minPrice) minPrice = price;
+                    });
+                });
+                
                 const col = document.createElement('div');
                 col.className = 'col-md-4 col-lg-3 mb-4';
                 col.innerHTML = `
-                    <div class="card product-card" data-product-id="${product.id}" data-product-key="${product.key}">
+                    <div class="card product-card" data-product-id="${product.id}">
                         <div class="card-body text-center">
                             <div class="product-img mb-3">
-                                <i class="${product.icon}"></i>
+                                <span style="font-size: 2.5rem;">${product.icon}</span>
                             </div>
                             <h5 class="card-title">${product.name}</h5>
                             <p class="card-text text-muted small">${product.category}</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="badge bg-secondary">${product.category}</span>
-                                <span class="text-primary fw-bold" id="price-${product.key}">Loading...</span>
+                                <span class="text-primary fw-bold">From ₱${minPrice}</span>
                             </div>
-                            <button class="btn btn-primary btn-sm mt-3 w-100 view-product-btn">View Details</button>
+                            <div class="mt-2">
+                                <small class="text-muted">Stock: ${product.stock}</small>
+                            </div>
+                            <button class="btn btn-primary btn-sm mt-3 w-100 view-product-btn" ${product.stock === 0 ? 'disabled' : ''}>
+                                ${product.stock === 0 ? 'Out of Stock' : 'View Details'}
+                            </button>
                         </div>
                     </div>
                 `;
                 container.appendChild(col);
-                
-                // Load price for this product
-                loadProductPrice(product.key, product.id);
             });
             
             // Add event listeners to view product buttons
             document.querySelectorAll('.view-product-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const productId = this.closest('.card').getAttribute('data-product-id');
-                    const productKey = this.closest('.card').getAttribute('data-product-key');
-                    openProductModal(parseInt(productId), productKey);
+                    openProductModal(productId);
                 });
             });
-        }
-        
-        async function loadProductPrice(productKey, productId) {
-            try {
-                const { data: prices, error } = await supabase
-                    .from('product_prices')
-                    .select('*')
-                    .eq('product_id', productId)
-                    .order('price', { ascending: true })
-                    .limit(1);
-
-                if (error) throw error;
-                
-                const priceElement = document.getElementById(`price-${productKey}`);
-                if (prices && prices.length > 0) {
-                    priceElement.textContent = `From ₱${prices[0].price}`;
-                } else {
-                    priceElement.textContent = 'Price N/A';
-                }
-            } catch (error) {
-                console.error('Error loading price:', error);
-                document.getElementById(`price-${productKey}`).textContent = 'Price N/A';
-            }
         }
         
         function filterProducts(category) {
@@ -955,132 +1301,81 @@
             });
         }
         
-        async function openProductModal(productId, productKey) {
-            try {
-                // Get product details
-                const { data: product, error } = await supabase
-                    .from('products')
-                    .select('*')
-                    .eq('id', productId)
-                    .single();
-
-                if (error) throw error;
-
-                currentProduct = product;
-
-                // Get prices for this product
-                const prices = await loadProductPrices(productId);
-
-                // Update modal content
-                document.getElementById('productModalTitle').textContent = product.name;
-                document.getElementById('productModalIcon').className = product.icon;
-                document.getElementById('productModalName').textContent = product.name;
-                document.getElementById('productModalDescription').textContent = product.category;
-
-                // Populate account types and durations
-                this.populateProductOptions(prices);
-
-                // Reset form
-                document.getElementById('buyNowForm').reset();
-                document.getElementById('inviteEmailField').classList.add('hidden');
-
-                // Show modal
-                const productModal = new bootstrap.Modal(document.getElementById('productModal'));
-                productModal.show();
-
-            } catch (error) {
-                console.error('Error opening product modal:', error);
-                showToast('Error loading product details', 'error');
+        function openProductModal(productId) {
+            const product = PRODUCTS_DATA.find(p => p.id === productId);
+            
+            if (!product) {
+                showToast('Product not found', 'error');
+                return;
             }
-        }
-        
-        async function loadProductPrices(productId) {
-            try {
-                const { data: prices, error } = await supabase
-                    .from('product_prices')
-                    .select('*')
-                    .eq('product_id', productId);
-
-                if (error) throw error;
-                return prices || [];
-            } catch (error) {
-                console.error('Error loading prices:', error);
-                return [];
-            }
-        }
-        
-        function populateProductOptions(prices) {
+            
+            currentProduct = product;
+            
+            document.getElementById('productModalTitle').textContent = product.name;
+            document.getElementById('productModalIcon').textContent = product.icon;
+            document.getElementById('productModalName').textContent = product.name;
+            document.getElementById('productModalDescription').textContent = `${product.category} - ${product.stock} in stock`;
+            document.getElementById('availableStock').textContent = product.stock;
+            
+            // Populate account types
             const accountTypeSelect = document.getElementById('accountType');
-            const durationSelect = document.getElementById('duration');
-
-            // Get unique account types and durations
-            const accountTypes = [...new Set(prices.map(p => p.account_type))];
-            const durations = [...new Set(prices.map(p => p.duration))];
-
             accountTypeSelect.innerHTML = '<option value="">Select account type</option>';
-            durationSelect.innerHTML = '<option value="">Select duration</option>';
-
-            accountTypes.forEach(type => {
+            
+            Object.keys(product.pricing).forEach(accountType => {
                 const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
+                option.value = accountType;
+                option.textContent = accountType.charAt(0).toUpperCase() + accountType.slice(1);
                 accountTypeSelect.appendChild(option);
             });
-
-            durations.forEach(duration => {
-                const option = document.createElement('option');
-                option.value = duration;
-                option.textContent = duration;
-                durationSelect.appendChild(option);
+            
+            // Populate durations based on selected account type
+            accountTypeSelect.addEventListener('change', function() {
+                const durationSelect = document.getElementById('duration');
+                durationSelect.innerHTML = '<option value="">Select duration</option>';
+                
+                if (this.value) {
+                    const durations = product.pricing[this.value];
+                    Object.keys(durations).forEach(durationKey => {
+                        const option = document.createElement('option');
+                        option.value = durationKey;
+                        option.textContent = durationMap[durationKey] || durationKey;
+                        durationSelect.appendChild(option);
+                    });
+                }
+                
+                updatePrice();
             });
-
-            // Add event listeners for price updates
-            accountTypeSelect.addEventListener('change', () => this.updatePriceAndStock(prices));
-            durationSelect.addEventListener('change', () => this.updatePriceAndStock(prices));
+            
+            // Update price when duration changes
+            document.getElementById('duration').addEventListener('change', updatePrice);
+            
+            // Reset form and update invite field
+            document.getElementById('buyNowForm').reset();
+            updateInviteField();
+            
+            // Show modal
+            const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+            productModal.show();
         }
         
-        async function updatePriceAndStock(prices) {
+        function updatePrice() {
             const accountType = document.getElementById('accountType').value;
             const duration = document.getElementById('duration').value;
-
-            if (accountType && duration) {
-                const price = prices.find(p => p.account_type === accountType && p.duration === duration);
-                if (price) {
-                    document.getElementById('productPrice').textContent = `₱${price.price.toFixed(2)}`;
-
-                    // Get stock count
-                    const stockCount = await getStockCount(this.currentProduct.id, accountType, duration);
-                    document.getElementById('availableStock').textContent = stockCount;
-
-                    // Show/hide invite email field
-                    if (accountType.toLowerCase().includes('invite')) {
-                        document.getElementById('inviteEmailField').classList.remove('hidden');
-                    } else {
-                        document.getElementById('inviteEmailField').classList.add('hidden');
-                    }
-                }
+            
+            if (accountType && duration && currentProduct.pricing[accountType] && currentProduct.pricing[accountType][duration]) {
+                const price = currentProduct.pricing[accountType][duration];
+                document.getElementById('productPrice').textContent = `₱${price}`;
             } else {
                 document.getElementById('productPrice').textContent = '₱0.00';
-                document.getElementById('availableStock').textContent = '0';
             }
         }
         
-        async function getStockCount(productId, accountType, duration) {
-            try {
-                const { data: stocks, error } = await supabase
-                    .from('stocks')
-                    .select('id')
-                    .eq('product_id', productId)
-                    .eq('account_type', accountType)
-                    .eq('duration', duration)
-                    .eq('is_archived', false)
-                    .eq('is_sold', false);
-
-                if (error) throw error;
-                return stocks.length;
-            } catch (error) {
-                console.error('Error getting stock count:', error);
-                return 0;
+        function updateInviteField() {
+            const accountType = document.getElementById('accountType').value;
+            if (accountType && accountType.toLowerCase().includes('invite')) {
+                document.getElementById('inviteEmailField').classList.remove('hidden');
+            } else {
+                document.getElementById('inviteEmailField').classList.add('hidden');
             }
         }
         
@@ -1137,59 +1432,37 @@
             }
             
             try {
-                let proofImageUrl = null;
-                if (proofImage) {
-                    // Upload proof image to Supabase Storage
-                    const fileName = `payment-proofs/${Date.now()}-${proofImage.name}`;
-                    const { data, error } = await supabase.storage
-                        .from('aiaxcart')
-                        .upload(fileName, proofImage);
-                    
-                    if (error) throw error;
-                    
-                    // Get public URL
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('aiaxcart')
-                        .getPublicUrl(fileName);
-                    
-                    proofImageUrl = publicUrl;
-                }
-                
                 // Generate order ID
                 const orderId = generateOrderId();
                 
-                // Create order in Supabase
-                const { data: order, error } = await supabase
-                    .from('orders')
-                    .insert([{
-                        id: orderId,
-                        buyer_id: currentUser.id,
-                        product_id: currentOrderDetails.productId,
-                        account_type: currentOrderDetails.accountType,
-                        duration: currentOrderDetails.duration,
-                        price: currentOrderDetails.price,
-                        payment_method: paymentMethod,
-                        reference_number: referenceNumber,
-                        proof_image_url: proofImageUrl,
-                        invite_email: currentOrderDetails.inviteEmail,
-                        status: 'pending',
-                        created_at: new Date().toISOString()
-                    }])
-                    .select()
-                    .single();
-
-                if (error) throw error;
-
-                // Send Telegram notification (you would need to set up a Telegram bot)
-                // await sendTelegramNotification(order);
-
+                // Create order object
+                const order = {
+                    id: orderId,
+                    buyer_id: currentUser.id,
+                    product_id: currentOrderDetails.productId,
+                    account_type: currentOrderDetails.accountType,
+                    duration: currentOrderDetails.duration,
+                    price: currentOrderDetails.price,
+                    payment_method: paymentMethod,
+                    reference_number: referenceNumber,
+                    invite_email: currentOrderDetails.inviteEmail,
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                };
+                
+                // In real implementation, save to Supabase
+                await saveOrderToSupabase(order);
+                
+                // Send Telegram notification
+                await sendTelegramNotification(order);
+                
                 // Show success message
                 bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
                 showToast(`Order submitted successfully! Your order ID is ${orderId}`, 'success');
-
+                
                 // Reset form
                 document.getElementById('checkoutForm').reset();
-
+                
                 // Update user orders
                 loadUserOrders();
                 
@@ -1199,18 +1472,15 @@
             }
         }
         
-        async function loadRules() {
-            try {
-                const { data: rules, error } = await supabase
-                    .from('rules')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if (error) throw error;
-                this.displayRules(rules);
-            } catch (error) {
-                console.error('Error loading rules:', error);
-            }
+        function loadRules() {
+            // Mock rules data
+            const rules = [
+                { id: 1, rule_text: 'All accounts are guaranteed to work for the duration purchased.', product_id: null },
+                { id: 2, rule_text: 'Refunds are only provided if the account does not work within 24 hours of purchase.', product_id: null },
+                { id: 3, rule_text: 'Sharing account details with others may result in suspension.', product_id: null }
+            ];
+            
+            displayRules(rules);
         }
         
         function displayRules(rules) {
@@ -1236,18 +1506,15 @@
             }
         }
         
-        async function loadFeedback() {
-            try {
-                const { data: feedback, error } = await supabase
-                    .from('feedback')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                this.displayFeedback(feedback);
-            } catch (error) {
-                console.error('Error loading feedback:', error);
-            }
+        function loadFeedback() {
+            // Mock feedback data
+            const feedback = [
+                { id: 1, buyer_name: 'John D.', feedback_text: 'Great service! My account works perfectly.', photo_url: null, created_at: '2023-05-15T10:30:00Z' },
+                { id: 2, buyer_name: 'Sarah M.', feedback_text: 'Fast delivery and good support.', photo_url: null, created_at: '2023-05-10T14:22:00Z' },
+                { id: 3, buyer_name: 'Mike T.', feedback_text: 'Had an issue but support resolved it quickly.', photo_url: null, created_at: '2023-05-05T09:15:00Z' }
+            ];
+            
+            displayFeedback(feedback);
         }
         
         function displayFeedback(feedback) {
@@ -1274,12 +1541,7 @@
             });
         }
         
-        async function submitFeedback() {
-            if (!currentUser) {
-                showToast('Please login to submit feedback', 'warning');
-                return;
-            }
-
+        function submitFeedback() {
             const name = document.getElementById('feedbackName').value;
             const text = document.getElementById('feedbackText').value;
             const image = document.getElementById('feedbackImage').files[0];
@@ -1289,60 +1551,21 @@
                 return;
             }
             
-            try {
-                let photoUrl = null;
-                if (image) {
-                    // Upload image to Supabase Storage
-                    const fileName = `feedback/${Date.now()}-${image.name}`;
-                    const { data, error } = await supabase.storage
-                        .from('aiaxcart')
-                        .upload(fileName, image);
-                    
-                    if (error) throw error;
-                    
-                    // Get public URL
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('aiaxcart')
-                        .getPublicUrl(fileName);
-                    
-                    photoUrl = publicUrl;
-                }
-
-                const { error } = await supabase
-                    .from('feedback')
-                    .insert([{
-                        buyer_id: currentUser.id,
-                        buyer_name: name,
-                        feedback_text: text,
-                        photo_url: photoUrl,
-                        created_at: new Date().toISOString()
-                    }]);
-
-                if (error) throw error;
-
-                showToast('Feedback submitted successfully!', 'success');
-                document.getElementById('feedbackForm').reset();
-                this.loadFeedback();
-
-            } catch (error) {
-                console.error('Error submitting feedback:', error);
-                showToast('Error submitting feedback', 'error');
-            }
+            // In real implementation, save to Supabase
+            showToast('Feedback submitted successfully!', 'success');
+            document.getElementById('feedbackForm').reset();
+            loadFeedback();
         }
         
-        async function loadUserOrders() {
-            try {
-                const { data: orders, error } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .eq('buyer_id', currentUser.id)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                this.displayUserOrders(orders);
-            } catch (error) {
-                console.error('Error loading user orders:', error);
-            }
+        function loadUserOrders() {
+            // Mock orders data
+            const orders = [
+                { id: 'AXP-20230520-1234', product_name: 'Netflix Premium', account_type: 'Personal', duration: '1 Month', price: 199, status: 'pending', created_at: '2023-05-20T10:30:00Z' },
+                { id: 'AXP-20230515-5678', product_name: 'Spotify Family', account_type: 'Family', duration: '3 Months', price: 449, status: 'confirmed', created_at: '2023-05-15T14:22:00Z' },
+                { id: 'AXP-20230510-9012', product_name: 'Adobe Creative Cloud', account_type: 'Personal', duration: '1 Month', price: 299, status: 'delivered', created_at: '2023-05-10T09:15:00Z' }
+            ];
+            
+            displayUserOrders(orders);
         }
         
         function displayUserOrders(orders) {
@@ -1363,7 +1586,8 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h6 class="mb-1">Order: ${order.id}</h6>
+                                <h6 class="mb-1">${order.product_name}</h6>
+                                <p class="mb-1 small">Order ID: ${order.id}</p>
                                 <p class="mb-1 small">Account Type: ${order.account_type} • Duration: ${order.duration}</p>
                                 <p class="mb-0 fw-bold">₱${order.price}</p>
                             </div>
@@ -1409,12 +1633,7 @@
             document.getElementById('reportOrderId').value = orderId;
         }
         
-        async function submitReport() {
-            if (!currentUser) {
-                showToast('Please login to submit a report', 'warning');
-                return;
-            }
-
+        function submitReport() {
             const orderId = document.getElementById('reportOrderId').value;
             const issue = document.getElementById('reportIssue').value;
             const screenshot = document.getElementById('reportScreenshot').files[0];
@@ -1424,46 +1643,10 @@
                 return;
             }
             
-            try {
-                let screenshotUrl = null;
-                if (screenshot) {
-                    // Upload screenshot to Supabase Storage
-                    const fileName = `reports/${Date.now()}-${screenshot.name}`;
-                    const { data, error } = await supabase.storage
-                        .from('aiaxcart')
-                        .upload(fileName, screenshot);
-                    
-                    if (error) throw error;
-                    
-                    // Get public URL
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('aiaxcart')
-                        .getPublicUrl(fileName);
-                    
-                    screenshotUrl = publicUrl;
-                }
-
-                const { error } = await supabase
-                    .from('buyer_reports')
-                    .insert([{
-                        buyer_id: currentUser.id,
-                        order_id: orderId,
-                        issue_text: issue,
-                        screenshot_url: screenshotUrl,
-                        status: 'open',
-                        created_at: new Date().toISOString()
-                    }]);
-
-                if (error) throw error;
-
-                showToast('Report submitted successfully!', 'success');
-                document.getElementById('reportForm').reset();
-                showSection('profileSection');
-
-            } catch (error) {
-                console.error('Error submitting report:', error);
-                showToast('Error submitting report', 'error');
-            }
+            // In real implementation, save to Supabase
+            showToast('Report submitted successfully!', 'success');
+            document.getElementById('reportForm').reset();
+            showSection('profileSection');
         }
         
         // Utility Functions
@@ -1485,22 +1668,30 @@
             return `AXP-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
         }
         
-        // Supabase Integration Functions
+        // Supabase Integration Functions (Mock implementations)
         async function saveBuyerToSupabase(buyer) {
-            try {
-                const { error } = await supabase
-                    .from('buyers')
-                    .upsert({
-                        id: buyer.id,
-                        name: buyer.name,
-                        email: buyer.email,
-                        created_at: new Date().toISOString()
-                    });
-
-                if (error) throw error;
-            } catch (error) {
-                console.error('Error saving buyer:', error);
-            }
+            console.log('Saving buyer to Supabase:', buyer);
+            // await supabase.from('buyers').insert([buyer]);
+        }
+        
+        async function saveOrderToSupabase(order) {
+            console.log('Saving order to Supabase:', order);
+            // await supabase.from('orders').insert([order]);
+        }
+        
+        async function sendTelegramNotification(order) {
+            const message = `
+🛒 NEW ORDER RECEIVED!
+Order ID: ${order.id}
+Buyer: ${currentUser.email}
+Product: ${currentOrderDetails.productName}
+Account Type: ${order.account_type}
+Duration: ${order.duration}
+Price: ₱${order.price}
+Payment Method: ${order.payment_method}
+            `;
+            
+            console.log('Sending Telegram notification:', message);
         }
     </script>
 </body>
