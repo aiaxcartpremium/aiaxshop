@@ -1,247 +1,495 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Aiaxcart Premium | Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Aiaxcart Premium | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Bootstrap + Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Bootstrap + Icons (for quick UI) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
 
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #ffb0b5;
+      --secondary: #ffd3d6;
+      --dark: #382f2c;
+      --light: #fefaf7;
+    }
 
-    <style>
-        :root {
-            --primary: #FFB0B5;
-            --secondary: #FFD3D6;
-            --dark: #382f2c;
-            --light: #fefaf7;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        body {
-            background: var(--light);
-            color: var(--dark);
-            font-family: 'Segoe UI', sans-serif;
-        }
+    body {
+      margin: 0;
+      background: var(--light);
+      color: var(--dark);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        header {
-            background: var(--secondary);
-            padding: 1.2rem 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-            margin-bottom: 1.5rem;
-        }
-        
-        .logo {
-            font-size: 2rem;
-            font-weight: 700;
-        }
+    header {
+      background: var(--secondary);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
 
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 1.8rem;
-            align-items: center;
-        }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-        nav ul a {
-            color: var(--dark);
-            text-decoration: none;
-            padding: .6rem 1.2rem;
-            border-radius: 10px;
-            font-weight: 500;
-        }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
 
-        nav ul a.active, nav ul a:hover {
-            background: var(--primary);
-            color: white;
-        }
+    .logo span {
+      font-weight: 600;
+    }
 
-        /* Tabs */
-        .tab {
-            border: none;
-            background: white;
-            padding: .8rem 1.5rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-            transition: .2s;
-        }
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
+    .top-nav a {
+      text-decoration: none;
+      color: var(--dark);
+      margin-left: 1rem;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 500;
+    }
 
-        .panel {
-            display: none;
-        }
-        .panel.active {
-            display: block;
-        }
+    .top-nav a.active,
+    .top-nav a:hover {
+      background: var(--primary);
+      color: #fff;
+    }
 
-        /* Cards */
-        .card-clean {
-            background: white;
-            padding: 1.8rem 1.5rem;
-            border-radius: 14px;
-            margin-bottom: 1.6rem;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-        }
+    /* Layout */
+    .admin-wrapper {
+      max-width: 1100px;
+      margin: 1.5rem auto 2.5rem;
+      padding: 0 1.25rem;
+    }
 
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9000;
-        }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
 
-        /* Tables */
-        .clean-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .clean-table th {
-            background: var(--secondary);
-            padding: .75rem;
-            border-bottom: 2px solid #eaeaea;
-        }
-        .clean-table td {
-            padding: .75rem;
-            border-bottom: 1px solid #eee;
-        }
-        .clean-table tr:hover {
-            background: #fff7f7;
-        }
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
 
-        /* Modal */
-        .owner-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            display: none;
-        }
-        .owner-box {
-            background: white;
-            padding: 2.2rem;
-            border-radius: 16px;
-            width: 340px;
-            position: relative;
-        }
-        .close-btn {
-            position: absolute;
-            right: 12px;
-            top: 10px;
-            font-size: 1.4rem;
-            color: #fa5a5a;
-            cursor: pointer;
-        }
-    </style>
+    .stat-card h3 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    .stat-card span {
+      font-size: 0.9rem;
+      color: #6a5c58;
+    }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .sidebar {
+      background: #fff;
+      border-radius: 16px;
+      padding: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 5rem;
+    }
+
+    .sidebar button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      margin-bottom: 0.3rem;
+      cursor: pointer;
+      color: #5a4b47;
+    }
+
+    .sidebar button.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .sidebar button i {
+      width: 1rem;
+      text-align: center;
+      margin-right: 0.5rem;
+    }
+
+    .admin-main {
+      min-height: 400px;
+    }
+
+    .panel-admin {
+      display: none;
+    }
+
+    .panel-admin.active {
+      display: block;
+    }
+
+    .card-clean {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.25rem 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .records-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .records-table th,
+    .records-table td {
+      border-bottom: 1px solid #eee;
+      padding: 0.45rem 0.55rem;
+      vertical-align: top;
+    }
+
+    .records-table th {
+      background: #ffeef0;
+      font-weight: 600;
+    }
+
+    .records-table tr:hover td {
+      background: #fff7f8;
+    }
+
+    .form-label {
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .toast-container {
+      z-index: 9999;
+    }
+
+    @media (max-width: 900px) {
+      .admin-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <!-- Toasts -->
+  <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
 
-<!-- Toast Container -->
-<div id="toastContainer" class="toast-container"></div>
-
-<header>
-    <div class="container d-flex justify-content-between align-items-center">
-        <div class="logo">🛒 Aiaxcart Premium</div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a class="active" href="admin.html">Admin</a></li>
-            </ul>
-        </nav>
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span>🛒</span>
+        <span>Aiaxcart Premium – Admin</span>
+      </div>
+      <nav class="top-nav">
+        <a href="./index.html">Home</a>
+        <a href="./admin.html" class="active">Admin</a>
+      </nav>
     </div>
-</header>
+  </header>
 
-<!-- OWNER VERIFICATION -->
-<div id="ownerOverlay" class="owner-overlay">
-    <div class="owner-box">
-        <div class="close-btn" onclick="closeOwnerModal()">×</div>
+  <!-- Main Admin Wrapper -->
+  <main class="admin-wrapper" id="admin-root">
+    <h1 class="h4 mb-3">Admin Console</h1>
 
-        <h2 class="mb-3">🔐 Owner Verification</h2>
-        <input type="text" class="form-control" id="ownerUidInput" placeholder="Enter Owner UID">
-        <button class="btn btn-primary mt-3 w-100" onclick="verifyOwnerUID()">Verify Access</button>
-        <div id="ownerVeriMsg" class="mt-2 text-danger"></div>
-    </div>
-</div>
-
-<div class="container" id="adminPanel" style="display:none;">
-
-    <!-- DASHBOARD STATS -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card-clean text-center">
-                <h3 id="stat-products">0</h3>
-                <div>Products</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card-clean text-center">
-                <h3 id="stat-stock">0</h3>
-                <div>Available Stock</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card-clean text-center">
-                <h3 id="stat-pending">0</h3>
-                <div>Pending Orders</div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card-clean text-center">
-                <h3 id="stat-revenue">₱0</h3>
-                <div>Total Revenue</div>
-            </div>
-        </div>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3 id="stat-products">0</h3>
+        <span>Products</span>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-stock">0</h3>
+        <span>Available Stocks</span>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-pending">0</h3>
+        <span>Pending Orders</span>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-revenue">₱0.00</h3>
+        <span>Total Revenue</span>
+      </div>
     </div>
 
-    <!-- TABS -->
-    <div class="d-flex flex-wrap gap-2 mb-3">
-        <button class="tab active" data-target="panel-add-product">Add Product</button>
-        <button class="tab" data-target="panel-add-stock">Add Stock</button>
-        <button class="tab" data-target="panel-stocks">Manage Stocks</button>
-        <button class="tab" data-target="panel-pending">Pending Orders</button>
-        <button class="tab" data-target="panel-sold">Sold Accounts</button>
-        <button class="tab" data-target="panel-archived">Archived</button>
-        <button class="tab" data-target="panel-products">Products</button>
-        <button class="tab" data-target="panel-prices">Price Management</button>
-        <button class="tab" data-target="panel-rules">Store Rules</button>
-        <button class="tab" data-target="panel-records">Records</button>
-        <button class="tab" data-target="panel-reports">Reports</button>
+    <div class="admin-layout">
+      <!-- Sidebar Tabs -->
+      <aside class="sidebar">
+        <button class="active" data-target="panel-add-product">
+          <i class="fa fa-box"></i> Add / Edit Product
+        </button>
+        <button data-target="panel-products">
+          <i class="fa fa-list"></i> Products List
+        </button>
+        <button data-target="panel-add-stock">
+          <i class="fa fa-plus-square"></i> Add Stock
+        </button>
+        <button data-target="panel-manage-stocks">
+          <i class="fa fa-layer-group"></i> Manage Stocks
+        </button>
+        <button data-target="panel-pending-orders">
+          <i class="fa fa-clock"></i> Pending Orders
+        </button>
+        <button data-target="panel-sold-accounts">
+          <i class="fa fa-check-circle"></i> Sold Accounts
+        </button>
+        <button data-target="panel-records">
+          <i class="fa fa-book"></i> Records
+        </button>
+        <button data-target="panel-store-rules">
+          <i class="fa fa-scroll"></i> Store Rules
+        </button>
+        <button data-target="panel-reports">
+          <i class="fa fa-flag"></i> Reports
+        </button>
+      </aside>
+
+      <!-- Main panels -->
+      <section class="admin-main">
+        <!-- Products: Form (rendered by products.js) -->
+        <div id="panel-add-product" class="panel-admin active">
+          <!-- products.js will render the form here -->
+        </div>
+
+        <!-- Products: List (rendered by products.js) -->
+        <div id="panel-products" class="panel-admin">
+          <!-- products.js will render list here -->
+        </div>
+
+        <!-- Stocks: Add -->
+        <div id="panel-add-stock" class="panel-admin">
+          <!-- stocks.js will render add-stock form here -->
+        </div>
+
+        <!-- Stocks: Manage -->
+        <div id="panel-manage-stocks" class="panel-admin">
+          <!-- stocks.js will render manage-stocks content here -->
+        </div>
+
+        <!-- Orders: Pending -->
+        <div id="panel-pending-orders" class="panel-admin">
+          <!-- orders.js will render pending orders here -->
+        </div>
+
+        <!-- Sold Accounts (cards view) -->
+        <div id="panel-sold-accounts" class="panel-admin">
+          <!-- records.js will render sold cards here -->
+        </div>
+
+        <!-- Records panel – form + table -->
+        <div id="panel-records" class="panel-admin">
+          <div class="card-clean mb-3">
+            <h3 class="mb-3">Add / Edit Record</h3>
+            <!-- hidden: if filled with ID = edit mode, else new record -->
+            <input type="hidden" id="recordFormMode" />
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Order ID (optional / external)</label>
+                <input
+                  type="text"
+                  id="record-orderid"
+                  class="form-control"
+                  placeholder="Leave blank if none"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Buyer (name or email)</label>
+                <input
+                  type="text"
+                  id="record-buyer"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Source</label>
+                <select id="record-source" class="form-select">
+                  <option value="">Select source</option>
+                  <option value="website">Website</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="telegram">Telegram</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Product</label>
+                <select id="record-product" class="form-select"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Account Type</label>
+                <input
+                  type="text"
+                  id="record-type"
+                  class="form-control"
+                  placeholder="e.g. solo, shared"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Duration</label>
+                <input
+                  type="text"
+                  id="record-duration"
+                  class="form-control"
+                  placeholder="e.g. 1m, 3m, 7d"
+                />
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Purchase Date</label>
+                <input type="date" id="record-purchasedate" class="form-control" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Additional Days</label>
+                <input
+                  type="number"
+                  id="record-adddays"
+                  class="form-control"
+                  value="0"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Price (₱)</label>
+                <input
+                  type="number"
+                  id="record-price"
+                  class="form-control"
+                  step="0.01"
+                  value="0"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Account Email</label>
+                <input type="text" id="record-email" class="form-control" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Password</label>
+                <input type="text" id="record-password" class="form-control" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Profile</label>
+                <input type="text" id="record-profile" class="form-control" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">PIN</label>
+                <input type="text" id="record-pin" class="form-control" />
+              </div>
+            </div>
+
+            <button
+              class="btn btn-primary mt-3"
+              type="button"
+              onclick="window.saveEditedRecord && window.saveEditedRecord()"
+            >
+              Save Record
+            </button>
+          </div>
+
+          <div class="card-clean">
+            <h3 class="mb-3">Records List</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Buyer</th>
+                    <th>Source</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Purchase</th>
+                    <th>Base Exp.</th>
+                    <th>+Days</th>
+                    <th>New Exp.</th>
+                    <th>Account</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="records-table-body">
+                  <!-- records.js will populate rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Rules -->
+        <div id="panel-store-rules" class="panel-admin">
+          <!-- rules.js will render rules UI -->
+        </div>
+
+        <!-- Reports -->
+        <div id="panel-reports" class="panel-admin">
+          <!-- reports.js will render reports UI -->
+        </div>
+      </section>
     </div>
+  </main>
 
-    <!-- PANELS -->
-    <div id="panel-add-product" class="panel active"></div>
-    <div id="panel-add-stock" class="panel"></div>
-    <div id="panel-stocks" class="panel"></div>
-    <div id="panel-pending" class="panel"></div>
-    <div id="panel-sold" class="panel"></div>
-    <div id="panel-archived" class="panel"></div>
-    <div id="panel-products" class="panel"></div>
-    <div id="panel-prices" class="panel"></div>
-    <div id="panel-rules" class="panel"></div>
-    <div id="panel-records" class="panel"></div>
-    <div id="panel-reports" class="panel"></div>
+  <!-- Bootstrap JS (for toasts etc.) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-</div>
-
-<!-- Bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Next: JS Section -->
-<script type="module" src="./js/admin.js"></script>
-
+  <!-- Main Admin App (modules) -->
+  <!-- VERY IMPORTANT: this path is from ROOT → /admin/js/admin.js -->
+  <script type="module" src="./admin/js/admin.js"></script>
 </body>
 </html>
