@@ -1,223 +1,342 @@
-// ===============================================
-// records.js — SOLD ACCOUNTS & RECORDS MODULE
-// ===============================================
+/* ============================================================
+   records.js — Sold Accounts / Records Management
+   Aiaxcart Premium Shop — Admin Side
+   ============================================================ */
 
 import {
-    fill,
     showToast,
+    confirmBox,
+    formatDate,
+    addDays,
+    cleanText,
     generateId
 } from "./utils.js";
 
 import {
-    fetchTable,
-    updateRow,
-    deleteRow
+    dbSelect,
+    dbInsert,
+    dbUpdate,
+    dbDelete
 } from "./supabase.js";
 
-import { loadProducts } from "./products.js";
+import { getProducts } from "./products.js";
 
-// Internal
+// In-memory cache
 let RECORDS = [];
 let PRODUCTS = [];
 
-// ===============================================
-// INIT MODULE
-// ===============================================
+/* -------------------------------------------------------------
+   Exports for admin.js & others
+------------------------------------------------------------- */
+
 export async function initRecordsModule() {
-    PRODUCTS = await loadProducts();
+    PRODUCTS = getProducts();
     await loadRecordsFromDB();
-    renderSoldList();
     renderRecordsTable();
+    renderSoldAccountsPanel();
 }
 
-// ===============================================
-// DASHBOARD — TOTAL REVENUE
-// ===============================================
 export async function refreshRevenueStats() {
-    const total = RECORDS.reduce((sum, r) => sum + (r.price || 0), 0);
-    document.getElementById("stat-revenue").textContent = "₱" + total;
+    if (!RECORDS.length) await loadRecordsFromDB();
+    const total = RECORDS.reduce((sum, r) => sum + Number(r.price || 0), 0);
+    const el = document.getElementById("stat-revenue");
+    if (el) el.textContent = "₱" + total.toFixed(2);
 }
 
-// ===============================================
-// LOAD RECORDS FROM SUPABASE
-// ===============================================
+/* -------------------------------------------------------------
+   Load records from DB
+------------------------------------------------------------- */
+
 async function loadRecordsFromDB() {
-    RECORDS = await fetchTable("records");
+    const data = await dbSelect("records", {
+        order: { column: "created_at", asc: false }
+    });
+
+    RECORDS = data || [];
 }
 
-// ===============================================
-// SOLD ACCOUNTS (summary list)
-// ===============================================
-function renderSoldList() {
-    const html = RECORDS.map(r => {
-        const p = PRODUCTS.find(x => x.id === r.product_id);
+/* -------------------------------------------------------------
+   RENDER: Records Table (panel-records > tbody#records-table-body)
+------------------------------------------------------------- */
 
-        return `
-            <div class="card-clean mb-3">
-                <h5>${p?.name || "Unknown Product"}</h5>
-                <div><b>Buyer:</b> ${r.buyer}</div>
-                <div><b>Type:</b> ${r.account_type}</div>
-                <div><b>Duration:</b> ${r.duration}</div>
-                <div><b>Price:</b> ₱${r.price}</div>
-
-                <div class="text-end mt-3">
-                    <button class="btn btn-warning btn-sm" onclick="editRecord('${r.id}')">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="removeRecord('${r.id}')">Delete</button>
-                </div>
-            </div>
-        `;
-    }).join("");
-
-    fill("panel-sold-accounts", html || "<p>No sold accounts yet.</p>");
-}
-
-// ===============================================
-// FULL RECORDS TABLE (Admin Table)
-// ===============================================
 function renderRecordsTable() {
-    if (RECORDS.length === 0) {
-        fill("records-table-body", `
-            <tr><td colspan="12" class="text-center">No records found.</td></tr>
-        `);
+    const tbody = document.getElementById("records-table-body");
+    if (!tbody) return;
+
+    if (!RECORDS.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="13" class="text-center text-muted">No records yet.</td>
+            </tr>
+        `;
         return;
     }
 
-    const html = RECORDS.map(r => {
-        const p = PRODUCTS.find(x => x.id === r.product_id);
+    const rows = RECORDS.map(r => {
+        const product = PRODUCTS.find(p => p.id === r.product_id);
+        const productName = product?.name || r.product_id || "Unknown";
 
-        const expiration = computeExpiration(r.purchase_date, r.duration, r.additional_days);
+        const purchase = r.purchase_date ? formatDate(r.purchase_date) : "";
+        const baseExp = purchase || ""; // simple fallback
+        const updatedExp = r.additional_days
+            ? addDays(purchase, Number(r.additional_days))
+            : baseExp;
+
+        const credsLines = [];
+        if (r.email) credsLines.push(`Email: ${r.email}`);
+        if (r.password) credsLines.push(`Password: ${r.password}`);
+        if (r.profile) credsLines.push(`Profile: ${r.profile}`);
+        if (r.pin) credsLines.push(`PIN: ${r.pin}`);
+
+        const creds = credsLines.join("<br>");
 
         return `
             <tr>
-                <td>${r.order_id}</td>
+                <td>${r.order_id || "-"}</td>
                 <td>${r.buyer}</td>
                 <td>${r.source}</td>
-                <td>${p?.name || "Unknown"}</td>
+                <td>${productName}</td>
                 <td>${r.account_type}</td>
                 <td>${r.duration}</td>
-                <td>${r.purchase_date}</td>
-                <td>${expiration.original}</td>
-                <td>${r.additional_days}</td>
-                <td>${expiration.updated}</td>
+                <td>${purchase || "-"}</td>
+                <td>${baseExp || "-"}</td>
+                <td>${r.additional_days ?? 0}</td>
+                <td>${updatedExp || "-"}</td>
+                <td>${creds || "-"}</td>
+                <td>₱${Number(r.price || 0).toFixed(2)}</td>
                 <td>
-                    ${r.email ? `Email: ${r.email}<br>` : ""}
-                    ${r.password ? `Pass: ${r.password}<br>` : ""}
-                    ${r.profile ? `Profile: ${r.profile}<br>` : ""}
-                    ${r.pin ? `PIN: ${r.pin}` : ""}
-                </td>
-                <td>₱${r.price}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="editRecord('${r.id}')">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="removeRecord('${r.id}')">Delete</button>
+                    <button class="btn btn-warning btn-sm mb-1"
+                            onclick="window.editRecord('${r.id}')">
+                        Edit
+                    </button><br>
+                    <button class="btn btn-danger btn-sm"
+                            onclick="window.deleteRecord('${r.id}')">
+                        Delete
+                    </button>
                 </td>
             </tr>
         `;
     }).join("");
 
-    fill("records-table-body", html);
+    tbody.innerHTML = rows;
 }
 
-// ===============================================
-// EXPIRATION CALCULATION
-// ===============================================
-function computeExpiration(purchaseDate, durationKey, addDays) {
-    const base = new Date(purchaseDate);
+/* -------------------------------------------------------------
+   RENDER: Sold Accounts Panel (panel-sold-accounts)
+------------------------------------------------------------- */
 
-    const num = parseInt(durationKey);
-    const isDays = durationKey.endsWith("d");
-    const isMonths = durationKey.endsWith("m");
+function renderSoldAccountsPanel() {
+    const panel = document.getElementById("panel-sold-accounts");
+    if (!panel) return;
 
-    let original = new Date(base);
+    const sold = RECORDS.filter(r => (r.status || "").toLowerCase() === "sold");
 
-    if (isDays) original.setDate(original.getDate() + num);
-    if (isMonths) original.setMonth(original.getMonth() + num);
+    if (!sold.length) {
+        panel.innerHTML = `
+            <div class="card-clean">
+                <h3>Sold Accounts</h3>
+                <p class="mb-0 text-muted">No sold records yet.</p>
+            </div>
+        `;
+        return;
+    }
 
-    // Additional days
-    let updated = new Date(original);
-    updated.setDate(updated.getDate() + (addDays || 0));
+    const cards = sold.map(r => {
+        const product = PRODUCTS.find(p => p.id === r.product_id);
+        const productName = product?.name || r.product_id || "Unknown";
 
-    const fmt = d => d.toISOString().split("T")[0];
+        return `
+            <div class="card-clean mb-2">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <b>${productName}</b><br>
+                        <span>${r.account_type} — ${r.duration}</span><br>
+                        <span>Buyer: ${r.buyer}</span><br>
+                        <span>Source: ${r.source}</span><br>
+                        <span>Purchased: ${formatDate(r.purchase_date)}</span><br>
+                        <span>Price: ₱${Number(r.price || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="text-end">
+                        <button class="btn btn-sm btn-outline-primary"
+                                onclick="window.editRecord('${r.id}')">
+                            View / Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
 
-    return {
-        original: fmt(original),
-        updated: fmt(updated)
-    };
+    panel.innerHTML = `
+        <h3>Sold Accounts</h3>
+        ${cards}
+    `;
 }
 
-// ===============================================
-// EDIT RECORD — PREFILL FORM
-// ===============================================
-window.editRecord = function (recordId) {
-    const r = RECORDS.find(x => x.id === recordId);
+/* -------------------------------------------------------------
+   EDIT FLOW (uses the form inside panel-records)
+------------------------------------------------------------- */
+
+window.editRecord = function (id) {
+    const r = RECORDS.find(x => x.id === id);
     if (!r) return;
 
-    document.querySelector(`[data-target="panel-records"]`).click();
+    const idInput = document.getElementById("recordFormMode"); // hidden
+    if (idInput) idInput.value = id;
 
-    document.getElementById("record-orderid").value = r.order_id;
-    document.getElementById("record-buyer").value = r.buyer;
-    document.getElementById("record-source").value = r.source;
-    document.getElementById("record-product").value = r.product_id;
-    document.getElementById("record-type").value = r.account_type;
-    document.getElementById("record-duration").value = r.duration;
-    document.getElementById("record-purchasedate").value = r.purchase_date;
-    document.getElementById("record-adddays").value = r.additional_days;
-    document.getElementById("record-email").value = r.email || "";
-    document.getElementById("record-password").value = r.password || "";
-    document.getElementById("record-profile").value = r.profile || "";
-    document.getElementById("record-pin").value = r.pin || "";
-    document.getElementById("record-price").value = r.price;
+    setValue("record-orderid", r.order_id || "");
+    setValue("record-buyer", r.buyer || "");
+    setValue("record-source", r.source || "");
+    setValue("record-product", r.product_id || "");
+    setValue("record-type", r.account_type || "");
+    setValue("record-duration", r.duration || "");
+    setValue("record-purchasedate", formatDate(r.purchase_date));
+    setValue("record-adddays", r.additional_days ?? 0);
+    setValue("record-email", r.email || "");
+    setValue("record-password", r.password || "");
+    setValue("record-profile", r.profile || "");
+    setValue("record-pin", r.pin || "");
+    setValue("record-price", r.price ?? 0);
 
-    document.getElementById("recordFormMode").value = recordId; // track editing
+    showToast("Record loaded into form. Edit then click Save.", "info");
 
-    showToast("Record loaded. After editing, click SAVE.", "info");
+    // Scroll to form
+    const formAnchor = document.getElementById("record-orderid");
+    if (formAnchor) formAnchor.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
-// ===============================================
-// SAVE EDITED RECORD
-// Called from inline HTML Save button
-// ===============================================
-window.saveEditedRecord = async function () {
-    const id = document.getElementById("recordFormMode").value;
-    if (!id) return;
+function setValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value ?? "";
+}
 
-    const updated = {
-        order_id: document.getElementById("record-orderid").value,
-        buyer: document.getElementById("record-buyer").value,
-        source: document.getElementById("record-source").value,
-        product_id: document.getElementById("record-product").value,
-        account_type: document.getElementById("record-type").value,
-        duration: document.getElementById("record-duration").value,
-        purchase_date: document.getElementById("record-purchasedate").value,
-        additional_days: Number(document.getElementById("record-adddays").value),
-        email: document.getElementById("record-email").value,
-        password: document.getElementById("record-password").value,
-        profile: document.getElementById("record-profile").value,
-        pin: document.getElementById("record-pin").value,
-        price: Number(document.getElementById("record-price").value),
+/* -------------------------------------------------------------
+   SAVE Edited / New Record (triggered by Save button)
+   - If recordFormMode has ID → update existing
+   - If blank → create NEW manual record
+------------------------------------------------------------- */
+
+window.saveEditedRecord = async function () {
+    const modeEl = document.getElementById("recordFormMode");
+
+    const formId = modeEl?.value || null;
+
+    const order_id = cleanText(getVal("record-orderid"));
+    const buyer = cleanText(getVal("record-buyer"));
+    const source = cleanText(getVal("record-source"));
+    const product_id = cleanText(getVal("record-product"));
+    const account_type = cleanText(getVal("record-type"));
+    const duration = cleanText(getVal("record-duration"));
+    const purchase_date = getVal("record-purchasedate") || null;
+    const additional_days = Number(getVal("record-adddays") || 0);
+    const email = cleanText(getVal("record-email"));
+    const password = cleanText(getVal("record-password"));
+    const profile = cleanText(getVal("record-profile"));
+    const pin = cleanText(getVal("record-pin"));
+    const price = Number(getVal("record-price") || 0);
+
+    if (!buyer || !source || !product_id || !account_type || !duration || !purchase_date) {
+        showToast("Please fill all required fields (buyer, source, product, type, duration, date).", "warning");
+        return;
+    }
+
+    const payload = {
+        order_id,
+        buyer,
+        source,
+        product_id,
+        account_type,
+        duration,
+        purchase_date,
+        additional_days,
+        email,
+        password,
+        profile,
+        pin,
+        price,
+        status: "sold"
     };
 
-    await updateRow("records", { id }, updated);
+    let success = false;
 
-    showToast("Record updated!", "success");
+    if (formId) {
+        // Update existing
+        const updated = await dbUpdate("records", { id: formId }, payload);
+        if (updated !== null) {
+            showToast("Record updated.", "success");
+            success = true;
+        }
+    } else {
+        // Insert new manual record
+        const newId = generateId("REC");
+        const inserted = await dbInsert("records", {
+            id: newId,
+            ...payload,
+            created_at: new Date().toISOString()
+        });
+        if (inserted !== null) {
+            showToast("New record added.", "success");
+            success = true;
+        }
+    }
 
+    if (!success) return;
+
+    // Refresh
     await loadRecordsFromDB();
     renderRecordsTable();
-    renderSoldList();
-    refreshRevenueStats();
+    renderSoldAccountsPanel();
+    await refreshRevenueStats();
+
+    // Clear form mode (so next save = new record)
+    if (modeEl) modeEl.value = "";
+
+    // Optionally clear form fields
+    clearRecordForm();
 };
 
-// ===============================================
-// DELETE RECORD
-// ===============================================
-window.removeRecord = async function (id) {
-    if (!confirm("Delete this record?")) return;
+function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : "";
+}
 
-    await deleteRow("records", { id });
+function clearRecordForm() {
+    const fields = [
+        "record-orderid",
+        "record-buyer",
+        "record-source",
+        "record-product",
+        "record-type",
+        "record-duration",
+        "record-purchasedate",
+        "record-adddays",
+        "record-email",
+        "record-password",
+        "record-profile",
+        "record-pin",
+        "record-price"
+    ];
+    fields.forEach(id => setValue(id, ""));
+}
 
-    showToast("Record deleted.", "danger");
+/* -------------------------------------------------------------
+   DELETE Record
+------------------------------------------------------------- */
+
+window.deleteRecord = async function (id) {
+    const r = RECORDS.find(x => x.id === id);
+    if (!r) return;
+
+    const ok = await confirmBox(`Delete this record permanently?\n\nBuyer: ${r.buyer}\nProduct: ${r.product_id}`);
+    if (!ok) return;
+
+    const deleted = await dbDelete("records", { id });
+    if (deleted === null) return;
+
+    showToast("Record deleted.", "error");
 
     await loadRecordsFromDB();
     renderRecordsTable();
-    renderSoldList();
-    refreshRevenueStats();
+    renderSoldAccountsPanel();
+    await refreshRevenueStats();
 };
