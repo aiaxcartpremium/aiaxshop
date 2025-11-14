@@ -1,114 +1,123 @@
 /* ============================================================
-   admin.js — Main controller for Aiaxcart Premium Admin Panel
-   Uses STRICT admin security via Supabase (Version A)
+   admin.js — Main Admin Shell / Bootstrapping
+   Aiaxcart Premium Shop — Admin Side
    ============================================================ */
 
-import { showToast, showLoader, hideLoader } from "./utils.js";
-import { ensureAdminSession } from "./supabase.js";
+import { showToast } from "./utils.js";
+import { dbSelect } from "./supabase.js";
 
-import { initProductsModule, refreshProductsStats } from "./products.js";
-import { initStocksModule, refreshStocksStats } from "./stocks.js";
-import { initOrdersModule, refreshPendingStats } from "./orders.js";
-import { initRecordsModule, refreshRevenueStats } from "./records.js";
+import { initProductsModule } from "./products.js";
+import { initStocksModule } from "./stocks.js";
+import { initOrdersModule } from "./orders.js";
+import { initRecordsModule } from "./records.js";
 import { initRulesModule } from "./rules.js";
 import { initReportsModule } from "./reports.js";
 
 /* -------------------------------------------------------------
-   1. TAB / SIDEBAR HANDLING
-------------------------------------------------------------- */
-
-function setupSidebarTabs() {
-    const buttons = document.querySelectorAll(".sidebar button[data-target]");
-    const panels = document.querySelectorAll(".panel");
-
-    buttons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const target = btn.dataset.target;
-
-            // active state
-            buttons.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            // show / hide panels
-            panels.forEach(p => {
-                if (p.id === target) {
-                    p.style.display = "block";
-                } else {
-                    p.style.display = "none";
-                }
-            });
-        });
-    });
-}
-
-/* -------------------------------------------------------------
-   2. DASHBOARD STAT REFRESH
-------------------------------------------------------------- */
-
-async function refreshDashboardStats() {
-    await refreshProductsStats();
-    await refreshStocksStats();
-    await refreshPendingStats();
-    await refreshRevenueStats();
-}
-
-/* -------------------------------------------------------------
-   3. MAIN ADMIN BOOTSTRAP
-------------------------------------------------------------- */
-
-async function startAdmin() {
-    try {
-        showLoader();
-
-        // 1) Check if logged-in user is valid admin
-        const ok = await ensureAdminSession();
-        if (!ok) {
-            hideLoader();
-            return;
-        }
-
-        // 2) Init modules (order matters a bit)
-        await initProductsModule();
-        await initStocksModule();
-        await initOrdersModule();
-        await initRecordsModule();
-        await initRulesModule();
-        await initReportsModule();
-
-        // 3) Refresh dashboard stats
-        await refreshDashboardStats();
-
-        hideLoader();
-        showToast("Admin panel ready.", "success");
-    } catch (err) {
-        console.error("Admin init error:", err);
-        hideLoader();
-        showToast("Something went wrong loading the admin panel.", "error");
-    }
-}
-
-/* -------------------------------------------------------------
-   4. DOM LOADED ENTRY POINT
+   ENTRY POINT
 ------------------------------------------------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // tab / sidebar behaviour
-    setupSidebarTabs();
-
-    // dashboard is default visible (already set in HTML)
-    // now bootstrap the admin app
-    startAdmin();
+  setupSidebarTabs();
+  bootstrapAdmin();
 });
 
 /* -------------------------------------------------------------
-   5. OPTIONAL: Dummy functions for old HTML hooks
-      (so walang error kung may natirang onclick sa HTML)
+   Sidebar tabs (left menu)
 ------------------------------------------------------------- */
 
-// These are here only so if may natitirang onclick="verifyOwnerUID()"
-// sa lumang HTML, hindi siya mag-e-error. Pero hindi na ginagamit
-// sa strict Version A (auth via Supabase only).
+function setupSidebarTabs() {
+  const buttons = document.querySelectorAll(".sidebar button");
+  const panels = document.querySelectorAll(".panel-admin");
 
-window.verifyOwnerUID = function () {
-    showToast("UID modal no longer used. Please log in via main site.", "info");
-};
+  if (!buttons.length || !panels.length) return;
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.target;
+      if (!targetId) return;
+
+      // active class sa buttons
+      buttons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      // show/hide panels
+      panels.forEach((p) => {
+        if (p.id === targetId) {
+          p.classList.add("active");
+        } else {
+          p.classList.remove("active");
+        }
+      });
+    });
+  });
+}
+
+/* -------------------------------------------------------------
+   Boot sequence: init all modules + stats
+------------------------------------------------------------- */
+
+async function bootstrapAdmin() {
+  try {
+    // dito mo ilalagay in the future yung admin auth / gate
+    // e.g. ensureAdminSession()
+
+    // init bawat module (render contents sa kani-kaniyang panel)
+    await initProductsModule();
+    await initStocksModule();
+    await initOrdersModule();
+    await initRecordsModule();
+    await initRulesModule();
+    await initReportsModule();
+
+    // initial dashboard stats
+    await refreshDashboardStats();
+
+    showToast("Admin loaded successfully.", "success");
+  } catch (err) {
+    console.error("Error bootstrapping admin:", err);
+    showToast("Failed to load admin. Check console.", "error");
+  }
+}
+
+/* -------------------------------------------------------------
+   Dashboard stats (top 4 cards)
+------------------------------------------------------------- */
+
+export async function refreshDashboardStats() {
+  try {
+    const [products, stocks, orders, records] = await Promise.all([
+      dbSelect("products", {}),
+      dbSelect("stocks", {}),
+      dbSelect("orders", {}),
+      dbSelect("records", {}),
+    ]);
+
+    const productsCount = (products || []).length;
+    const availableStocks = (stocks || []).filter(
+      (s) => (s.status || "").toLowerCase() === "available"
+    ).length;
+    const pendingOrders = (orders || []).filter(
+      (o) => (o.status || "").toLowerCase() === "pending"
+    ).length;
+    const totalRevenue = (records || []).reduce(
+      (sum, r) => sum + Number(r.price || 0),
+      0
+    );
+
+    setText("stat-products", productsCount);
+    setText("stat-stock", availableStocks);
+    setText("stat-pending", pendingOrders);
+    setText("stat-revenue", "₱" + totalRevenue.toFixed(2));
+  } catch (err) {
+    console.error("Error refreshing dashboard stats:", err);
+  }
+}
+
+// para ma-trigger from ibang modules kung kailangan
+window.refreshDashboardStats = refreshDashboardStats;
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
