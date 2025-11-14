@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aiaxcart Premium | Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --primary: #FFB0B5;
+            --secondary: #FFD3D6;
+            --dark: #382f2c;
+            --light: #fefaf7;
+        }
+
+        body {
+            background: var(--light);
+            color: var(--dark);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        header {
+            background: var(--secondary);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.8rem;
+            align-items: center;
+        }
+
+        nav ul a {
+            color: var(--dark);
+            text-decoration: none;
+            padding: .6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        nav ul a.active, nav ul a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Tabs */
+        .tab {
+            border: none;
+            background: white;
+            padding: .8rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            transition: .2s;
+        }
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card-clean {
+            background: white;
+            padding: 1.8rem 1.5rem;
+            border-radius: 14px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9000;
+        }
+
+        /* Tables */
+        .clean-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .clean-table th {
+            background: var(--secondary);
+            padding: .75rem;
+            border-bottom: 2px solid #eaeaea;
+        }
+        .clean-table td {
+            padding: .75rem;
+            border-bottom: 1px solid #eee;
+        }
+        .clean-table tr:hover {
+            background: #fff7f7;
+        }
+
+        /* Modal */
+        .owner-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            display: none;
+        }
+        .owner-box {
+            background: white;
+            padding: 2.2rem;
+            border-radius: 16px;
+            width: 340px;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            right: 12px;
+            top: 10px;
+            font-size: 1.4rem;
+            color: #fa5a5a;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<header>
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="logo">🛒 Aiaxcart Premium</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a class="active" href="admin.html">Admin</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- OWNER VERIFICATION -->
+<div id="ownerOverlay" class="owner-overlay">
+    <div class="owner-box">
+        <div class="close-btn" onclick="closeOwnerModal()">×</div>
+
+        <h2 class="mb-3">🔐 Owner Verification</h2>
+        <input type="text" class="form-control" id="ownerUidInput" placeholder="Enter Owner UID">
+        <button class="btn btn-primary mt-3 w-100" onclick="verifyOwnerUID()">Verify Access</button>
+        <div id="ownerVeriMsg" class="mt-2 text-danger"></div>
+    </div>
+</div>
+
+<div class="container" id="adminPanel" style="display:none;">
+
+    <!-- DASHBOARD STATS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card-clean text-center">
+                <h3 id="stat-products">0</h3>
+                <div>Products</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-clean text-center">
+                <h3 id="stat-stock">0</h3>
+                <div>Available Stock</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-clean text-center">
+                <h3 id="stat-pending">0</h3>
+                <div>Pending Orders</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card-clean text-center">
+                <h3 id="stat-revenue">₱0</h3>
+                <div>Total Revenue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="tab active" data-target="panel-add-product">Add Product</button>
+        <button class="tab" data-target="panel-add-stock">Add Stock</button>
+        <button class="tab" data-target="panel-stocks">Manage Stocks</button>
+        <button class="tab" data-target="panel-pending">Pending Orders</button>
+        <button class="tab" data-target="panel-sold">Sold Accounts</button>
+        <button class="tab" data-target="panel-archived">Archived</button>
+        <button class="tab" data-target="panel-products">Products</button>
+        <button class="tab" data-target="panel-prices">Price Management</button>
+        <button class="tab" data-target="panel-rules">Store Rules</button>
+        <button class="tab" data-target="panel-records">Records</button>
+        <button class="tab" data-target="panel-reports">Reports</button>
+    </div>
+
+    <!-- PANELS -->
+    <div id="panel-add-product" class="panel active"></div>
+    <div id="panel-add-stock" class="panel"></div>
+    <div id="panel-stocks" class="panel"></div>
+    <div id="panel-pending" class="panel"></div>
+    <div id="panel-sold" class="panel"></div>
+    <div id="panel-archived" class="panel"></div>
+    <div id="panel-products" class="panel"></div>
+    <div id="panel-prices" class="panel"></div>
+    <div id="panel-rules" class="panel"></div>
+    <div id="panel-records" class="panel"></div>
+    <div id="panel-reports" class="panel"></div>
+
+</div>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Next: JS Section -->
+<script src="admin.js"></script>
+
+</body>
+</html>
