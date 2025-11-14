@@ -1,187 +1,165 @@
-// ==========================================
-// rules.js — STORE RULES MANAGEMENT MODULE
-// ==========================================
+/* ============================================================
+   rules.js — Store Rules Management
+   Aiaxcart Premium Shop — Admin Side
+   ============================================================ */
 
-import {
-    fill,
-    showToast,
-    generateId
-} from "./utils.js";
+import { showToast, confirmBox, cleanText } from "./utils.js";
+import { dbSelect, dbInsert, dbDelete } from "./supabase.js";
+import { getProducts } from "./products.js";
 
-import {
-    fetchTable,
-    insertRow,
-    deleteRow
-} from "./supabase.js";
-
-import { loadProducts } from "./products.js";
-
-// Internal
 let RULES = [];
 let PRODUCTS = [];
 
-// ==========================================
-// INIT MODULE
-// ==========================================
+/* -------------------------------------------------------------
+   Exported for admin.js
+------------------------------------------------------------- */
+
 export async function initRulesModule() {
-    PRODUCTS = await loadProducts();
+    PRODUCTS = getProducts();
     await loadRulesFromDB();
     renderRulesPanel();
-    prepareAddRulePanel();
 }
 
-// ==========================================
-// LOAD RULES
-// ==========================================
+/* -------------------------------------------------------------
+   Load rules from DB
+------------------------------------------------------------- */
+
 async function loadRulesFromDB() {
-    RULES = await fetchTable("rules");
+    const data = await dbSelect("rules", {
+        order: { column: "created_at", asc: true }
+    });
+
+    RULES = data || [];
 }
 
-// ==========================================
-// RULES LIST PANEL
-// ==========================================
+/* -------------------------------------------------------------
+   RENDER: Store Rules Panel (panel-store-rules)
+------------------------------------------------------------- */
+
 function renderRulesPanel() {
-    if (RULES.length === 0) {
-        fill("panel-store-rules", "<p>No rules added yet.</p>");
-        return;
-    }
+    const panel = document.getElementById("panel-store-rules");
+    if (!panel) return;
 
-    const html = RULES.map(r => {
-        const product = PRODUCTS.find(p => p.id === r.product_id);
+    const productOptions =
+        `<option value="">(Global / All Products)</option>` +
+        getProducts()
+            .map((p) => `<option value="${p.id}">${p.name}</option>`)
+            .join("");
 
-        return `
-            <div class="card-clean mb-2">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <b>Rule:</b> ${r.rule_text}<br>
-                        <small class="text-muted">
-                            ${product ? "For: " + product.name : "Applies to all products"}
-                        </small>
+    const rulesList = RULES.length
+        ? RULES.map((r) => {
+              const product = PRODUCTS.find((p) => p.id === r.product_id);
+              const prodLabel = product
+                  ? product.name
+                  : r.product_id
+                  ? r.product_id
+                  : "All Products";
+
+              return `
+                <div class="card-clean mb-2">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-muted small mb-1">
+                                Applies to: <b>${prodLabel}</b>
+                            </div>
+                            <div>${r.rule_text}</div>
+                        </div>
+                        <div class="text-end">
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="window.deleteRule(${r.id})">
+                                Delete
+                            </button>
+                        </div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteRule('${r.id}')">Delete</button>
                 </div>
-            </div>
-        `;
-    }).join("");
+              `;
+          }).join("")
+        : `<p class="text-muted mb-0">No rules yet. Add some below.</p>`;
 
-    fill("panel-store-rules", html);
-}
-
-// ==========================================
-// ADD RULE PANEL
-// ==========================================
-function prepareAddRulePanel() {
-    const productOptions = PRODUCTS
-        .map(p => `<option value="${p.id}">${p.name}</option>`)
-        .join("");
-
-    fill("panel-store-rules", `
+    panel.innerHTML = `
         <div class="card-clean mb-3">
-            <h4>Add New Rule</h4>
-
-            <label>Rule Text
-                <textarea id="rule-text" class="form-control" rows="2"></textarea>
-            </label>
-
-            <label class="mt-2">Applies To (optional)
-                <select id="rule-product" class="form-select">
-                    <option value="">All Products</option>
-                    ${productOptions}
-                </select>
-            </label>
-
-            <button class="btn btn-primary mt-3" id="saveRuleBtn">Add Rule</button>
+            <h3>Store Rules</h3>
+            ${rulesList}
         </div>
 
-        <hr class="my-4">
+        <div class="card-clean">
+            <h4>Add New Rule</h4>
 
-        <h4>Existing Rules</h4>
-        <div id="rulesList"></div>
-    `);
-
-    // Load list after panel is created
-    renderRulesListInside();
-
-    document.getElementById("saveRuleBtn")
-        .addEventListener("click", saveRule);
-}
-
-// ==========================================
-// RENDER RULES BELOW FORM
-// ==========================================
-function renderRulesListInside() {
-    const containerId = "rulesList";
-
-    if (RULES.length === 0) {
-        fill(containerId, "<p>No rules added yet.</p>");
-        return;
-    }
-
-    const html = RULES.map(r => {
-        const product = PRODUCTS.find(p => p.id === r.product_id);
-        return `
-            <div class="card-clean mb-2">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <b>${r.rule_text}</b><br>
-                        <small class="text-muted">
-                            ${product ? product.name : "All Products"}
-                        </small>
-                    </div>
-
-                    <button class="btn btn-danger btn-sm"
-                        onclick="deleteRule('${r.id}')">
-                        Delete
-                    </button>
-                </div>
+            <div class="mt-2">
+                <label class="form-label">Rule Text</label>
+                <textarea id="rule-text" class="form-control" rows="3"
+                          placeholder="e.g. All accounts are guaranteed to work for the duration purchased."></textarea>
             </div>
-        `;
-    }).join("");
 
-    fill(containerId, html);
+            <div class="mt-3">
+                <label class="form-label">Applies to Product (optional)</label>
+                <select id="rule-product" class="form-select">
+                    ${productOptions}
+                </select>
+            </div>
+
+            <button type="button" class="btn btn-primary mt-3" id="btn-save-rule">
+                Save Rule
+            </button>
+        </div>
+    `;
+
+    const btn = document.getElementById("btn-save-rule");
+    if (btn) btn.addEventListener("click", saveRule);
 }
 
-// ==========================================
-// SAVE RULE
-// ==========================================
-async function saveRule() {
-    const text = document.getElementById("rule-text").value.trim();
-    const product_id = document.getElementById("rule-product").value || null;
+/* -------------------------------------------------------------
+   SAVE: New Rule
+------------------------------------------------------------- */
 
-    if (!text) {
-        showToast("Rule text cannot be empty.", "danger");
+async function saveRule() {
+    const textEl = document.getElementById("rule-text");
+    const prodEl = document.getElementById("rule-product");
+
+    if (!textEl || !prodEl) return;
+
+    const rule_text = cleanText(textEl.value);
+    const product_id = prodEl.value || null;
+
+    if (!rule_text) {
+        showToast("Please enter a rule text.", "warning");
         return;
     }
 
-    const rule = {
-        id: generateId(),
-        rule_text: text,
+    const payload = {
+        rule_text,
         product_id,
         created_at: new Date().toISOString()
     };
 
-    const ok = await insertRow("rules", rule);
-    if (!ok) return;
+    const inserted = await dbInsert("rules", payload);
+    if (inserted === null) return;
 
-    showToast("Rule added!", "success");
+    showToast("Rule added.", "success");
 
-    // Refresh
+    textEl.value = "";
+    prodEl.value = "";
+
     await loadRulesFromDB();
     renderRulesPanel();
-    prepareAddRulePanel();
 }
 
-// ==========================================
-// DELETE RULE
-// ==========================================
-window.deleteRule = async function (ruleId) {
-    if (!confirm("Delete this rule?")) return;
+/* -------------------------------------------------------------
+   DELETE: Rule
+------------------------------------------------------------- */
 
-    await deleteRow("rules", { id: ruleId });
+window.deleteRule = async function (id) {
+    const r = RULES.find((x) => x.id === id);
+    if (!r) return;
 
-    showToast("Rule deleted.", "danger");
+    const ok = await confirmBox("Delete this rule?");
+    if (!ok) return;
+
+    const deleted = await dbDelete("rules", { id });
+    if (deleted === null) return;
+
+    showToast("Rule deleted.", "error");
 
     await loadRulesFromDB();
     renderRulesPanel();
-    prepareAddRulePanel();
 };
