@@ -1,183 +1,189 @@
-// =======================================
-// stocks.js — STOCK MANAGEMENT MODULE
-// =======================================
+/* ============================================================
+   stocks.js — Stock Management Module (Admin)
+   Aiaxcart Premium Shop — Admin Side
+   ============================================================ */
 
-import {
-    fill,
-    showToast,
-    generateId
-} from "./utils.js";
+import { showToast, confirmBox, cleanText, formatDate } from "./utils.js";
+import { dbSelect, dbInsert, dbUpdate, dbDelete } from "./supabase.js";
+import { getProducts } from "./products.js";
 
-import {
-    fetchTable,
-    insertRow,
-    updateRow,
-    deleteRow
-} from "./supabase.js";
-
-import { loadProducts } from "./products.js";
-
-// Internal memory
+// In-memory cache
 let STOCKS = [];
 let PRODUCTS = [];
 
-// =======================================
-// INIT MODULE
-// Called automatically by admin.js
-// =======================================
+/* -------------------------------------------------------------
+   Exported for admin.js
+------------------------------------------------------------- */
+
 export async function initStocksModule() {
-    PRODUCTS = await fetchTable("products");
+    PRODUCTS = getProducts();
     await loadStocksFromDB();
-    renderStockPanel();
-    prepareAddStockPanel();
+    renderAddStockForm();
+    renderManageStocks();
 }
 
-// =======================================
-// DASHBOARD COUNT
-// =======================================
 export async function refreshStocksStats() {
-    const count = STOCKS.filter(s => s.status === "available").length;
-    document.getElementById("stat-stock").textContent = count;
+    if (!STOCKS.length) await loadStocksFromDB();
+    const available = STOCKS.filter((s) => s.status === "available").length;
+    const el = document.getElementById("stat-stock");
+    if (el) el.textContent = available;
 }
 
-// =======================================
-// LOAD STOCK FROM DATABASE
-// =======================================
-export async function loadStocksFromDB() {
-    STOCKS = await fetchTable("stocks");
+/* -------------------------------------------------------------
+   Load from Supabase
+------------------------------------------------------------- */
+
+async function loadStocksFromDB() {
+    const data = await dbSelect("stocks", {
+        order: { column: "created_at", asc: false },
+    });
+
+    STOCKS = data || [];
 }
 
-// =======================================
-// STOCK PANEL RENDER
-// =======================================
-function renderStockPanel() {
-    const available = STOCKS.filter(s => s.status === "available");
+/* -------------------------------------------------------------
+   RENDER: Add Stock Form (panel-add-stock)
+------------------------------------------------------------- */
 
-    if (available.length === 0) {
-        fill("panel-manage-stocks", "<p>No available stock.</p>");
-        return;
-    }
+function renderAddStockForm() {
+    const panel = document.getElementById("panel-add-stock");
+    if (!panel) return;
 
-    const html = available.map(s => {
-        const p = PRODUCTS.find(x => x.id === s.product_id);
-
-        return `
-            <div class="card-clean mb-3">
-                <div class="d-flex justify-content-between">
-
-                    <div>
-                        <h5>${p?.name || "Unknown Product"}</h5>
-                        <div><b>Type:</b> ${s.account_type}</div>
-                        <div><b>Duration:</b> ${s.duration}</div>
-                        <div><b>Email:</b> ${s.email}</div>
-                        <div><b>Profile:</b> ${s.profile || "-"}</div>
-                        <div><b>Auto Archive:</b> ${s.archive_after} days</div>
-                    </div>
-
-                    <div class="text-end">
-                        <button class="btn btn-success btn-sm mb-1" onclick="markStockSold('${s.id}')">
-                            Mark Sold
-                        </button>
-                        <button class="btn btn-warning btn-sm mb-1" onclick="archiveStock('${s.id}')">
-                            Archive
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteStock('${s.id}')">
-                            Delete
-                        </button>
-                    </div>
-
-                </div>
+    if (!PRODUCTS.length) {
+        panel.innerHTML = `
+            <div class="card-clean">
+                <h3>Add Stock</h3>
+                <p class="text-muted mb-0">
+                    No products found. Please add products first in the <b>Products</b> tab.
+                </p>
             </div>
         `;
-    }).join("");
-
-    fill("panel-manage-stocks", html);
-}
-
-// =======================================
-// ADD STOCK PANEL
-// =======================================
-function prepareAddStockPanel() {
-    const productOptions = PRODUCTS.map(
-        p => `<option value="${p.id}">${p.name}</option>`
-    ).join("");
-
-    fill("panel-add-stock", `
-        <div class="card-clean">
-            <h4>Add Stock</h4>
-
-            <label>Product
-                <select class="form-select" id="st-prod">${productOptions}</select>
-            </label>
-
-            <label class="mt-2">Account Type
-                <input type="text" id="st-type" class="form-control">
-            </label>
-
-            <label class="mt-2">Duration
-                <input type="text" id="st-duration" class="form-control">
-            </label>
-
-            <label class="mt-2">Email
-                <input type="text" id="st-email" class="form-control">
-            </label>
-
-            <label class="mt-2">Password
-                <input type="text" id="st-pass" class="form-control">
-            </label>
-
-            <label class="mt-2">Profile
-                <input type="text" id="st-profile" class="form-control">
-            </label>
-
-            <label class="mt-2">PIN
-                <input type="text" id="st-pin" class="form-control">
-            </label>
-
-            <label class="mt-2">Quantity
-                <input type="number" id="st-qty" class="form-control" value="1" min="1">
-            </label>
-
-            <label class="mt-2">Auto Archive After (days)
-                <input type="number" id="st-archive" class="form-control" value="30">
-            </label>
-
-            <label class="mt-2">Premium Until (optional)
-                <input type="date" id="st-prem" class="form-control">
-            </label>
-
-            <button class="btn btn-primary mt-3" id="st-save">Add Stock</button>
-        </div>
-    `);
-
-    document.getElementById("st-save").addEventListener("click", saveStockBatch);
-}
-
-// =======================================
-// SAVE MULTIPLE STOCKS (QUANTITY)
-// =======================================
-async function saveStockBatch() {
-    const product_id = document.getElementById("st-prod").value;
-    const account_type = document.getElementById("st-type").value.trim();
-    const duration = document.getElementById("st-duration").value;
-    const email = document.getElementById("st-email").value.trim();
-    const password = document.getElementById("st-pass").value.trim();
-    const profile = document.getElementById("st-profile").value.trim();
-    const pin = document.getElementById("st-pin").value.trim();
-    const qty = Number(document.getElementById("st-qty").value);
-    const archive_after = Number(document.getElementById("st-archive").value);
-    const premium_until = document.getElementById("st-prem").value;
-
-    if (!product_id || !account_type || !duration || !email || !password) {
-        showToast("Please complete all required fields.", "danger");
         return;
     }
 
-    let success = 0;
+    const productOptions = PRODUCTS.map(
+        (p) => `<option value="${p.id}">${p.name}</option>`
+    ).join("");
+
+    panel.innerHTML = `
+        <div class="card-clean">
+            <h3>Add Stock</h3>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label">Product</label>
+                    <select id="st-product" class="form-select">
+                        <option value="">Select product</option>
+                        ${productOptions}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Account Type</label>
+                    <input type="text" id="st-type" class="form-control" placeholder="e.g. solo account, shared profile">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Duration</label>
+                    <input type="text" id="st-duration" class="form-control" placeholder="e.g. 7d, 1m, 3m">
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label class="form-label">Email / Username</label>
+                    <input type="text" id="st-email" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Password</label>
+                    <input type="text" id="st-password" class="form-control">
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label">Profile (optional)</label>
+                    <input type="text" id="st-profile" class="form-control">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">PIN (optional)</label>
+                    <input type="text" id="st-pin" class="form-control">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" id="st-qty" class="form-control" value="1" min="1">
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label class="form-label">Auto-Archive After (days)</label>
+                    <input type="number" id="st-archive" class="form-control" value="30" min="0">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Premium Until (optional)</label>
+                    <input type="date" id="st-premium" class="form-control">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary mt-3" id="btn-save-stock">
+                Save Stock
+            </button>
+        </div>
+    `;
+
+    document
+        .getElementById("btn-save-stock")
+        .addEventListener("click", saveStockBatch);
+}
+
+/* -------------------------------------------------------------
+   SAVE: Multiple Stocks (by quantity)
+------------------------------------------------------------- */
+
+async function saveStockBatch() {
+    const prodEl = document.getElementById("st-product");
+    const typeEl = document.getElementById("st-type");
+    const durEl = document.getElementById("st-duration");
+    const emailEl = document.getElementById("st-email");
+    const passEl = document.getElementById("st-password");
+    const profEl = document.getElementById("st-profile");
+    const pinEl = document.getElementById("st-pin");
+    const qtyEl = document.getElementById("st-qty");
+    const archEl = document.getElementById("st-archive");
+    const premEl = document.getElementById("st-premium");
+
+    if (!prodEl || !typeEl || !durEl || !emailEl || !passEl) return;
+
+    const product_id = prodEl.value;
+    const account_type = cleanText(typeEl.value.toLowerCase());
+    const duration = cleanText(durEl.value);
+    const email = cleanText(emailEl.value);
+    const password = cleanText(passEl.value);
+    const profile = cleanText(profEl?.value || "");
+    const pin = cleanText(pinEl?.value || "");
+    const qty = Number(qtyEl?.value || 1);
+    const archive_after = Number(archEl?.value || 30);
+    const premium_until = premEl?.value || null;
+
+    if (!product_id || !account_type || !duration || !email || !password) {
+        showToast("Please complete all required fields.", "warning");
+        return;
+    }
+
+    if (qty <= 0) {
+        showToast("Quantity must be at least 1.", "warning");
+        return;
+    }
+
+    let successCount = 0;
 
     for (let i = 0; i < qty; i++) {
-        const stock = {
-            id: generateId(),
+        const payload = {
             product_id,
             account_type,
             duration,
@@ -188,87 +194,187 @@ async function saveStockBatch() {
             archive_after,
             premium_until: premium_until || null,
             status: "available",
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         };
 
-        const ok = await insertRow("stocks", stock);
-        if (ok) success++;
+        const inserted = await dbInsert("stocks", payload);
+        if (inserted !== null) successCount++;
     }
 
-    showToast(`Added ${success} stock item(s)`, "success");
+    if (successCount > 0) {
+        showToast(`Added ${successCount} stock item(s).`, "success");
+        await loadStocksFromDB();
+        renderManageStocks();
+        await refreshStocksStats();
 
-    await loadStocksFromDB();
-    renderStockPanel();
-    refreshStocksStats();
+        // Clear only some fields (keep product & qty)
+        typeEl.value = "";
+        durEl.value = "";
+        emailEl.value = "";
+        passEl.value = "";
+        profEl.value = "";
+        pinEl.value = "";
+        premEl.value = "";
+    }
 }
 
-// =======================================
-// MARK STOCK AS SOLD → MOVE TO RECORDS
-// =======================================
-window.markStockSold = async function (stockId) {
-    const s = STOCKS.find(x => x.id === stockId);
-    if (!s) return;
+/* -------------------------------------------------------------
+   RENDER: Manage Stocks (panel-manage-stocks)
+------------------------------------------------------------- */
 
-    if (!confirm("Mark this stock as SOLD?")) return;
+function renderManageStocks() {
+    const panel = document.getElementById("panel-manage-stocks");
+    if (!panel) return;
 
-    // Update stock status
-    await updateRow("stocks", { id: stockId }, { status: "sold" });
+    const available = STOCKS.filter((s) => s.status === "available");
+    const archived = STOCKS.filter((s) => s.status === "archived");
+    const sold = STOCKS.filter((s) => s.status === "sold");
 
-    // Add record to records table
-    const record = {
-        id: generateId(),
-        order_id: generateId(),
-        buyer: "Manual Sale",
-        source: "manual",
-        product_id: s.product_id,
-        account_type: s.account_type,
-        duration: s.duration,
-        purchase_date: new Date().toISOString().split("T")[0],
-        additional_days: 0,
-        email: s.email,
-        password: s.password,
-        profile: s.profile,
-        pin: s.pin,
-        price: 0,
-        status: "sold",
-        created_at: new Date().toISOString()
+    if (!STOCKS.length) {
+        panel.innerHTML = `
+            <div class="card-clean">
+                <h3>Manage Stocks</h3>
+                <p class="mb-0">No stock records yet.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const section = (title, list, type) => {
+        if (!list.length) return "";
+
+        const items = list
+            .map((s) => {
+                const prod = PRODUCTS.find((p) => p.id === s.product_id);
+                return `
+                    <div class="card-clean mb-2">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div><b>${prod?.name || "Unknown Product"}</b></div>
+                                <div>${s.account_type} — ${s.duration}</div>
+                                <div>Email: ${s.email}</div>
+                                <div>Profile: ${s.profile || "-"}</div>
+                                <div>Premium until: ${
+                                    s.premium_until ? formatDate(s.premium_until) : "-"
+                                }</div>
+                                <div class="text-muted">
+                                    Added: ${formatDate(s.created_at)}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                ${
+                                    type === "available"
+                                        ? `
+                                    <button class="btn btn-success btn-sm mb-1" onclick="window.markStockSold('${s.id}')">
+                                        Mark Sold
+                                    </button><br>
+                                    <button class="btn btn-warning btn-sm mb-1" onclick="window.archiveStock('${s.id}')">
+                                        Archive
+                                    </button><br>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteStock('${s.id}')">
+                                        Delete
+                                    </button>
+                                `
+                                        : type === "archived"
+                                        ? `
+                                    <button class="btn btn-success btn-sm mb-1" onclick="window.restoreStock('${s.id}')">
+                                        Restore
+                                    </button><br>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteStock('${s.id}')">
+                                        Delete
+                                    </button>
+                                `
+                                        : `
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteStock('${s.id}')">
+                                        Delete
+                                    </button>
+                                `
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .join("");
+
+        return `
+            <h5 class="mt-3">${title}</h5>
+            ${items}
+        `;
     };
 
-    await insertRow("records", record);
+    panel.innerHTML = `
+        <h3>Manage Stocks</h3>
+        ${section("Available", available, "available")}
+        ${section("Archived", archived, "archived")}
+        ${section("Sold", sold, "sold")}
+    `;
+}
 
-    showToast("Stock marked as sold!", "success");
+/* -------------------------------------------------------------
+   ACTIONS: Mark Sold / Archive / Restore / Delete
+------------------------------------------------------------- */
 
+window.markStockSold = async function (id) {
+    const s = STOCKS.find((x) => x.id === id);
+    if (!s) return;
+
+    const ok = await confirmBox("Mark this stock as SOLD? (Will not auto-create record here. Website orders will do that automatically.)");
+    if (!ok) return;
+
+    const updated = await dbUpdate("stocks", { id }, { status: "sold" });
+    if (updated === null) return;
+
+    showToast("Stock marked as sold.", "success");
     await loadStocksFromDB();
-    renderStockPanel();
-    refreshStocksStats();
+    renderManageStocks();
+    await refreshStocksStats();
 };
 
-// =======================================
-// ARCHIVE STOCK
-// =======================================
 window.archiveStock = async function (id) {
-    if (!confirm("Archive this stock?")) return;
+    const s = STOCKS.find((x) => x.id === id);
+    if (!s) return;
 
-    await updateRow("stocks", { id }, { status: "archived" });
+    const ok = await confirmBox("Archive this stock?");
+    if (!ok) return;
+
+    const updated = await dbUpdate("stocks", { id }, { status: "archived" });
+    if (updated === null) return;
 
     showToast("Stock archived.", "warning");
-
     await loadStocksFromDB();
-    renderStockPanel();
-    refreshStocksStats();
+    renderManageStocks();
+    await refreshStocksStats();
 };
 
-// =======================================
-// DELETE STOCK
-// =======================================
-window.deleteStock = async function (id) {
-    if (!confirm("Delete stock? This cannot be undone.")) return;
+window.restoreStock = async function (id) {
+    const s = STOCKS.find((x) => x.id === id);
+    if (!s) return;
 
-    await deleteRow("stocks", { id });
+    const ok = await confirmBox("Restore this stock to AVAILABLE?");
+    if (!ok) return;
 
-    showToast("Stock deleted.", "danger");
+    const updated = await dbUpdate("stocks", { id }, { status: "available" });
+    if (updated === null) return;
 
+    showToast("Stock restored to available.", "success");
     await loadStocksFromDB();
-    renderStockPanel();
-    refreshStocksStats();
+    renderManageStocks();
+    await refreshStocksStats();
+};
+
+window.deleteStock = async function (id) {
+    const s = STOCKS.find((x) => x.id === id);
+    if (!s) return;
+
+    const ok = await confirmBox("Delete this stock permanently?");
+    if (!ok) return;
+
+    const deleted = await dbDelete("stocks", { id });
+    if (deleted === null) return;
+
+    showToast("Stock deleted.", "error");
+    await loadStocksFromDB();
+    renderManageStocks();
+    await refreshStocksStats();
 };
