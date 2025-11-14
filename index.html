@@ -1697,6 +1697,182 @@ Payment Method: ${order.payment_method}
             
             console.log('Sending Telegram notification:', message);
         }
+        // ===== SUPABASE DATABASE FUNCTIONS FOR BUYER SITE =====
+// Add this after your existing JavaScript code, before the closing </script> tag
+
+// Database Functions for index.html
+async function saveBuyerToSupabase(buyer) {
+    const { data, error } = await supabase
+        .from('buyers')
+        .insert([buyer]);
+    
+    if (error) {
+        console.error('Error saving buyer:', error);
+        return null;
+    } else {
+        return data;
+    }
+}
+
+async function saveOrderToSupabase(order) {
+    const { data, error } = await supabase
+        .from('orders')
+        .insert([order]);
+    
+    if (error) {
+        console.error('Error saving order:', error);
+        showToast('Error saving order to database', 'error');
+        return null;
+    } else {
+        showToast('Order saved to database!', 'success');
+        return data;
+    }
+}
+
+async function loadProductsFromSupabase() {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*');
+    
+    if (error) {
+        console.error('Error loading products:', error);
+        showToast('Error loading products from database', 'error');
+        return PRODUCTS_DATA; // Fallback to local data
+    } else {
+        return data;
+    }
+}
+
+// Update handleCheckout to save to Supabase
+async function handleCheckout() {
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const referenceNumber = document.getElementById('referenceNumber').value;
+    const proofImage = document.getElementById('proofImage').files[0];
+
+    if (!paymentMethod) {
+        showToast('Please select a payment method', 'warning');
+        return;
+    }
+
+    try {
+        // Generate order ID
+        const orderId = generateOrderId();
+
+        // Create order object
+        const order = {
+            id: orderId,
+            buyer_id: currentUser.id,
+            product_id: currentOrderDetails.productId,
+            account_type: currentOrderDetails.accountType,
+            duration: currentOrderDetails.duration,
+            price: currentOrderDetails.price,
+            payment_method: paymentMethod,
+            reference_number: referenceNumber,
+            invite_email: currentOrderDetails.inviteEmail,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        };
+
+        // Save to Supabase
+        await saveOrderToSupabase(order);
+
+        // Send Telegram notification
+        await sendTelegramNotification(order);
+
+        // Show success message
+        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+        showToast(`Order submitted successfully! Your order ID is ${orderId}`, 'success');
+
+        // Reset form
+        document.getElementById('checkoutForm').reset();
+
+        // Update user orders
+        loadUserOrders();
+
+    } catch (error) {
+        console.error('Checkout error:', error);
+        showToast('Error submitting order', 'error');
+    }
+}
+
+// Update loadProducts to load from Supabase
+async function loadProducts() {
+    try {
+        const supabaseProducts = await loadProductsFromSupabase();
+        if (supabaseProducts && supabaseProducts.length > 0) {
+            displayProducts(supabaseProducts);
+        } else {
+            // Fallback to local data
+            displayProducts(PRODUCTS_DATA);
+        }
+    } catch (error) {
+        console.error('Error loading products:', error);
+        showToast('Error loading products', 'error');
+        // Fallback to local data
+        displayProducts(PRODUCTS_DATA);
+    }
+}
+
+// Update handleLogin and handleSignup to save buyers
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    try {
+        // Simulate login - in real app, use Supabase Auth
+        const user = {
+            id: Date.now(),
+            name: email.split('@')[0],
+            email: email
+        };
+        
+        currentUser = user;
+        localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+        
+        // Save to Supabase buyers table
+        await saveBuyerToSupabase(user);
+        
+        showUserProfile();
+        bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+        showToast('Login successful!', 'success');
+        
+    } catch (error) {
+        showToast('Login failed. Please try again.', 'error');
+    }
+}
+
+async function handleSignup() {
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        return;
+    }
+    
+    try {
+        const user = {
+            id: Date.now(),
+            name: name,
+            email: email
+        };
+        
+        currentUser = user;
+        localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+        
+        // Save to Supabase buyers table
+        await saveBuyerToSupabase(user);
+        
+        showUserProfile();
+        bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+        showToast('Account created successfully!', 'success');
+        
+    } catch (error) {
+        showToast('Signup failed. Please try again.', 'error');
+    }
+}
     </script>
 </body>
 </html>
