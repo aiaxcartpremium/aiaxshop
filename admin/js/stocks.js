@@ -9,111 +9,34 @@ function el(id) {
   return document.getElementById(id);
 }
 
-// RENDER UI
+//// DEBUG VERSION: PARA LANG MA-PROVE NA NAGLO-LOAD YUNG MODULE
+
 export function initStocksModule() {
-  const addPanel = el("panel-add-stock");
-  const managePanel = el("panel-manage-stocks");
+  console.log("[stocks] initStocksModule CALLED");
 
-  if (!addPanel && !managePanel) return;
+  const addPanel = document.getElementById("panel-add-stock");
+  const managePanel = document.getElementById("panel-manage-stocks");
 
-  // --- Add Stock form ---
+  // Para sure na nakikita natin kung nade-detect yung panels
+  console.log("[stocks] addPanel =", addPanel);
+  console.log("[stocks] managePanel =", managePanel);
+
   if (addPanel) {
     addPanel.innerHTML = `
-      <div class="card-clean mb-3">
-        <h3 class="mb-3">Add Stock</h3>
-        <div class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label">Product</label>
-            <select id="stock-product" class="form-select">
-              <option value="">Select product</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Account Type</label>
-            <input id="stock-account-type" class="form-control" placeholder="solo, shared, invite, etc.">
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Duration</label>
-            <input id="stock-duration" class="form-control" placeholder="1m, 3m, 7d, etc.">
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label">Account Email</label>
-            <input id="stock-email" class="form-control">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Password</label>
-            <input id="stock-password" class="form-control">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Profile</label>
-            <input id="stock-profile" class="form-control">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">PIN</label>
-            <input id="stock-pin" class="form-control">
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Archive After (days)</label>
-            <input id="stock-archive-after" type="number" min="0" value="0" class="form-control">
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Premium Until</label>
-            <input id="stock-premium-until" type="date" class="form-control">
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Status</label>
-            <select id="stock-status" class="form-select">
-              <option value="available">available</option>
-              <option value="reserved">reserved</option>
-              <option value="sold">sold</option>
-            </select>
-          </div>
-        </div>
-
-        <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
-          Save Stock
-        </button>
+      <div class="card-clean">
+        <h3>Stocks test</h3>
+        <p>If you see this, <strong>stocks.js is loading correctly</strong>.</p>
       </div>
     `;
-
-    const btnSave = el("btn-save-stock");
-    if (btnSave) {
-      btnSave.addEventListener("click", handleSaveStock);
-    }
-
-    // load product dropdown for Add Stock
-    loadProductsForStocks();
   }
 
-  // --- Manage Stocks table ---
   if (managePanel) {
     managePanel.innerHTML = `
       <div class="card-clean">
-        <h3 class="mb-3">Manage Stocks</h3>
-        <div class="table-responsive">
-          <table class="records-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Product</th>
-                <th>Account Type</th>
-                <th>Duration</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Premium Until</th>
-              </tr>
-            </thead>
-            <tbody id="stocks-table-body">
-              <!-- rows will be loaded here -->
-            </tbody>
-          </table>
-        </div>
+        <h3>Manage Stocks test</h3>
+        <p>If you see this, <strong>stocks.js can also write to this panel</strong>.</p>
       </div>
     `;
-
-    loadStocksTable();
   }
 }
 
