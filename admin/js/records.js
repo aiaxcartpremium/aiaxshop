@@ -1,337 +1,232 @@
 // admin/js/records.js
-// Handles Records panel (Add/Edit + table) +
-// dynamic dropdowns for Account Type & Duration
+// Handles: product dropdown, account type, duration, price, and records list
 
 import { showToast } from "./utils.js";
-import { sb } from "./supabase.js";
-import { MASTER_PRODUCTS, durationMap } from "./products.js";
+import { dbSelect, dbInsert, dbUpdate } from "./supabase.js";
 
-let editingRecordId = null;
+// Cache for products loaded from Supabase
+const PRODUCTS_CACHE = new Map();
 
-// ---- DOM HELPERS ----
-function el(id) {
+function $(id) {
   return document.getElementById(id);
 }
 
-// Dropdown elements
-let productSelect, typeSelect, durationSelect, priceInput;
+const recordProductSel   = $("record-product");
+const recordTypeSel      = $("record-type");
+const recordDurationSel  = $("record-duration");
+const recordPriceInput   = $("record-price");
+const recordsTableBody   = $("records-table-body");
 
-// ---- INIT ----
-export function initRecordsModule() {
-  productSelect = el("record-product");
-  typeSelect = el("record-type");
-  durationSelect = el("record-duration");
-  priceInput = el("record-price");
+/* =========================
+   INIT
+   ========================= */
+export async function initRecordsModule() {
+  try {
+    await loadProductsForRecords();
+    await loadRecordsTable();
+    attachRecordFormListeners();
+  } catch (err) {
+    console.error("initRecordsModule error:", err);
+    showToast("Failed to load records module.", "danger");
+  }
+}
 
-  if (!productSelect || !typeSelect || !durationSelect) {
-    console.warn("[records] Form elements not found, skipping init.");
+/* =========================
+   LOAD PRODUCTS → DROPDOWN
+   ========================= */
+async function loadProductsForRecords() {
+  const { data, error } = await dbSelect("products", "*", { orderBy: { column: "name", ascending: true } });
+
+  if (error) {
+    console.error("loadProductsForRecords error:", error);
+    showToast("Failed to load products for records form.", "danger");
     return;
   }
 
-  setupDropdownLogic();
-  populateProductDropdown();
-  loadRecordsTable();
+  recordProductSel.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select product";
+  recordProductSel.appendChild(placeholder);
 
-  // expose for Save button
-  window.saveEditedRecord = handleSaveRecord;
+  data.forEach((p) => {
+    PRODUCTS_CACHE.set(p.id, p); // p.id is the string like 'netflix', 'viu', etc.
+
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.name} (${p.category})`;
+    recordProductSel.appendChild(opt);
+  });
 }
 
-// ---- DROPDOWN LOGIC ----
-function setupDropdownLogic() {
-  // When product changes → reset type & duration, repopulate types
-  productSelect.addEventListener("change", () => {
-    const productId = productSelect.value || "";
-    populateTypeDropdown(productId);
-    clearDurationDropdown();
-    priceInput && (priceInput.value = "");
+/* ======================================
+   POPULATE ACCOUNT TYPE & DURATION
+   ====================================== */
+
+function clearTypeDropdown(msg = "Select product first") {
+  recordTypeSel.innerHTML = "";
+  const opt = document.createElement("option");
+  opt.value = "";
+  opt.textContent = msg;
+  recordTypeSel.appendChild(opt);
+}
+
+function clearDurationDropdown(msg = "Select account type first") {
+  recordDurationSel.innerHTML = "";
+  const opt = document.createElement("option");
+  opt.value = "";
+  opt.textContent = msg;
+  recordDurationSel.appendChild(opt);
+}
+
+function populateTypeDropdown(productId) {
+  clearTypeDropdown();
+  clearDurationDropdown();
+  recordPriceInput.value = 0;
+
+  const product = PRODUCTS_CACHE.get(productId);
+  if (!product || !product.pricing) {
+    clearTypeDropdown("No account types");
+    clearDurationDropdown("No durations");
+    return;
+  }
+
+  recordTypeSel.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select account type";
+  recordTypeSel.appendChild(placeholder);
+
+  const pricing = product.pricing; // JSONB from DB
+  Object.keys(pricing).forEach((typeKey) => {
+    const opt = document.createElement("option");
+    opt.value = typeKey;
+    opt.textContent = typeKey;
+    recordTypeSel.appendChild(opt);
   });
 
-  // When account type changes → reset & repopulate durations
-  typeSelect.addEventListener("change", () => {
-    const productId = productSelect.value || "";
-    const accountType = typeSelect.value || "";
-    populateDurationDropdown(productId, accountType);
-    priceInput && (priceInput.value = "");
+  clearDurationDropdown();
+}
+
+function populateDurationDropdown(productId, accountType) {
+  clearDurationDropdown();
+  recordPriceInput.value = 0;
+
+  const product = PRODUCTS_CACHE.get(productId);
+  if (!product || !product.pricing || !accountType) {
+    return;
+  }
+
+  const priceMap = product.pricing[accountType]; // { '1m': 160, '2m': 280, ... }
+  if (!priceMap) {
+    clearDurationDropdown("No durations for this type");
+    return;
+  }
+
+  recordDurationSel.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select duration";
+  recordDurationSel.appendChild(placeholder);
+
+  Object.entries(priceMap).forEach(([durKey, price]) => {
+    const opt = document.createElement("option");
+    opt.value = durKey;
+    opt.textContent = `${durKey} – ₱${price}`;
+    recordDurationSel.appendChild(opt);
+  });
+}
+
+/* =========================
+   FORM EVENT LISTENERS
+   ========================= */
+function attachRecordFormListeners() {
+  if (!recordProductSel) return;
+
+  // When product changes → refresh account type options
+  recordProductSel.addEventListener("change", () => {
+    const pid = recordProductSel.value;
+    if (!pid) {
+      clearTypeDropdown();
+      clearDurationDropdown();
+      recordPriceInput.value = 0;
+      return;
+    }
+    populateTypeDropdown(pid);
   });
 
-  // When duration changes → auto set price
-  durationSelect.addEventListener("change", () => {
-    const opt =
-      durationSelect.options[durationSelect.selectedIndex] || null;
-    if (opt && opt.dataset.price && priceInput) {
-      priceInput.value = opt.dataset.price;
+  // When account type changes → refresh duration options
+  recordTypeSel.addEventListener("change", () => {
+    const pid = recordProductSel.value;
+    const type = recordTypeSel.value;
+    if (!pid || !type) {
+      clearDurationDropdown();
+      recordPriceInput.value = 0;
+      return;
+    }
+    populateDurationDropdown(pid, type);
+  });
+
+  // When duration changes → set price input
+  recordDurationSel.addEventListener("change", () => {
+    const pid = recordProductSel.value;
+    const type = recordTypeSel.value;
+    const dur = recordDurationSel.value;
+
+    const product = PRODUCTS_CACHE.get(pid);
+    if (!product || !product.pricing || !type || !dur) {
+      return;
+    }
+
+    const price = product.pricing[type]?.[dur];
+    if (price != null) {
+      recordPriceInput.value = price;
     }
   });
 }
 
-function populateProductDropdown() {
-  productSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "Select product";
-  productSelect.appendChild(placeholder);
-
-  MASTER_PRODUCTS.forEach((p) => {
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.name} (${p.category})`;
-    productSelect.appendChild(opt);
-  });
-}
-
-function populateTypeDropdown(productId, selectedType = "") {
-  typeSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "Select account type";
-  typeSelect.appendChild(placeholder);
-
-  if (!productId) return;
-
-  const product = MASTER_PRODUCTS.find((p) => p.id === productId);
-  if (!product || !product.pricing) return;
-
-  Object.keys(product.pricing).forEach((acctType) => {
-    const opt = document.createElement("option");
-    opt.value = acctType;
-    opt.textContent = acctType; // already human-readable (e.g. "solo account")
-    if (acctType === selectedType) opt.selected = true;
-    typeSelect.appendChild(opt);
-  });
-}
-
-function clearDurationDropdown() {
-  durationSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "Select duration";
-  durationSelect.appendChild(placeholder);
-}
-
-function populateDurationDropdown(
-  productId,
-  accountType,
-  selectedDuration = ""
-) {
-  clearDurationDropdown();
-  if (!productId || !accountType) return;
-
-  const product = MASTER_PRODUCTS.find((p) => p.id === productId);
-  const pricing =
-    product && product.pricing ? product.pricing[accountType] : null;
-  if (!pricing) return;
-
-  Object.entries(pricing).forEach(([durKey, price]) => {
-    const opt = document.createElement("option");
-    const label = durationMap[durKey] || durKey;
-    opt.value = durKey;
-    opt.dataset.price = price;
-    opt.textContent = `${label} – ₱${price}`;
-    if (durKey === selectedDuration) opt.selected = true;
-    durationSelect.appendChild(opt);
-  });
-}
-
-// ---- LOAD & RENDER TABLE ----
+/* =========================
+   LOAD RECORDS TABLE
+   ========================= */
 async function loadRecordsTable() {
-  const tbody = el("records-table-body");
-  if (!tbody) return;
-
-  tbody.innerHTML = `<tr><td colspan="13">Loading...</td></tr>`;
-
-  const { data, error } = await sb
-    .from("records")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await dbSelect("records", "*", {
+    orderBy: { column: "created_at", ascending: false },
+  });
 
   if (error) {
-    console.error(error);
-    tbody.innerHTML = `<tr><td colspan="13">Failed to load records.</td></tr>`;
-    showToast("Error loading records", "danger");
+    console.error("loadRecordsTable error:", error);
+    showToast("Failed to load records list.", "danger");
     return;
   }
 
-  if (!data || !data.length) {
-    tbody.innerHTML = `<tr><td colspan="13">No records yet.</td></tr>`;
-    return;
-  }
+  recordsTableBody.innerHTML = "";
 
-  tbody.innerHTML = "";
-  data.forEach((rec) => {
+  data.forEach((r) => {
     const tr = document.createElement("tr");
 
-    const baseExp = computeBaseExpiry(rec.purchase_date, rec.duration);
-    const newExp = computeNewExpiry(baseExp, rec.additional_days);
-
     tr.innerHTML = `
-      <td>${rec.order_id || ""}</td>
-      <td>${rec.buyer || ""}</td>
-      <td>${rec.source || ""}</td>
-      <td>${rec.product_id || ""}</td>
-      <td>${rec.account_type || ""}</td>
-      <td>${rec.duration || ""}</td>
-      <td>${rec.purchase_date || ""}</td>
-      <td>${baseExp || ""}</td>
-      <td>${rec.additional_days ?? 0}</td>
-      <td>${newExp || ""}</td>
-      <td>${rec.email || ""}</td>
-      <td>₱${rec.price ?? 0}</td>
+      <td>${r.order_id || ""}</td>
+      <td>${r.buyer || ""}</td>
+      <td>${r.source || ""}</td>
+      <td>${r.product_id || ""}</td>
+      <td>${r.account_type || ""}</td>
+      <td>${r.duration || ""}</td>
+      <td>${r.purchase_date || ""}</td>
+      <td>${r.archive_after || ""}</td>
+      <td>${r.additional_days || 0}</td>
+      <td>${r.premium_until || ""}</td>
+      <td>${r.email || ""}</td>
+      <td>₱${r.price ?? 0}</td>
       <td>
-        <button 
-          class="btn btn-sm btn-outline-primary" 
-          data-action="edit" 
-          data-id="${rec.id}">
-          Edit
-        </button>
+        <button class="btn btn-sm btn-outline-secondary" data-id="${r.id}" data-action="edit">Edit</button>
       </td>
     `;
 
-    // Attach listener for Edit
-    tr.querySelector('[data-action="edit"]').addEventListener("click", () =>
-      loadRecordIntoForm(rec)
-    );
-
-    tbody.appendChild(tr);
+    recordsTableBody.appendChild(tr);
   });
+
+  // TODO: hook up edit buttons if needed
 }
 
-// ---- FORM HANDLING ----
-function loadRecordIntoForm(rec) {
-  editingRecordId = rec.id;
-
-  el("record-orderid").value = rec.order_id || "";
-  el("record-buyer").value = rec.buyer || "";
-  el("record-source").value = rec.source || "";
-
-  // product / type / duration dropdowns
-  productSelect.value = rec.product_id || "";
-  populateTypeDropdown(rec.product_id || "", rec.account_type || "");
-  populateDurationDropdown(
-    rec.product_id || "",
-    rec.account_type || "",
-    rec.duration || ""
-  );
-
-  el("record-purchasedate").value =
-    rec.purchase_date ? rec.purchase_date.substring(0, 10) : "";
-  el("record-adddays").value = rec.additional_days ?? 0;
-  priceInput.value = rec.price ?? 0;
-
-  el("record-email").value = rec.email || "";
-  el("record-password").value = rec.password || "";
-  el("record-profile").value = rec.profile || "";
-  el("record-pin").value = rec.pin || "";
-
-  showToast("Loaded record into form (edit mode).", "info");
-}
-
-async function handleSaveRecord() {
-  const payload = collectFormPayload();
-  if (!payload) return;
-
-  let error;
-
-  if (editingRecordId) {
-    const res = await sb
-      .from("records")
-      .update(payload)
-      .eq("id", editingRecordId)
-      .select()
-      .single();
-    error = res.error;
-  } else {
-    const res = await sb.from("records").insert(payload).select().single();
-    error = res.error;
-  }
-
-  if (error) {
-    console.error(error);
-    showToast("Failed to save record", "danger");
-    return;
-  }
-
-  showToast("Record saved successfully!", "success");
-  resetForm();
-  loadRecordsTable();
-}
-
-function collectFormPayload() {
-  const buyer = el("record-buyer").value.trim();
-  if (!buyer) {
-    showToast("Buyer name/email is required", "warning");
-    return null;
-  }
-
-  const product_id = productSelect.value || "";
-  const account_type = typeSelect.value || "";
-  const duration = durationSelect.value || "";
-
-  const payload = {
-    order_id: el("record-orderid").value.trim() || null,
-    buyer,
-    source: el("record-source").value || null,
-    product_id: product_id || null,
-    account_type: account_type || null,
-    duration: duration || null,
-    purchase_date: el("record-purchasedate").value || null,
-    additional_days: parseInt(el("record-adddays").value || "0", 10) || 0,
-    price: Number(priceInput.value || "0") || 0,
-    email: el("record-email").value.trim() || null,
-    password: el("record-password").value.trim() || null,
-    profile: el("record-profile").value.trim() || null,
-    pin: el("record-pin").value.trim() || null
-  };
-
-  return payload;
-}
-
-function resetForm() {
-  editingRecordId = null;
-  el("record-orderid").value = "";
-  el("record-buyer").value = "";
-  el("record-source").value = "";
-  productSelect.value = "";
-  populateTypeDropdown("");
-  clearDurationDropdown();
-  el("record-purchasedate").value = "";
-  el("record-adddays").value = "0";
-  priceInput.value = "0";
-  el("record-email").value = "";
-  el("record-password").value = "";
-  el("record-profile").value = "";
-  el("record-pin").value = "";
-}
-
-// ---- DATE HELPERS FOR EXPIRY ----
-function computeBaseExpiry(purchaseDate, durationKey) {
-  if (!purchaseDate || !durationKey) return "";
-  try {
-    const d = new Date(purchaseDate);
-    const match = durationKey.match(/^(\d+)([md])\s*(w)?/i); // e.g. 3m, 7d, 3m w
-    if (!match) return purchaseDate;
-
-    const num = parseInt(match[1], 10);
-    const unit = match[2];
-
-    if (unit === "d") d.setDate(d.getDate() + num);
-    else if (unit === "m") d.setMonth(d.getMonth() + num);
-
-    return d.toISOString().substring(0, 10);
-  } catch {
-    return purchaseDate;
-  }
-}
-
-function computeNewExpiry(baseExpiry, additionalDays) {
-  if (!baseExpiry) return "";
-  const add = parseInt(additionalDays || "0", 10);
-  if (!add) return baseExpiry;
-
-  try {
-    const d = new Date(baseExpiry);
-    d.setDate(d.getDate() + add);
-    return d.toISOString().substring(0, 10);
-  } catch {
-    return baseExpiry;
-  }
-}
+// Expose for admin.js (if needed)
+window.reloadRecordsTable = loadRecordsTable;
