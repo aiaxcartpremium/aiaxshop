@@ -1,303 +1,337 @@
 // admin/js/records.js
-// Handles Add / List records (sold accounts)
+// Handles Records panel (Add/Edit + table) +
+// dynamic dropdowns for Account Type & Duration
 
-import { dbSelect, dbInsert } from "./supabase.js";
-import { showToast, showLoader, hideLoader, durationMap } from "./utils.js";
-import { fetchProducts, fillProductSelect, getProductById } from "./products.js";
+import { showToast } from "./utils.js";
+import { sb } from "./supabase.js";
+import { MASTER_PRODUCTS, durationMap } from "./products.js";
 
-let RECORDS_CACHE = [];
+let editingRecordId = null;
 
-// --------- INIT / RENDER PANEL ---------
-
-export async function initRecordsModule() {
-  const main = document.getElementById("admin-main");
-  if (!main) return;
-
-  main.innerHTML = `
-    <section class="admin-section">
-      <h2 class="admin-title">Add / Edit Record</h2>
-      <p class="admin-subtitle">
-        Save sold accounts here (manual sales from Telegram, FB, TikTok, etc.).
-      </p>
-
-      <form id="record-form" class="admin-form">
-        <div class="admin-form-grid">
-          <div class="form-field">
-            <label for="record-order-id">Order ID (optional / external)</label>
-            <input id="record-order-id" name="order_id" type="text"
-                   placeholder="Leave blank if none" />
-          </div>
-
-          <div class="form-field">
-            <label for="record-buyer">Buyer (name or email)</label>
-            <input id="record-buyer" name="buyer" type="text" required />
-          </div>
-
-          <div class="form-field">
-            <label for="record-source">Source</label>
-            <select id="record-source" name="source" required>
-              <option value="">Select source</option>
-              <option value="website">Website</option>
-              <option value="facebook">Facebook</option>
-              <option value="instagram">Instagram</option>
-              <option value="telegram">Telegram</option>
-              <option value="tiktok">TikTok</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div class="form-field">
-            <label for="record-product">Product</label>
-            <select id="record-product" name="product_id" required></select>
-          </div>
-
-          <div class="form-field">
-            <label for="record-account-type">Account type</label>
-            <input id="record-account-type" name="account_type" type="text"
-                   placeholder="e.g. solo account, shared profile" required />
-          </div>
-
-          <div class="form-field">
-            <label for="record-duration">Duration code</label>
-            <input id="record-duration" name="duration" type="text"
-                   placeholder="e.g. 1m, 3m, 7d, 12m w" required />
-            <small class="text-muted">
-              Allowed codes: 7d, 14d, 1m, 2m, 3m, 4m, 5m, 6m, 8m, 10m, 12m, 24m, nw, 3m w, 6m w, 12m w
-            </small>
-          </div>
-
-          <div class="form-field">
-            <label for="record-purchase-date">Purchase date</label>
-            <input id="record-purchase-date" name="purchase_date"
-                   type="date" required />
-          </div>
-
-          <div class="form-field">
-            <label for="record-additional-days">Additional days</label>
-            <input id="record-additional-days" name="additional_days"
-                   type="number" min="0" value="0" />
-          </div>
-
-          <div class="form-field">
-            <label for="record-email">Account email (optional)</label>
-            <input id="record-email" name="email" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="record-password">Account password (optional)</label>
-            <input id="record-password" name="password" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="record-profile">Profile (optional)</label>
-            <input id="record-profile" name="profile" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="record-pin">PIN (optional)</label>
-            <input id="record-pin" name="pin" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="record-price">Price (₱)</label>
-            <input id="record-price" name="price" type="number"
-                   min="0" step="0.01" required />
-          </div>
-        </div>
-
-        <div class="admin-form-actions">
-          <button type="submit" class="btn btn-primary">Save Record</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="admin-section mt-4">
-      <div class="admin-section-head">
-        <h2 class="admin-title">Records List</h2>
-        <p class="admin-subtitle">History of sold accounts.</p>
-      </div>
-
-      <div class="admin-table-wrapper">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Buyer</th>
-              <th>Source</th>
-              <th>Product</th>
-              <th>Account type</th>
-              <th>Duration</th>
-              <th>Price</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody id="records-table-body">
-            <tr><td colspan="8" class="text-center text-muted">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  `;
-
-  // Default purchase date = today
-  const today = new Date().toISOString().slice(0, 10);
-  document.getElementById("record-purchase-date").value = today;
-
-  // Hook form
-  document
-    .getElementById("record-form")
-    .addEventListener("submit", onSubmitRecord);
-
-  // Fill product select from Supabase products table
-  await fillProductSelect(document.getElementById("record-product"));
-
-  // Load existing records list
-  await loadRecordsTable();
+// ---- DOM HELPERS ----
+function el(id) {
+  return document.getElementById(id);
 }
 
-// --------- LOAD & RENDER TABLE ---------
+// Dropdown elements
+let productSelect, typeSelect, durationSelect, priceInput;
 
-async function loadRecordsTable() {
-  const tbody = document.getElementById("records-table-body");
-  if (!tbody) return;
+// ---- INIT ----
+export function initRecordsModule() {
+  productSelect = el("record-product");
+  typeSelect = el("record-type");
+  durationSelect = el("record-duration");
+  priceInput = el("record-price");
 
-  showLoader("Loading records...");
-
-  try {
-    const [records, products] = await Promise.all([
-      dbSelect("records", "*", (q) =>
-        q.order("purchase_date", { ascending: false }).limit(200)
-      ),
-      fetchProducts()
-    ]);
-
-    RECORDS_CACHE = records ?? [];
-
-    if (!RECORDS_CACHE.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="8" class="text-center text-muted">
-            No records yet.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    tbody.innerHTML = RECORDS_CACHE.map((rec) =>
-      renderRecordRow(rec, products)
-    ).join("");
-  } catch (err) {
-    console.error("loadRecordsTable error:", err);
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="8" class="text-center text-danger">
-          Failed to load records.
-        </td>
-      </tr>
-    `;
-    showToast("Failed to load records from database.", "danger");
-  } finally {
-    hideLoader();
-  }
-}
-
-function renderRecordRow(rec, products) {
-  const product =
-    products?.find((p) => p.id === rec.product_id) || getProductById(rec.product_id);
-
-  const productName = product ? product.name : rec.product_id || "—";
-
-  const durLabel = durationMap[rec.duration] || rec.duration || "—";
-
-  const detailsLines = [
-    rec.email && `Email: ${rec.email}`,
-    rec.password && `Password: ${rec.password}`,
-    rec.profile && `Profile: ${rec.profile}`,
-    rec.pin && `PIN: ${rec.pin}`
-  ]
-    .filter(Boolean)
-    .join("<br>");
-
-  const purchaseDate = rec.purchase_date || "";
-  const created = rec.created_at
-    ? new Date(rec.created_at).toLocaleString()
-    : "";
-
-  return `
-    <tr>
-      <td>
-        ${purchaseDate}
-        <br><small class="text-muted">${created}</small>
-      </td>
-      <td>${escapeHtml(rec.buyer || "")}</td>
-      <td>${escapeHtml(rec.source || "")}</td>
-      <td>${escapeHtml(productName)}</td>
-      <td>${escapeHtml(rec.account_type || "")}</td>
-      <td>${escapeHtml(durLabel)}</td>
-      <td>₱${Number(rec.price || 0).toFixed(2)}</td>
-      <td>
-        ${detailsLines || '<span class="text-muted">—</span>'}
-      </td>
-    </tr>
-  `;
-}
-
-// --------- SUBMIT HANDLER ---------
-
-async function onSubmitRecord(evt) {
-  evt.preventDefault();
-  const form = evt.target;
-
-  const payload = {
-    // id is varchar in your schema – generate simple unique id
-    id: `REC-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    order_id: form["order_id"].value.trim() || null,
-    buyer: form["buyer"].value.trim(),
-    source: form["source"].value,
-    product_id: form["product_id"].value,
-    account_type: form["account_type"].value.trim(),
-    duration: form["duration"].value.trim(),
-    purchase_date: form["purchase_date"].value,
-    additional_days: Number(form["additional_days"].value || 0),
-    email: form["email"].value.trim() || null,
-    password: form["password"].value.trim() || null,
-    profile: form["profile"].value.trim() || null,
-    pin: form["pin"].value.trim() || null,
-    price: Number(form["price"].value || 0),
-    status: "sold"
-  };
-
-  if (!payload.buyer || !payload.product_id || !payload.account_type || !payload.duration || !payload.purchase_date) {
-    showToast("Please fill in all required fields.", "warning");
+  if (!productSelect || !typeSelect || !durationSelect) {
+    console.warn("[records] Form elements not found, skipping init.");
     return;
   }
 
-  showLoader("Saving record...");
+  setupDropdownLogic();
+  populateProductDropdown();
+  loadRecordsTable();
 
+  // expose for Save button
+  window.saveEditedRecord = handleSaveRecord;
+}
+
+// ---- DROPDOWN LOGIC ----
+function setupDropdownLogic() {
+  // When product changes → reset type & duration, repopulate types
+  productSelect.addEventListener("change", () => {
+    const productId = productSelect.value || "";
+    populateTypeDropdown(productId);
+    clearDurationDropdown();
+    priceInput && (priceInput.value = "");
+  });
+
+  // When account type changes → reset & repopulate durations
+  typeSelect.addEventListener("change", () => {
+    const productId = productSelect.value || "";
+    const accountType = typeSelect.value || "";
+    populateDurationDropdown(productId, accountType);
+    priceInput && (priceInput.value = "");
+  });
+
+  // When duration changes → auto set price
+  durationSelect.addEventListener("change", () => {
+    const opt =
+      durationSelect.options[durationSelect.selectedIndex] || null;
+    if (opt && opt.dataset.price && priceInput) {
+      priceInput.value = opt.dataset.price;
+    }
+  });
+}
+
+function populateProductDropdown() {
+  productSelect.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select product";
+  productSelect.appendChild(placeholder);
+
+  MASTER_PRODUCTS.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.name} (${p.category})`;
+    productSelect.appendChild(opt);
+  });
+}
+
+function populateTypeDropdown(productId, selectedType = "") {
+  typeSelect.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select account type";
+  typeSelect.appendChild(placeholder);
+
+  if (!productId) return;
+
+  const product = MASTER_PRODUCTS.find((p) => p.id === productId);
+  if (!product || !product.pricing) return;
+
+  Object.keys(product.pricing).forEach((acctType) => {
+    const opt = document.createElement("option");
+    opt.value = acctType;
+    opt.textContent = acctType; // already human-readable (e.g. "solo account")
+    if (acctType === selectedType) opt.selected = true;
+    typeSelect.appendChild(opt);
+  });
+}
+
+function clearDurationDropdown() {
+  durationSelect.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select duration";
+  durationSelect.appendChild(placeholder);
+}
+
+function populateDurationDropdown(
+  productId,
+  accountType,
+  selectedDuration = ""
+) {
+  clearDurationDropdown();
+  if (!productId || !accountType) return;
+
+  const product = MASTER_PRODUCTS.find((p) => p.id === productId);
+  const pricing =
+    product && product.pricing ? product.pricing[accountType] : null;
+  if (!pricing) return;
+
+  Object.entries(pricing).forEach(([durKey, price]) => {
+    const opt = document.createElement("option");
+    const label = durationMap[durKey] || durKey;
+    opt.value = durKey;
+    opt.dataset.price = price;
+    opt.textContent = `${label} – ₱${price}`;
+    if (durKey === selectedDuration) opt.selected = true;
+    durationSelect.appendChild(opt);
+  });
+}
+
+// ---- LOAD & RENDER TABLE ----
+async function loadRecordsTable() {
+  const tbody = el("records-table-body");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="13">Loading...</td></tr>`;
+
+  const { data, error } = await sb
+    .from("records")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    tbody.innerHTML = `<tr><td colspan="13">Failed to load records.</td></tr>`;
+    showToast("Error loading records", "danger");
+    return;
+  }
+
+  if (!data || !data.length) {
+    tbody.innerHTML = `<tr><td colspan="13">No records yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = "";
+  data.forEach((rec) => {
+    const tr = document.createElement("tr");
+
+    const baseExp = computeBaseExpiry(rec.purchase_date, rec.duration);
+    const newExp = computeNewExpiry(baseExp, rec.additional_days);
+
+    tr.innerHTML = `
+      <td>${rec.order_id || ""}</td>
+      <td>${rec.buyer || ""}</td>
+      <td>${rec.source || ""}</td>
+      <td>${rec.product_id || ""}</td>
+      <td>${rec.account_type || ""}</td>
+      <td>${rec.duration || ""}</td>
+      <td>${rec.purchase_date || ""}</td>
+      <td>${baseExp || ""}</td>
+      <td>${rec.additional_days ?? 0}</td>
+      <td>${newExp || ""}</td>
+      <td>${rec.email || ""}</td>
+      <td>₱${rec.price ?? 0}</td>
+      <td>
+        <button 
+          class="btn btn-sm btn-outline-primary" 
+          data-action="edit" 
+          data-id="${rec.id}">
+          Edit
+        </button>
+      </td>
+    `;
+
+    // Attach listener for Edit
+    tr.querySelector('[data-action="edit"]').addEventListener("click", () =>
+      loadRecordIntoForm(rec)
+    );
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ---- FORM HANDLING ----
+function loadRecordIntoForm(rec) {
+  editingRecordId = rec.id;
+
+  el("record-orderid").value = rec.order_id || "";
+  el("record-buyer").value = rec.buyer || "";
+  el("record-source").value = rec.source || "";
+
+  // product / type / duration dropdowns
+  productSelect.value = rec.product_id || "";
+  populateTypeDropdown(rec.product_id || "", rec.account_type || "");
+  populateDurationDropdown(
+    rec.product_id || "",
+    rec.account_type || "",
+    rec.duration || ""
+  );
+
+  el("record-purchasedate").value =
+    rec.purchase_date ? rec.purchase_date.substring(0, 10) : "";
+  el("record-adddays").value = rec.additional_days ?? 0;
+  priceInput.value = rec.price ?? 0;
+
+  el("record-email").value = rec.email || "";
+  el("record-password").value = rec.password || "";
+  el("record-profile").value = rec.profile || "";
+  el("record-pin").value = rec.pin || "";
+
+  showToast("Loaded record into form (edit mode).", "info");
+}
+
+async function handleSaveRecord() {
+  const payload = collectFormPayload();
+  if (!payload) return;
+
+  let error;
+
+  if (editingRecordId) {
+    const res = await sb
+      .from("records")
+      .update(payload)
+      .eq("id", editingRecordId)
+      .select()
+      .single();
+    error = res.error;
+  } else {
+    const res = await sb.from("records").insert(payload).select().single();
+    error = res.error;
+  }
+
+  if (error) {
+    console.error(error);
+    showToast("Failed to save record", "danger");
+    return;
+  }
+
+  showToast("Record saved successfully!", "success");
+  resetForm();
+  loadRecordsTable();
+}
+
+function collectFormPayload() {
+  const buyer = el("record-buyer").value.trim();
+  if (!buyer) {
+    showToast("Buyer name/email is required", "warning");
+    return null;
+  }
+
+  const product_id = productSelect.value || "";
+  const account_type = typeSelect.value || "";
+  const duration = durationSelect.value || "";
+
+  const payload = {
+    order_id: el("record-orderid").value.trim() || null,
+    buyer,
+    source: el("record-source").value || null,
+    product_id: product_id || null,
+    account_type: account_type || null,
+    duration: duration || null,
+    purchase_date: el("record-purchasedate").value || null,
+    additional_days: parseInt(el("record-adddays").value || "0", 10) || 0,
+    price: Number(priceInput.value || "0") || 0,
+    email: el("record-email").value.trim() || null,
+    password: el("record-password").value.trim() || null,
+    profile: el("record-profile").value.trim() || null,
+    pin: el("record-pin").value.trim() || null
+  };
+
+  return payload;
+}
+
+function resetForm() {
+  editingRecordId = null;
+  el("record-orderid").value = "";
+  el("record-buyer").value = "";
+  el("record-source").value = "";
+  productSelect.value = "";
+  populateTypeDropdown("");
+  clearDurationDropdown();
+  el("record-purchasedate").value = "";
+  el("record-adddays").value = "0";
+  priceInput.value = "0";
+  el("record-email").value = "";
+  el("record-password").value = "";
+  el("record-profile").value = "";
+  el("record-pin").value = "";
+}
+
+// ---- DATE HELPERS FOR EXPIRY ----
+function computeBaseExpiry(purchaseDate, durationKey) {
+  if (!purchaseDate || !durationKey) return "";
   try {
-    await dbInsert("records", payload);
-    showToast("Record saved to database.", "success");
+    const d = new Date(purchaseDate);
+    const match = durationKey.match(/^(\d+)([md])\s*(w)?/i); // e.g. 3m, 7d, 3m w
+    if (!match) return purchaseDate;
 
-    form.reset();
-    // reset purchase date to today after reset
-    form["purchase_date"].value = new Date().toISOString().slice(0, 10);
-    form["additional_days"].value = 0;
+    const num = parseInt(match[1], 10);
+    const unit = match[2];
 
-    await loadRecordsTable();
-  } catch (err) {
-    console.error("onSubmitRecord error:", err);
-    showToast("Failed to save record.", "danger");
-  } finally {
-    hideLoader();
+    if (unit === "d") d.setDate(d.getDate() + num);
+    else if (unit === "m") d.setMonth(d.getMonth() + num);
+
+    return d.toISOString().substring(0, 10);
+  } catch {
+    return purchaseDate;
   }
 }
 
-// --------- SMALL HELPER ---------
+function computeNewExpiry(baseExpiry, additionalDays) {
+  if (!baseExpiry) return "";
+  const add = parseInt(additionalDays || "0", 10);
+  if (!add) return baseExpiry;
 
-function escapeHtml(str) {
-  return (str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  try {
+    const d = new Date(baseExpiry);
+    d.setDate(d.getDate() + add);
+    return d.toISOString().substring(0, 10);
+  } catch {
+    return baseExpiry;
+  }
 }
