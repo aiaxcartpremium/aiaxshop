@@ -489,5 +489,598 @@
 
     window.addEventListener("load", populateRecordProducts);
   </script>
+  <script>
+  // === BASIC CONFIG & CONSTANTS ===
+  const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
+  const SUPABASE_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
+
+  let supabaseClient = null;
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+  }
+
+  const durationMap = {
+    '7d': '7 Days',
+    '14d': '14 Days',
+    '1m': '1 Month',
+    '2m': '2 Months',
+    '3m': '3 Months',
+    '4m': '4 Months',
+    '5m': '5 Months',
+    '6m': '6 Months',
+    '8m': '8 Months',
+    '10m': '10 Months',
+    '12m': '12 Months',
+    '24m': '24 Months',
+    'nw': 'No Warranty',
+    '3m w': '3 Months Warranty',
+    '6m w': '6 Months Warranty',
+    '12m w': '12 Months Warranty'
+  };
+
+  // === MASTER PRODUCTS (from your list) ===
+  const MASTER_PRODUCTS = [
+    {
+      id: 'netflix',
+      name: 'Netflix Premium',
+      category: 'entertainment',
+      icon: '📺',
+      stock: 15,
+      pricing: {
+        'solo profile': { '1m': 160, '2m': 280, '3m': 435, '4m': 565, '6m': 850, '8m': 1090, '12m': 1500 },
+        'shared profile': { '1m': 80, '2m': 145, '3m': 205, '4m': 270, '6m': 410, '8m': 520, '12m': 800 }
+      }
+    },
+    {
+      id: 'viu',
+      name: 'Viu Premium',
+      category: 'entertainment',
+      icon: '🎬',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 70, '2m': 105, '3m': 145, '4m': 170, '6m': 205, '10m': 280, '12m': 310 },
+        'shared account': { '1m': 30, '2m': 55, '3m': 75, '4m': 90, '6m': 120, '10m': 190, '12m': 220 }
+      }
+    },
+    {
+      id: 'viva-max',
+      name: 'VIVAMAX VIVAONE',
+      category: 'entertainment',
+      icon: '🎭',
+      stock: 15,
+      pricing: {
+        'solo account': { '1m': 110, '2m': 145, '3m': 170 },
+        'shared account': { '1m': 65, '2m': 90, '3m': 120 }
+      }
+    },
+    {
+      id: 'wetv',
+      name: 'WeTV',
+      category: 'entertainment',
+      icon: '📱',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 150 },
+        'shared account': { '1m': 55, '2m': 95, '3m': 135 }
+      }
+    },
+    {
+      id: 'iwant-tfc',
+      name: 'IWANT TFC',
+      category: 'entertainment',
+      icon: '📺',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 145 },
+        'shared account': { '1m': 50, '2m': 90, '3m': 125 }
+      }
+    },
+    {
+      id: 'crunchyroll',
+      name: 'Crunchyroll',
+      category: 'entertainment',
+      icon: '🎮',
+      stock: 10,
+      pricing: {
+        'solo profile': { '1m': 75, '2m': 115, '3m': 160, '4m': 195 },
+        'shared profile': { '1m': 35, '2m': 60, '3m': 90, '4m': 115 }
+      }
+    },
+    {
+      id: 'disney-plus',
+      name: 'Disney+',
+      category: 'entertainment',
+      icon: '🦁',
+      stock: 12,
+      pricing: {
+        'solo account': { '1m': 390 },
+        'solo profile': { '1m': 160, '2m': 315, '4m': 630, '10m': 1480, '12m': 1700 },
+        'shared profile': { '1m': 85, '2m': 165, '4m': 330, '10m': 720, '12m': 880 }
+      }
+    },
+    {
+      id: 'bilibili',
+      name: 'Bilibili',
+      category: 'entertainment',
+      icon: '📺',
+      stock: 6,
+      pricing: {
+        'shared account': { '1m': 45, '2m': 75, '3m': 105 }
+      }
+    },
+    {
+      id: 'loklok',
+      name: 'Loklok',
+      category: 'entertainment',
+      icon: '📱',
+      stock: 7,
+      pricing: {
+        'solo account': { '1m': 150 },
+        'shared account': { '1m': 65, '2m': 115, '3m': 170 }
+      }
+    },
+    {
+      id: 'iqiyi',
+      name: 'iQiyi',
+      category: 'entertainment',
+      icon: '📺',
+      stock: 8,
+      pricing: {
+        'shared account': { '1m': 50, '2m': 90, '3m': 135 }
+      }
+    },
+    {
+      id: 'hbo-max',
+      name: 'HBO Max',
+      category: 'entertainment',
+      icon: '📹',
+      stock: 10,
+      pricing: {
+        'solo account': { '1m': 240, '2m': 360, '3m': 480 },
+        'solo profile': { '1m': 135, '2m': 240, '3m': 350 },
+        'shared profile': { '1m': 70, '2m': 120, '3m': 170 }
+      }
+    },
+    {
+      id: 'amazon-prime',
+      name: 'Amazon Prime',
+      category: 'entertainment',
+      icon: '🛒',
+      stock: 15,
+      pricing: {
+        'solo account': { '1m': 80, '2m': 110, '3m': 135, '4m': 160, '5m': 185, '6m': 210 },
+        'solo profile': { '1m': 50, '2m': 80, '3m': 110, '4m': 135, '5m': 150, '6m': 170 },
+        'shared profile': { '1m': 30, '2m': 50, '3m': 70, '4m': 80, '5m': 90, '6m': 100 }
+      }
+    },
+    {
+      id: 'youku',
+      name: 'Youku',
+      category: 'entertainment',
+      icon: '📺',
+      stock: 6,
+      pricing: {
+        'solo account': { '1m': 125 },
+        'shared account': { '1m': 50, '2m': 90, '3m': 125 }
+      }
+    },
+    {
+      id: 'nba-league-pass',
+      name: 'NBA League Pass Premium',
+      category: 'entertainment',
+      icon: '🏀',
+      stock: 5,
+      pricing: {
+        'solo account': { '1m': 150 },
+        'shared account': { '1m': 75 }
+      }
+    },
+
+    // Streaming (Music)
+    {
+      id: 'youtube',
+      name: 'YouTube Premium',
+      category: 'streaming',
+      icon: '📹',
+      stock: 20,
+      pricing: {
+        famhead: { '1m': 70, '2m': 90, '3m': 125, '4m': 150, '5m': 175, '6m': 200 },
+        solo: { '1m': 45, '2m': 60, '3m': 85, '4m': 105, '5m': 125, '6m': 145 },
+        invite: { '1m': 20, '2m': 35, '3m': 50, '4m': 60, '5m': 70, '6m': 80 }
+      }
+    },
+    {
+      id: 'spotify',
+      name: 'Spotify Premium',
+      category: 'streaming',
+      icon: '🎵',
+      stock: 15,
+      pricing: {
+        'solo fw': { '1m': 60, '2m': 110, '3m': 150, '4m': 200 },
+        'solo nw': { '1m': 45, '2m': 80, '3m': 120, '4m': 150 }
+      }
+    },
+    {
+      id: 'apple-music',
+      name: 'Apple Music',
+      category: 'streaming',
+      icon: '🎧',
+      stock: 12,
+      pricing: {
+        'solo account': { '1m': 49, '2m': 89, '3m': 129, '4m': 159 }
+      }
+    },
+
+    // AI Tools
+    {
+      id: 'chatgpt',
+      name: 'ChatGPT Plus',
+      category: 'ai',
+      icon: '🧠',
+      stock: 10,
+      pricing: {
+        'solo account': { '1m': 600, '2m': 1050, '3m': 1500 },
+        'shared account': { '1m': 120, '2m': 200, '3m': 290 }
+      }
+    },
+    {
+      id: 'blackbox-ai',
+      name: 'Blackbox AI',
+      category: 'ai',
+      icon: '🤖',
+      stock: 0,
+      pricing: {
+        'solo account': { '1m': 90, '2m': 170, '3m': 250 }
+      }
+    },
+    {
+      id: 'perplexity',
+      name: 'Perplexity AI',
+      category: 'ai',
+      icon: '🔍',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 120, '4m': 200, '6m': 250, '12m': 300, '24m': 450 },
+        'shared account': { '1m': 55, '4m': 140, '6m': 190, '12m': 230, '24m': 350 }
+      }
+    },
+    {
+      id: 'google-one',
+      name: 'Google One + Gemini AI',
+      category: 'ai',
+      icon: '☁️',
+      stock: 10,
+      pricing: {
+        'solo account': { '1m': 50, '2m': 85, '3m': 120, '12m': 280 },
+        'shared account': { '1m': 30, '2m': 50, '3m': 80, '12m': 150 }
+      }
+    },
+
+    // Educational
+    {
+      id: 'quizlet',
+      name: 'Quizlet+',
+      category: 'educational',
+      icon: '📚',
+      stock: 6,
+      pricing: {
+        'solo account': { '1m': 45, '2m': 65, '3m': 100 },
+        'shared account': { '1m': 20, '2m': 35, '3m': 50 }
+      }
+    },
+    {
+      id: 'scribd',
+      name: 'Scribd Premium',
+      category: 'educational',
+      icon: '📖',
+      stock: 7,
+      pricing: {
+        'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+        'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+      }
+    },
+    {
+      id: 'studocu',
+      name: 'Studocu Premium',
+      category: 'educational',
+      icon: '🎓',
+      stock: 6,
+      pricing: {
+        'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+        'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+      }
+    },
+    {
+      id: 'duolingo',
+      name: 'Duolingo Super',
+      category: 'educational',
+      icon: '🧑‍🎓',
+      stock: 6,
+      pricing: {
+        'solo account': { '1m': 80, '2m': 130, '3m': 170 }
+      }
+    },
+    {
+      id: 'turnitin-student',
+      name: 'Turnitin Student',
+      category: 'educational',
+      icon: '📝',
+      stock: 8,
+      pricing: {
+        'solo account': { '7d': 35, '14d': 50, '1m': 80, '2m': 140, '3m': 160, '6m': 330, '12m': 580 }
+      }
+    },
+    {
+      id: 'turnitin-instructor',
+      name: 'Turnitin Instructor',
+      category: 'educational',
+      icon: '👨‍🏫',
+      stock: 5,
+      pricing: {
+        'solo account': { '1m': 520 },
+        'shared account': { '7d': 120, '14d': 175, '1m': 280 }
+      }
+    },
+
+    // Editing Tools
+    {
+      id: 'canva',
+      name: 'Canva Pro',
+      category: 'editing',
+      icon: '🎨',
+      stock: 25,
+      pricing: {
+        'edu lifetime': { 'nw': 19, '3m w': 39, '6m w': 49, '12m w': 69 },
+        teamhead: { '1m': 45, '2m': 55, '3m': 65, '4m': 75, '5m': 85, '6m': 95 },
+        solo: { '1m': 25, '2m': 35, '3m': 45, '4m': 55, '5m': 65, '6m': 75 },
+        invite: { '1m': 10, '2m': 15, '3m': 20, '4m': 25, '5m': 30, '6m': 35 }
+      }
+    },
+    {
+      id: 'picsart',
+      name: 'Picsart Gold',
+      category: 'editing',
+      icon: '👏',
+      stock: 12,
+      pricing: {
+        'teamhead account': { '1m': 70, '2m': 115, '3m': 150 },
+        'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+        'shared account': { '1m': 25, '2m': 45, '3m': 70 }
+      }
+    },
+    {
+      id: 'capcut',
+      name: 'CapCut Pro',
+      category: 'editing',
+      icon: '📝',
+      stock: 10,
+      pricing: {
+        'solo account': { '7d': 50, '1m': 130, '2m': 190, '3m': 240 },
+        'shared account': { '1m': 70, '2m': 120, '3m': 155 }
+      }
+    },
+    {
+      id: 'alight-motion',
+      name: 'Alight Motion Pro',
+      category: 'editing',
+      icon: '📱',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 90, '12m': 149 },
+        'shared account': { '1m': 35, '12m': 69 }
+      }
+    },
+    {
+      id: 'remini',
+      name: 'Remini Web',
+      category: 'editing',
+      icon: '✨',
+      stock: 6,
+      pricing: {
+        'solo account': { '7d': 30, '1m': 50 },
+        'shared account': { '7d': 15, '1m': 25 }
+      }
+    },
+    {
+      id: 'grammarly',
+      name: 'Grammarly Premium',
+      category: 'educational',
+      icon: '✍️',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 85 },
+        'shared account': { '1m': 35, '2m': 65, '3m': 95 }
+      }
+    },
+    {
+      id: 'quillbot',
+      name: 'Quillbot Premium',
+      category: 'educational',
+      icon: '📝',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 100 },
+        'shared account': { '1m': 45, '2m': 75, '3m': 110 }
+      }
+    },
+    {
+      id: 'ms-365',
+      name: 'Microsoft 365',
+      category: 'educational',
+      icon: '🤬',
+      stock: 15,
+      pricing: {
+        'solo account': { '1m': 55, '2m': 90, '3m': 120 },
+        'shared account': { '1m': 25, '2m': 45, '3m': 65 }
+      }
+    },
+    {
+      id: 'cams-canner',
+      name: 'CamScanner Pro',
+      category: 'editing',
+      icon: '📁',
+      stock: 8,
+      pricing: {
+        'solo account': { '1m': 100, '2m': 180, '3m': 250 },
+        'shared account': { '1m': 50, '2m': 90, '3m': 120 }
+      }
+    },
+    {
+      id: 'small-pdf',
+      name: 'Small PDF Pro',
+      category: 'editing',
+      icon: '📁',
+      stock: 7,
+      pricing: {
+        'solo account': { '1m': 55, '2m': 95, '3m': 130 },
+        'shared account': { '1m': 30, '2m': 50, '3m': 70 }
+      }
+    },
+    {
+      id: 'zoom',
+      name: 'Zoom Pro',
+      category: 'educational',
+      icon: '📽️',
+      stock: 6,
+      pricing: {
+        'solo account': { '14d': 45, '1m': 70, '2m': 120, '3m': 160 }
+      }
+    }
+  ];
+
+  // === SMALL HELPERS ===
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const wrapper = document.createElement('div');
+    const bsType =
+      type === 'error'
+        ? 'danger'
+        : type === 'success'
+        ? 'success'
+        : type === 'warning'
+        ? 'warning'
+        : 'secondary';
+
+    wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
+    wrapper.setAttribute('role', 'alert');
+    wrapper.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${msg}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    `;
+    container.appendChild(wrapper);
+    const t = new bootstrap.Toast(wrapper);
+    t.show();
+    wrapper.addEventListener('hidden.bs.toast', () => wrapper.remove());
+  }
+
+  function formatPricing(pricing) {
+    if (!pricing) return '<em>No pricing</em>';
+    let html = '';
+    Object.entries(pricing).forEach(([accType, durations]) => {
+      const rows = Object.entries(durations)
+        .map(([dur, price]) => {
+          const label = durationMap[dur] || dur;
+          return `${label}: ₱${price}`;
+        })
+        .join(', ');
+      html += `<div><strong>${accType}</strong> – <small>${rows}</small></div>`;
+    });
+    return html;
+  }
+
+  // === RENDER: PRODUCTS LIST PANEL ===
+  function renderProductsListPanel() {
+    const panel = document.getElementById('panel-products');
+    if (!panel) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-clean';
+    wrapper.innerHTML = `
+      <h3 class="mb-3">Products (Master List)</h3>
+      <p class="text-muted mb-3" style="font-size:0.9rem;">
+        This list is currently based on your hard-coded master product data.
+        Later pwede natin gawing fully editable + synced sa Supabase.
+      </p>
+      <div class="list-group" id="productsListGroup"></div>
+    `;
+    panel.innerHTML = '';
+    panel.appendChild(wrapper);
+
+    const listGroup = wrapper.querySelector('#productsListGroup');
+    MASTER_PRODUCTS.forEach((p) => {
+      const item = document.createElement('div');
+      item.className =
+        'list-group-item list-group-item-action flex-column align-items-start';
+      item.innerHTML = `
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">${p.icon || '📦'} ${p.name}</h5>
+          <small class="text-muted">${p.category}</small>
+        </div>
+        <p class="mb-1"><small>ID: <code>${p.id}</code> • Stock (default): ${
+        p.stock ?? 0
+      }</small></p>
+        <div style="font-size:0.85rem; margin-top:0.25rem;">
+          ${formatPricing(p.pricing)}
+        </div>
+      `;
+      listGroup.appendChild(item);
+    });
+  }
+
+  // === POPULATE: RECORDS FORM PRODUCT DROPDOWN ===
+  function populateRecordProductSelect() {
+    const select = document.getElementById('record-product');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Select product</option>';
+    MASTER_PRODUCTS.forEach((p) => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.name} (${p.category})`;
+      select.appendChild(opt);
+    });
+  }
+
+  // === BASIC STATS (using master data only for now) ===
+  function updateBasicStats() {
+    const productsCount = MASTER_PRODUCTS.length;
+    const statProducts = document.getElementById('stat-products');
+    if (statProducts) statProducts.textContent = productsCount.toString();
+
+    // For now, wala pa tayong real stock / orders from DB.
+    const statStock = document.getElementById('stat-stock');
+    if (statStock) statStock.textContent = '0';
+
+    const statPending = document.getElementById('stat-pending');
+    if (statPending) statPending.textContent = '0';
+
+    const statRevenue = document.getElementById('stat-revenue');
+    if (statRevenue) statRevenue.textContent = '₱0.00';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      renderProductsListPanel();
+      populateRecordProductSelect();
+      updateBasicStats();
+      console.log(
+        '[Admin inline script] Loaded. Products in master:',
+        MASTER_PRODUCTS.length
+      );
+      showToast('Admin script loaded successfully ✅', 'success');
+    } catch (err) {
+      console.error('Admin inline script error:', err);
+      showToast('Error in admin script. Check console.', 'error');
+    }
+  });
+</script>
 </body>
 </html>
