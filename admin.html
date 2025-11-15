@@ -323,24 +323,18 @@
                 <select id="record-product" class="form-select"></select>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Account Type</label>
-                <input
-                  type="text"
-                  id="record-type"
-                  class="form-control"
-                  placeholder="e.g. solo, shared"
-                />
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Duration</label>
-                <input
-                  type="text"
-                  id="record-duration"
-                  class="form-control"
-                  placeholder="e.g. 1m, 3m, 7d"
-                />
-              </div>
+  <label class="form-label">Account Type</label>
+  <select id="record-type" class="form-select">
+    <!-- records.js will populate options -->
+  </select>
+</div>
 
+<div class="col-md-4">
+  <label class="form-label">Duration</label>
+  <select id="record-duration" class="form-select">
+    <!-- records.js will populate options -->
+  </select>
+</div>
               <div class="col-md-4">
                 <label class="form-label">Purchase Date</label>
                 <input type="date" id="record-purchasedate" class="form-control" />
