@@ -1078,18 +1078,18 @@
     }
 
     async function saveOrderToSupabase(order) {
-      const { data, error } = await supabase
-        .from('orders')
-        .insert([order]);
+  const { data, error } = await supabase
+    .from('orders')
+    .insert(order)
+    .select(); // para ibalik niya yung bagong row (kasama auto id)
 
-      if (error) {
-        console.error('Error saving order:', error);
-        showToast('Error saving order to database', 'error');
-        return null;
-      }
-      return data;
-    }
-
+  if (error) {
+    console.error('Error saving order:', error.message, error.details, error.hint);
+    showToast('Error saving order to database', 'error');
+    return null;
+  }
+  return data; // array of inserted rows
+}
     async function sendTelegramNotification(order) {
       const message = `
 🛒 NEW ORDER RECEIVED!
@@ -1621,61 +1621,72 @@ Payment Method: ${order.payment_method}
     // CHECKOUT (REAL ORDER)
     // ======================
     async function handleCheckout(e) {
-      e.preventDefault();
+  e.preventDefault();
 
-      if (!currentUser) {
-        showToast('Please login first', 'warning');
-        return;
-      }
+  if (!currentUser) {
+    showToast('Please login first', 'warning');
+    return;
+  }
 
-      const paymentMethod = document.getElementById('paymentMethod').value;
-      const referenceNumber = document.getElementById('referenceNumber').value;
-      // const proofImage = document.getElementById('proofImage').files[0]; // not used yet
+  const paymentMethod = document.getElementById('paymentMethod').value;
+  const referenceNumber = document.getElementById('referenceNumber').value;
+  // const proofImage = document.getElementById('proofImage').files[0]; // not used yet
 
-      if (!paymentMethod) {
-        showToast('Please select a payment method', 'warning');
-        return;
-      }
+  if (!paymentMethod) {
+    showToast('Please select a payment method', 'warning');
+    return;
+  }
 
-      if (!currentOrderDetails) {
-        showToast('No product selected', 'error');
-        return;
-      }
+  if (!currentOrderDetails) {
+    showToast('No product selected', 'error');
+    return;
+  }
 
-      try {
-        const orderId = generateOrderId();
+  try {
+    // OPTIONAL: pretty code, pero sa DB hindi na siya primary key
+    const orderCode = generateOrderId();
 
-        const order = {
-          id: orderId,
-          buyer_email: currentUser.email.toLowerCase(),   // IMPORTANT
-          product_id: currentOrderDetails.productId,
-          product_name: currentOrderDetails.productName,
-          account_type: currentOrderDetails.accountType,
-          duration: currentOrderDetails.duration,
-          price: currentOrderDetails.price,
-          payment_method: paymentMethod,
-          reference_number: referenceNumber || null,
-          invite_email: currentOrderDetails.inviteEmail,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        };
+    const order = {
+      // ❌ WALANG id DITO, si Supabase na bahala mag-auto
+      buyer_email: currentUser.email.toLowerCase(),
+      product_id: currentOrderDetails.productId,
+      product_name: currentOrderDetails.productName,
+      account_type: currentOrderDetails.accountType,
+      duration: currentOrderDetails.duration,
+      price: currentOrderDetails.price,
+      payment_method: paymentMethod,
+      reference_number: referenceNumber || null,
+      invite_email: currentOrderDetails.inviteEmail,
+      status: 'pending',
+      created_at: new Date().toISOString(),
 
-        const saved = await saveOrderToSupabase(order);
-        if (!saved) return;
+      // OPTIONAL: kung gumawa ka ng TEXT column na `order_code` sa Supabase
+      order_code: orderCode
+    };
 
-        await sendTelegramNotification(order);
+    const saved = await saveOrderToSupabase(order);
+    if (!saved || !saved.length) return;
 
-        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-        showToast(`Order submitted successfully! Your order ID is ${orderId}`, 'success');
+    const newOrder = saved[0]; // row galing kay Supabase (may auto `id` na uuid)
 
-        document.getElementById('checkoutForm').reset();
-        await loadUserOrders();
-      } catch (err) {
-        console.error('Checkout error:', err);
-        showToast('Error submitting order', 'error');
-      }
-    }
+    await sendTelegramNotification({
+      ...order,
+      id: newOrder.id // gamitin actual DB id sa message
+    });
 
+    bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+    showToast(
+      `Order submitted successfully! Your order ID is ${newOrder.id}`,
+      'success'
+    );
+
+    document.getElementById('checkoutForm').reset();
+    await loadUserOrders();
+  } catch (err) {
+    console.error('Checkout error:', err);
+    showToast('Error submitting order', 'error');
+  }
+}
     // ======================
     // INIT & EVENTS
     // ======================
