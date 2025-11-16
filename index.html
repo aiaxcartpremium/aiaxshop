@@ -1109,9 +1109,10 @@ Payment Method: ${order.payment_method}
       document.getElementById('profileName').textContent = currentUser.name;
       document.getElementById('profileEmail').textContent = currentUser.email;
       document.getElementById('profileAvatar').textContent = getInitials(currentUser.name);
-      loadUserOrders();
-    }
-
+      // Load user data from Supabase
+    loadUserOrders();
+    loadDeliveredAccounts();
+}
     // ===== PRODUCTS (BUYER SITE) =====
     function loadProducts() {
       displayProducts(PRODUCTS_DATA);
