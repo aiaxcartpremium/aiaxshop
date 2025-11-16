@@ -1056,26 +1056,32 @@
     // ======================
     // SUPABASE HELPERS
     // ======================
-    async function saveBuyerToSupabase(buyer) {
-      try {
-        const { data, error } = await supabase
-          .from('buyers')
-          .insert({
-            id: buyer.email.toLowerCase(),  // email as ID
-            name: buyer.name,
-            email: buyer.email.toLowerCase()
-          });
+    // FINAL VERSION – ito lang ang dapat meron
+async function saveBuyerToSupabase(buyer) {
+  try {
+    const { data, error } = await supabase
+      .from('buyers')
+      .insert({
+        // kung ang schema mo: id TEXT PRIMARY KEY:
+        // id: buyer.id,
+        // pero kung id mo UUID na may default, pwedeng wag na mag-send ng id:
 
-        if (error) {
-          console.error('Error saving buyer:', error);
-          return null;
-        }
-        return data;
-      } catch (err) {
-        console.error('saveBuyerToSupabase error:', err);
-        return null;
-      }
+        name: buyer.name,
+        email: buyer.email.toLowerCase()
+      });
+
+    if (error) {
+      console.error('Error saving buyer:', error.message, error.details, error.hint);
+      showToast('Error saving buyer to database', 'error');
+      return null;
     }
+    return data;
+  } catch (err) {
+    console.error('saveBuyerToSupabase error:', err);
+    showToast('Error saving buyer to database', 'error');
+    return null;
+  }
+}
 
     async function saveOrderToSupabase(order) {
   const { data, error } = await supabase
