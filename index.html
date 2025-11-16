@@ -1302,47 +1302,66 @@ Payment Method: ${order.payment_method}
       checkoutModal.show();
     }
 
-    async function handleCheckout(e) {
-      e.preventDefault();
-      if (!currentUser || !currentOrderDetails) {
-        showToast('Missing order details.', 'error');
-        return;
-      }
+    // === CHECKOUT → SAVE ORDER TO SUPABASE + NOTIFY + RELOAD ORDERS ===
+async function handleCheckout() {
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const referenceNumber = document.getElementById('referenceNumber').value;
+    // const proofImage = document.getElementById('proofImage').files[0]; // optional sa future
 
-      const paymentMethod = document.getElementById('paymentMethod').value;
-      const referenceNumber = document.getElementById('referenceNumber').value.trim();
-      // const proofImage = document.getElementById('proofImage').files[0]; // future use
-
-      if (!paymentMethod) {
+    if (!paymentMethod) {
         showToast('Please select a payment method', 'warning');
         return;
-      }
+    }
 
-      const orderId = generateOrderId();
-      const order = {
-        id: orderId,
-        buyer_id: currentUser.id,
-        buyer_email: currentUser.email,
-        product_id: currentOrderDetails.productId,
-        account_type: currentOrderDetails.accountType,
-        duration: currentOrderDetails.duration,
-        price: currentOrderDetails.price,
-        payment_method: paymentMethod,
-        reference_number: referenceNumber || null,
-        invite_email: currentOrderDetails.inviteEmail,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      };
+    if (!currentUser) {
+        showToast('Please login first', 'warning');
+        return;
+    }
 
-      await saveOrderToSupabase(order);
-      await sendTelegramNotification(order);
+    try {
+        // Generate order ID
+        const orderId = generateOrderId();
 
-      bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-      document.getElementById('checkoutForm').reset();
-      showToast(`Order submitted! Your order ID is ${orderId}`, 'success');
+        // Buong order object – GAWIN NATING STANDARD
+        const order = {
+            id: orderId,
+            buyer_email: currentUser.email,    // IMPORTANT
+            buyer_name: currentUser.name,      // optional pero useful
+            product_id: currentOrderDetails.productId,
+            product_name: currentOrderDetails.productName,
+            account_type: currentOrderDetails.accountType,
+            duration: currentOrderDetails.duration,
+            price: currentOrderDetails.price,
+            payment_method: paymentMethod,
+            reference_number: referenceNumber || null,
+            invite_email: currentOrderDetails.inviteEmail,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        };
 
-      loadUserOrders();
-            }
+        // Save sa Supabase
+        const saved = await saveOrderToSupabase(order);
+        if (!saved) return; // may error toast na sa loob ng saveOrderToSupabase
+
+        // Telegram notify
+        await sendTelegramNotification(order);
+
+        // Close modal + success toast
+        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+        showToast(`Order submitted successfully! Your order ID is ${orderId}`, 'success');
+
+        // Reset form
+        document.getElementById('checkoutForm').reset();
+
+        // Reload orders ng buyer mula DB
+        loadUserOrders();
+
+        // Optional: pwede mo ring i-refresh admin gamit Telegram lang muna
+    } catch (error) {
+        console.error('Checkout error:', error);
+        showToast('Error submitting order', 'error');
+    }
+  }
       // ===== RULES & FEEDBACK (MOCK) =====
     function loadRules() {
       const rules = [
@@ -1633,16 +1652,21 @@ async function saveBuyerToSupabase(buyer) {
   }
 }
 
-// Save order (used on CHECKOUT)
+// === SAVE ORDER TO SUPABASE ===
 async function saveOrderToSupabase(order) {
-  const { data, error } = await supabase.from('orders').insert(order);
-  if (error) {
-    console.error('Error saving order:', error);
-    throw error;
-  }
-  return data;
-}
+    const { data, error } = await supabase
+        .from('orders')
+        .insert([order]);
 
+    if (error) {
+        console.error('Error saving order:', error);
+        showToast('Error saving order to database', 'error');
+        return null;
+    } else {
+        // Huwag masyado madaming toast dito, sa handleCheckout na lang
+        return data;
+    }
+}
 // Load products from Supabase (optional, pwede mo nang burahin yung lumang version)
 async function loadProductsFromSupabase() {
   const { data, error } = await supabase.from('products').select('*');
