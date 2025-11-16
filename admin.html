@@ -59,10 +59,6 @@
       gap: 0.4rem;
     }
 
-    .logo span {
-      font-weight: 600;
-    }
-
     .top-nav a {
       text-decoration: none;
       color: var(--dark);
@@ -78,7 +74,6 @@
       color: #fff;
     }
 
-    /* Layout */
     .admin-wrapper {
       max-width: 1100px;
       margin: 1.5rem auto 2.5rem;
@@ -242,7 +237,7 @@
   </header>
 
   <!-- Main Admin Wrapper -->
-  <main class="admin-wrapper" id="admin-root">
+  <main class="admin-wrapper">
     <h1 class="h4 mb-3">Admin Console</h1>
 
     <!-- Stats -->
@@ -268,23 +263,17 @@
     <div class="admin-layout">
       <!-- Sidebar Tabs -->
       <aside class="sidebar">
-        <button class="active" data-target="panel-add-product">
-          <i class="fa fa-box"></i> Add / Edit Product
-        </button>
-        <button data-target="panel-products">
-          <i class="fa fa-list"></i> Products List
+        <button class="active" data-target="panel-products">
+          <i class="fa fa-list"></i> Products
         </button>
         <button data-target="panel-add-stock">
           <i class="fa fa-plus-square"></i> Add Stock
         </button>
         <button data-target="panel-manage-stocks">
-          <i class="fa fa-layer-group"></i> Manage Stocks
+          <i class="fa fa-layer-group"></i> Stocks List
         </button>
         <button data-target="panel-pending-orders">
           <i class="fa fa-clock"></i> Pending Orders
-        </button>
-        <button data-target="panel-sold-accounts">
-          <i class="fa fa-check-circle"></i> Sold Accounts
         </button>
         <button data-target="panel-records">
           <i class="fa fa-book"></i> Records
@@ -299,91 +288,795 @@
 
       <!-- Main panels -->
       <section class="admin-main">
-        <!-- Products: Form (rendered by products.js) -->
-        <div id="panel-add-product" class="panel-admin active">
-          <!-- products.js will render the form here -->
+        <!-- Products List -->
+        <div id="panel-products" class="panel-admin active">
+          <div class="card-clean">
+            <h3 class="mb-3">Products</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Icon</th>
+                    <th>Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="products-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <!-- Products: List (rendered by products.js) -->
-        <div id="panel-products" class="panel-admin">
-          <!-- products.js will render list here -->
-        </div>
-
-        <!-- Stocks: Add (stocks.js) -->
+        <!-- Add Stock -->
         <div id="panel-add-stock" class="panel-admin">
-          <!-- stocks.js will render add-stock form here -->
+          <div class="card-clean">
+            <h3 class="mb-3">Add Stock</h3>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Product</label>
+                <select id="stock-product" class="form-select">
+                  <option value="">Select product</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Account Type</label>
+                <input id="stock-account-type" class="form-control" placeholder="solo account, shared account, etc.">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Duration</label>
+                <input id="stock-duration" class="form-control" placeholder="1m, 3m, 7d, etc.">
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Account Email</label>
+                <input id="stock-email" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Password</label>
+                <input id="stock-password" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Profile</label>
+                <input id="stock-profile" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">PIN</label>
+                <input id="stock-pin" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Archive After (days)</label>
+                <input id="stock-archive-after" type="number" min="0" value="30" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Premium Until</label>
+                <input id="stock-premium-until" type="date" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select id="stock-status" class="form-select">
+                  <option value="available">available</option>
+                  <option value="reserved">reserved</option>
+                  <option value="sold">sold</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
+              Save Stock
+            </button>
+          </div>
         </div>
 
-        <!-- Stocks: Manage (stocks.js) -->
+        <!-- Stocks List -->
         <div id="panel-manage-stocks" class="panel-admin">
-          <!-- stocks.js will render manage-stocks table here -->
+          <div class="card-clean">
+            <h3 class="mb-3">Stocks List</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Account Type</th>
+                    <th>Duration</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Premium Until</th>
+                  </tr>
+                </thead>
+                <tbody id="stocks-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <!-- Orders: Pending (orders.js) -->
+        <!-- Pending Orders -->
         <div id="panel-pending-orders" class="panel-admin">
-          <!-- orders.js will render pending orders here -->
+          <div class="card-clean">
+            <h3 class="mb-3">Pending Orders</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Buyer ID</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <!-- Sold Accounts (records.js) -->
-        <div id="panel-sold-accounts" class="panel-admin">
-          <!-- records.js can render sold accounts summary/cards here -->
-        </div>
-
-        <!-- Records panel – form + table (records.js) -->
+        <!-- Records -->
         <div id="panel-records" class="panel-admin">
-          <!-- records.js will render form + table here OR
-               you can keep your existing HTML if gusto mo;
-               sa ngayon, blank muna and JS na bahala -->
+          <div class="card-clean">
+            <h3 class="mb-3">Records</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>Record ID</th>
+                    <th>Order ID</th>
+                    <th>Buyer</th>
+                    <th>Source</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Purchase Date</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody id="records-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <!-- Store Rules (rules.js) -->
+        <!-- Store Rules -->
         <div id="panel-store-rules" class="panel-admin">
-          <!-- rules.js will render rules UI -->
+          <div class="card-clean">
+            <h3 class="mb-3">Store Rules</h3>
+            <p class="text-muted mb-2">
+              This panel shows all rules from the <code>rules</code> table.
+            </p>
+            <ul id="rules-list" class="mb-0">
+              <!-- JS will insert <li> -->
+            </ul>
+          </div>
         </div>
 
-        <!-- Reports (reports.js) -->
+        <!-- Reports -->
         <div id="panel-reports" class="panel-admin">
-          <!-- reports.js will render reports UI -->
+          <div class="card-clean">
+            <h3 class="mb-3">Reports</h3>
+            <p class="text-muted mb-2">
+              This panel shows all reports from the <code>reports</code> table.
+            </p>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Order ID</th>
+                    <th>Buyer ID</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   </main>
 
-  <!-- Bootstrap JS (for toasts etc.) -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Fallback tab switching (kahit mag-error yung modules, gumagana pa rin tabs) -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var buttons = document.querySelectorAll(".sidebar button");
-      var panels = document.querySelectorAll(".panel-admin");
+  <!-- Supabase JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <script>
+    // ========= CONFIG =========
+    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+
+      const wrapper = document.createElement("div");
+      const bsType =
+        type === "success"
+          ? "success"
+          : type === "danger" || type === "error"
+          ? "danger"
+          : type === "warning"
+          ? "warning"
+          : "secondary";
+
+      wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
+      wrapper.role = "alert";
+      wrapper.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      container.appendChild(wrapper);
+      const toast = new bootstrap.Toast(wrapper);
+      toast.show();
+      wrapper.addEventListener("hidden.bs.toast", () => wrapper.remove());
+    }
+
+    function safeNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    // ========= STATS =========
+    async function refreshStats() {
+      try {
+        const [{ data: prodRows }, { data: stockRows }, { data: orderRows }, { data: recRows }] =
+          await Promise.all([
+            supabase.from("products").select("id, stock"),
+            supabase.from("stocks").select("id, status"),
+            supabase.from("orders").select("id, status"),
+            supabase.from("records").select("price"),
+          ]);
+
+        const productsCount = prodRows?.length || 0;
+        const availableStock = (stockRows || []).filter(
+          (s) => (s.status || "").toLowerCase() === "available"
+        ).length;
+        const pendingOrders = (orderRows || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        ).length;
+        const totalRevenue = (recRows || []).reduce(
+          (sum, r) => sum + safeNumber(r.price),
+          0
+        );
+
+        document.getElementById("stat-products").textContent = productsCount;
+        document.getElementById("stat-stock").textContent = availableStock;
+        document.getElementById("stat-pending").textContent = pendingOrders;
+        document.getElementById("stat-revenue").textContent =
+          "₱" +
+          totalRevenue.toLocaleString("en-PH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+      } catch (err) {
+        console.error("[stats] error:", err);
+      }
+    }
+
+    // ========= PRODUCTS =========
+    async function loadProducts() {
+      const tbody = document.getElementById("products-table-body");
+      const selectStockProduct = document.getElementById("stock-product");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      if (selectStockProduct) {
+        selectStockProduct.innerHTML = '<option value="">Select product</option>';
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, category, icon, stock")
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.textContent = "No products found.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((p) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = p.id;
+          tr.appendChild(tdId);
+
+          const tdName = document.createElement("td");
+          tdName.textContent = p.name;
+          tr.appendChild(tdName);
+
+          const tdCat = document.createElement("td");
+          tdCat.textContent = p.category;
+          tr.appendChild(tdCat);
+
+          const tdIcon = document.createElement("td");
+          tdIcon.textContent = p.icon || "";
+          tr.appendChild(tdIcon);
+
+          const tdStock = document.createElement("td");
+          tdStock.textContent = p.stock ?? 0;
+          tr.appendChild(tdStock);
+
+          tbody.appendChild(tr);
+
+          if (selectStockProduct) {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = `${p.name} (${p.category})`;
+            selectStockProduct.appendChild(opt);
+          }
+        });
+      } catch (err) {
+        console.error("[products] error:", err);
+        showToast("Failed to load products.", "danger");
+      }
+    }
+
+    // ========= STOCKS =========
+    async function loadStocks() {
+      const tbody = document.getElementById("stocks-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const [{ data: stocks, error: errStocks }, { data: products, error: errProd }] =
+          await Promise.all([
+            supabase
+              .from("stocks")
+              .select("id, product_id, account_type, duration, email, status, premium_until"),
+            supabase.from("products").select("id, name"),
+          ]);
+
+        if (errStocks) throw errStocks;
+        if (errProd) throw errProd;
+
+        const prodMap = {};
+        (products || []).forEach((p) => (prodMap[p.id] = p.name));
+
+        if (!stocks || !stocks.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 7;
+          td.textContent = "No stocks yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        stocks.forEach((s) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = s.id;
+          tr.appendChild(tdId);
+
+          const tdProduct = document.createElement("td");
+          tdProduct.textContent = prodMap[s.product_id] || s.product_id || "-";
+          tr.appendChild(tdProduct);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = s.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDuration = document.createElement("td");
+          tdDuration.textContent = s.duration || "-";
+          tr.appendChild(tdDuration);
+
+          const tdEmail = document.createElement("td");
+          tdEmail.textContent = s.email || "-";
+          tr.appendChild(tdEmail);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = s.status || "-";
+          tr.appendChild(tdStatus);
+
+          const tdPrem = document.createElement("td");
+          tdPrem.textContent = s.premium_until || "-";
+          tr.appendChild(tdPrem);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[stocks] error:", err);
+        showToast("Failed to load stocks.", "danger");
+      }
+    }
+
+    async function saveStock() {
+      const product_id = document.getElementById("stock-product")?.value || "";
+      const account_type =
+        document.getElementById("stock-account-type")?.value.trim() || "";
+      const duration =
+        document.getElementById("stock-duration")?.value.trim() || "";
+      const email = document.getElementById("stock-email")?.value.trim() || "";
+      const password =
+        document.getElementById("stock-password")?.value.trim() || "";
+      const profile =
+        document.getElementById("stock-profile")?.value.trim() || "";
+      const pin = document.getElementById("stock-pin")?.value.trim() || "";
+      const archive_after = Number(
+        document.getElementById("stock-archive-after")?.value || 0
+      );
+      const premium_until =
+        document.getElementById("stock-premium-until")?.value || null;
+      const status = document.getElementById("stock-status")?.value || "available";
+
+      if (!product_id) {
+        showToast("Please select a product first.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("stocks").insert([
+          {
+            product_id,
+            account_type,
+            duration,
+            email,
+            password,
+            profile,
+            pin,
+            archive_after: Number.isFinite(archive_after) ? archive_after : 0,
+            premium_until: premium_until || null,
+            status,
+          },
+        ]);
+
+        if (error) throw error;
+
+        showToast("Stock saved!", "success");
+
+        ["stock-email", "stock-password", "stock-profile", "stock-pin"].forEach(
+          (id) => {
+            const input = document.getElementById(id);
+            if (input) input.value = "";
+          }
+        );
+
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveStock] error:", err);
+        showToast("Failed to save stock.", "danger");
+      }
+    }
+
+    // ========= ORDERS =========
+    async function loadPendingOrders() {
+      const tbody = document.getElementById("orders-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("id, buyer_id, product_id, account_type, duration, price, status")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const pending = (data || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        );
+
+        if (!pending.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 8;
+          td.textContent = "No pending orders.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        pending.forEach((o) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = o.id;
+          tr.appendChild(tdId);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = o.buyer_id ?? "-";
+          tr.appendChild(tdBuyer);
+
+          const tdProd = document.createElement("td");
+          tdProd.textContent = o.product_id;
+          tr.appendChild(tdProd);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = o.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDur = document.createElement("td");
+          tdDur.textContent = o.duration || "-";
+          tr.appendChild(tdDur);
+
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = o.status;
+          tr.appendChild(tdStatus);
+
+          const tdAction = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.className = "btn btn-sm btn-success";
+          btn.textContent = "Mark as Paid";
+          btn.addEventListener("click", () => markOrderPaid(o.id));
+          tdAction.appendChild(btn);
+          tr.appendChild(tdAction);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[orders] error:", err);
+        showToast("Failed to load orders.", "danger");
+      }
+    }
+
+    async function markOrderPaid(orderId) {
+      if (!confirm(`Mark order ${orderId} as PAID?`)) return;
+
+      try {
+        const { error } = await supabase
+          .from("orders")
+          .update({ status: "paid" })
+          .eq("id", orderId);
+
+        if (error) throw error;
+
+        showToast("Order marked as paid. Trigger will assign stock.", "success");
+
+        await loadPendingOrders();
+        await loadRecords();
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[markOrderPaid] error:", err);
+        showToast("Failed to update order.", "danger");
+      }
+    }
+
+    // ========= RECORDS =========
+    async function loadRecords() {
+      const tbody = document.getElementById("records-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("records")
+          .select(
+            "id, order_id, buyer, source, product_id, account_type, duration, purchase_date, price"
+          )
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 9;
+          td.textContent = "No records yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((r) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = r.id;
+          tr.appendChild(tdId);
+
+          const tdOrder = document.createElement("td");
+          tdOrder.textContent = r.order_id || "-";
+          tr.appendChild(tdOrder);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = r.buyer || "-";
+          tr.appendChild(tdBuyer);
+
+          const tdSource = document.createElement("td");
+          tdSource.textContent = r.source || "-";
+          tr.appendChild(tdSource);
+
+          const tdProd = document.createElement("td");
+          tdProd.textContent = r.product_id || "-";
+          tr.appendChild(tdProd);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = r.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDur = document.createElement("td");
+          tdDur.textContent = r.duration || "-";
+          tr.appendChild(tdDur);
+
+          const tdDate = document.createElement("td");
+          tdDate.textContent = r.purchase_date || "-";
+          tr.appendChild(tdDate);
+
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(r.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[records] error:", err);
+        showToast("Failed to load records.", "danger");
+      }
+    }
+
+    // ========= RULES =========
+    async function loadRules() {
+      const ul = document.getElementById("rules-list");
+      if (!ul) return;
+      ul.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("rules")
+          .select("id, rule_text, product_id")
+          .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const li = document.createElement("li");
+          li.textContent = "No rules found.";
+          ul.appendChild(li);
+          return;
+        }
+
+        data.forEach((r) => {
+          const li = document.createElement("li");
+          li.textContent = r.product_id
+            ? `[${r.product_id}] ${r.rule_text}`
+            : r.rule_text;
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        console.error("[rules] error:", err);
+        showToast("Failed to load rules.", "danger");
+      }
+    }
+
+    // ========= REPORTS =========
+    async function loadReports() {
+      const tbody = document.getElementById("reports-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("reports")
+          .select("id, order_id, buyer_id, issue_description, status, created_at")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent = "No reports yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((rep) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = rep.id;
+          tr.appendChild(tdId);
+
+          const tdOrder = document.createElement("td");
+          tdOrder.textContent = rep.order_id || "-";
+          tr.appendChild(tdOrder);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = rep.buyer_id ?? "-";
+          tr.appendChild(tdBuyer);
+
+          const tdIssue = document.createElement("td");
+          tdIssue.textContent = rep.issue_description || "-";
+          tr.appendChild(tdIssue);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = rep.status || "-";
+          tr.appendChild(tdStatus);
+
+          const tdCreated = document.createElement("td");
+          tdCreated.textContent = rep.created_at || "-";
+          tr.appendChild(tdCreated);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[reports] error:", err);
+        showToast("Failed to load reports.", "danger");
+      }
+    }
+
+    // ========= TABS =========
+    function initTabs() {
+      const buttons = document.querySelectorAll(".sidebar button");
+      const panels = document.querySelectorAll(".panel-admin");
       if (!buttons.length || !panels.length) return;
 
-      buttons.forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var targetId = btn.getAttribute("data-target");
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-target");
           if (!targetId) return;
 
-          buttons.forEach(function (b) {
-            b.classList.remove("active");
-          });
+          buttons.forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
 
-          panels.forEach(function (p) {
-            if (p.id === targetId) {
-              p.classList.add("active");
-            } else {
-              p.classList.remove("active");
-            }
+          panels.forEach((p) => {
+            if (p.id === targetId) p.classList.add("active");
+            else p.classList.remove("active");
           });
         });
       });
+    }
+
+    // ========= INIT =========
+    document.addEventListener("DOMContentLoaded", () => {
+      initTabs();
+
+      const btnSaveStock = document.getElementById("btn-save-stock");
+      if (btnSaveStock) {
+        btnSaveStock.addEventListener("click", saveStock);
+      }
+
+      // Initial loads
+      refreshStats();
+      loadProducts();
+      loadStocks();
+      loadPendingOrders();
+      loadRecords();
+      loadRules();
+      loadReports();
     });
   </script>
-
-  <!-- Main Admin App (ES module) -->
-  <!-- IMPORTANT: path na ito ay from ROOT. So dapat may folder na /admin/js/admin.js sa repo mo -->
-  <script type="module" src="./admin/js/admin.js"></script>
 </body>
 </html>
