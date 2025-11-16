@@ -253,7 +253,9 @@
           </div>
         </div>
 
-        <div id="productsContainer" class="row"></div>
+        <div id="productsContainer" class="row">
+          <!-- product cards -->
+        </div>
       </div>
 
       <!-- RULES -->
@@ -572,8 +574,10 @@
     // ======================
     // STATIC PRODUCT LIST
     // ======================
-    const PRODUCTS_DATA = [/* full PRODUCTS_DATA same as before – kept exactly as in your code */];
-    // (Para di super haba dito, retain mo yung existing PRODUCTS_DATA block mo; compatible yun sa rest ng code.)
+    const PRODUCTS_DATA = [/* — SAME PRODUCTS_DATA AS SA LATEST CODE MO — */];
+
+    // (Para di humaba sobra dito sa chat, gamitin mo yung exact PRODUCTS_DATA
+    // na nasa last message mo — pwede mo lang ipaste sa lugar na ito.)
 
     // ======================
     // UTILITIES
@@ -650,7 +654,7 @@
     async function saveOrderToSupabase(order) {
       const { data, error } = await supabase
         .from('orders')
-        .insert([order])
+        .insert(order)
         .select();
 
       if (error) {
@@ -664,7 +668,7 @@
     async function sendTelegramNotification(order) {
       const message = `
 🛒 NEW ORDER RECEIVED!
-Order ID: ${order.id}
+Order ID: ${order.id || '(auto)'}
 Buyer: ${order.buyer_email}
 Product: ${order.product_name}
 Account Type: ${order.account_type}
@@ -900,11 +904,6 @@ Payment Method: ${order.payment_method}
     // RULES & FEEDBACK (STATIC)
     // ======================
     function loadRules() {
-      const rules = [
-        { id: 1, rule_text: 'All accounts are guaranteed for the duration purchased.' },
-        { id: 2, rule_text: 'Refunds only if the account does not work within 24 hours.' },
-        { id: 3, rule_text: 'Sharing account details with others may result in suspension.' }
-      ];
       const container = document.getElementById('rulesContainer');
       container.innerHTML = `
         <div class="card">
@@ -913,7 +912,9 @@ Payment Method: ${order.payment_method}
           </div>
           <div class="card-body">
             <ul class="list-group list-group-flush">
-              ${rules.map(r => `<li class="list-group-item">${r.rule_text}</li>`).join('')}
+              <li class="list-group-item">All accounts are guaranteed for the duration purchased.</li>
+              <li class="list-group-item">Refunds only if the account does not work within 24 hours.</li>
+              <li class="list-group-item">Sharing account details with others may result in suspension.</li>
             </ul>
           </div>
         </div>
@@ -970,7 +971,7 @@ Payment Method: ${order.payment_method}
       try {
         const { data: orderRows, error } = await supabase
           .from('orders')
-          .select('id, order_code, product_id, product_name, account_type, duration, price, status, created_at')
+          .select('id, product_id, product_name, account_type, duration, price, status, created_at, buyer_email')
           .eq('buyer_email', currentUser.email.toLowerCase())
           .order('created_at', { ascending: false });
 
@@ -986,7 +987,7 @@ Payment Method: ${order.payment_method}
         }
 
         const orders = orderRows.map(o => ({
-          id: o.order_code || o.id,
+          id: o.id,
           product_name: o.product_name || o.product_id,
           account_type: o.account_type,
           duration: o.duration,
@@ -1046,7 +1047,7 @@ Payment Method: ${order.payment_method}
     }
 
     // ======================
-    // LOAD DELIVERED ACCOUNTS (FROM records)
+    // LOAD DELIVERED ACCOUNTS (records)
     // ======================
     async function loadDeliveredAccounts() {
       if (!currentUser) return;
@@ -1220,8 +1221,6 @@ Payment Method: ${order.payment_method}
       }
 
       try {
-        const orderCode = generateOrderId();
-
         const order = {
           buyer_email: currentUser.email.toLowerCase(),
           product_id: currentOrderDetails.productId,
@@ -1233,8 +1232,7 @@ Payment Method: ${order.payment_method}
           reference_number: referenceNumber || null,
           invite_email: currentOrderDetails.inviteEmail,
           status: 'pending',
-          created_at: new Date().toISOString(),
-          order_code: orderCode
+          created_at: new Date().toISOString()
         };
 
         const saved = await saveOrderToSupabase(order);
@@ -1248,10 +1246,7 @@ Payment Method: ${order.payment_method}
         });
 
         bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-        showToast(
-          `Order submitted successfully! Your order ID is ${newOrder.order_code || newOrder.id}`,
-          'success'
-        );
+        showToast(`Order submitted successfully! Your order ID is ${newOrder.id}`, 'success');
 
         document.getElementById('checkoutForm').reset();
         await loadUserOrders();
@@ -1269,10 +1264,12 @@ Payment Method: ${order.payment_method}
         link.addEventListener('click', e => {
           const section = link.getAttribute('data-section');
           if (!section) return;
-          if (section === 'profile' || section === 'rules' || section === 'feedback' || section === 'report' || section === 'home') {
-            e.preventDefault();
-            showSection(section);
-          }
+          e.preventDefault();
+          if (section === 'profile') showSection('profile');
+          else if (section === 'rules') showSection('rules');
+          else if (section === 'feedback') showSection('feedback');
+          else if (section === 'report') showSection('report');
+          else if (section === 'home') showSection('home');
         });
       });
 
