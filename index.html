@@ -1605,6 +1605,327 @@ Payment Method: ${order.payment_method}
       initializeApp();
       setupEventListeners();
     });
+
+
+    // =========================
+// SUPABASE HELPERS (REAL)
+// =========================
+
+// Save new buyer (used on SIGNUP only)
+async function saveBuyerToSupabase(buyer) {
+  try {
+    const { data, error } = await supabase
+      .from('buyers')
+      .insert({
+        id: buyer.id,        // email as ID
+        name: buyer.name,
+        email: buyer.email
+      });
+
+    if (error) {
+      console.error('Error saving buyer:', error);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('saveBuyerToSupabase error:', err);
+    return null;
+  }
+}
+
+// Save order (used on CHECKOUT)
+async function saveOrderToSupabase(order) {
+  const { data, error } = await supabase.from('orders').insert(order);
+  if (error) {
+    console.error('Error saving order:', error);
+    throw error;
+  }
+  return data;
+}
+
+// Load products from Supabase (optional, pwede mo nang burahin yung lumang version)
+async function loadProductsFromSupabase() {
+  const { data, error } = await supabase.from('products').select('*');
+  if (error) {
+    console.error('Error loading products:', error);
+    showToast('Error loading products from database', 'error');
+    return PRODUCTS_DATA; // fallback
+  }
+  return data;
+}
+
+// Override loadProducts to use Supabase first, then fallback to local PRODUCTS_DATA
+async function loadProducts() {
+  try {
+    const supabaseProducts = await loadProductsFromSupabase();
+    if (supabaseProducts && supabaseProducts.length > 0) {
+      // NOTE: supabaseProducts structure dapat naka-match sa displayProducts needs
+      displayProducts(supabaseProducts);
+    } else {
+      displayProducts(PRODUCTS_DATA);
+    }
+  } catch (error) {
+    console.error('Error loading products:', error);
+    showToast('Error loading products', 'error');
+    displayProducts(PRODUCTS_DATA);
+  }
+}
+
+// =========================
+// LOAD USER ORDERS (REAL DATA)
+// =========================
+async function loadUserOrders() {
+  if (!currentUser) return;
+
+  try {
+    const { data: orderRows, error } = await supabase
+      .from('orders')
+      .select('id, product_id, account_type, duration, price, status, created_at')
+      .eq('buyer_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading user orders:', error);
+      showToast('Error loading your orders', 'error');
+      return;
+    }
+
+    if (!orderRows || !orderRows.length) {
+      // clear lists
+      displayUserOrders([]);
+      return;
+    }
+
+    // Load product names for mapping
+    const { data: productRows, error: prodErr } = await supabase
+      .from('products')
+      .select('id, name');
+
+    const prodMap = {};
+    if (!prodErr && Array.isArray(productRows)) {
+      productRows.forEach((p) => {
+        prodMap[p.id] = p.name;
+      });
+    }
+
+    const orders = orderRows.map((o) => ({
+      id: o.id,
+      product_name: prodMap[o.product_id] || o.product_id,
+      account_type: o.account_type,
+      duration: o.duration,
+      price: o.price,
+      status: (o.status || 'pending').toLowerCase(),
+      created_at: o.created_at
+    }));
+
+    displayUserOrders(orders);
+  } catch (err) {
+    console.error('loadUserOrders error:', err);
+    showToast('Error loading your orders', 'error');
+  }
+}
+
+// =========================
+// LOAD DELIVERED ACCOUNTS (FROM records TABLE)
+// =========================
+async function loadDeliveredAccounts() {
+  if (!currentUser) return;
+
+  const container = document.getElementById('deliveredAccountsList');
+  if (!container) return;
+
+  container.innerHTML = '<p class="text-muted">Loading delivered accounts...</p>';
+
+  try {
+    const { data, error } = await supabase
+      .from('records')
+      .select(
+        'id, order_id, product_name, account_type, duration, price, purchase_date, email, password, profile, pin'
+      )
+      .eq('buyer_id', currentUser.id)
+      .order('purchase_date', { ascending: false });
+
+    if (error) {
+      console.error('Error loading delivered accounts:', error);
+      showToast('Error loading delivered accounts', 'error');
+      container.innerHTML = '<p class="text-muted">Failed to load delivered accounts.</p>';
+      return;
+    }
+
+    if (!data || !data.length) {
+      container.innerHTML = '<p class="text-muted">No delivered accounts yet.</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+    data.forEach((rec) => {
+      const card = document.createElement('div');
+      card.className = 'card mb-3';
+      card.innerHTML = `
+        <div class="card-body">
+          <h6 class="mb-1">${rec.product_name || 'Delivered Account'}</h6>
+          <p class="mb-1 small">Order ID: ${rec.order_id || rec.id}</p>
+          <p class="mb-1 small">Account Type: ${rec.account_type || '-'} • Duration: ${rec.duration || '-'}</p>
+          <p class="mb-1 small">Account Email: <strong>${rec.email || '-'}</strong></p>
+          <p class="mb-1 small">Password: <strong>${rec.password || '-'}</strong></p>
+          ${rec.profile ? `<p class="mb-1 small">Profile: <strong>${rec.profile}</strong></p>` : ''}
+          ${rec.pin ? `<p class="mb-1 small">PIN: <strong>${rec.pin}</strong></p>` : ''}
+          <p class="mb-1 small">Purchase Date: ${
+            rec.purchase_date ? formatDate(rec.purchase_date) : '-'
+          }</p>
+          <p class="mb-0 fw-bold">₱${rec.price ?? 0}</p>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('loadDeliveredAccounts error:', err);
+    showToast('Error loading delivered accounts', 'error');
+  }
+}
+
+// =========================
+// LOGIN / SIGNUP (EMAIL AS ID)
+// =========================
+async function handleLogin() {
+  const emailInput = document.getElementById('loginEmail');
+  const passwordInput = document.getElementById('loginPassword');
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value; // hindi muna ginagamit
+
+  if (!email) {
+    showToast('Please enter your email', 'warning');
+    return;
+  }
+
+  try {
+    const normalizedEmail = email.toLowerCase();
+    const name = normalizedEmail.split('@')[0];
+
+    const user = {
+      id: normalizedEmail, // IMPORTANT: ito yung buyer_id
+      name: name,
+      email: normalizedEmail
+    };
+
+    currentUser = user;
+    localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+
+    showUserProfile();
+    await loadUserOrders();
+    await loadDeliveredAccounts();
+
+    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+    showToast('Login successful!', 'success');
+  } catch (err) {
+    console.error('Login error:', err);
+    showToast('Login failed. Please try again.', 'error');
+  }
+}
+
+async function handleSignup() {
+  const nameInput = document.getElementById('signupName');
+  const emailInput = document.getElementById('signupEmail');
+  const passwordInput = document.getElementById('signupPassword');
+  const confirmInput = document.getElementById('confirmPassword');
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  const confirmPassword = confirmInput.value;
+
+  if (!name || !email) {
+    showToast('Please fill in name and email', 'warning');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast('Passwords do not match', 'error');
+    return;
+  }
+
+  try {
+    const normalizedEmail = email.toLowerCase();
+
+    const user = {
+      id: normalizedEmail, // email as ID
+      name: name,
+      email: normalizedEmail
+    };
+
+    // Save buyer in Supabase (buyers table)
+    await saveBuyerToSupabase(user);
+
+    currentUser = user;
+    localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+
+    showUserProfile();
+    await loadUserOrders();
+    await loadDeliveredAccounts();
+
+    bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+    showToast('Account created successfully!', 'success');
+  } catch (err) {
+    console.error('Signup error:', err);
+    showToast('Signup failed. Please try again.', 'error');
+  }
+}
+
+// =========================
+// CHECKOUT (SAVE REAL ORDER)
+// =========================
+async function handleCheckout() {
+  if (!currentUser) {
+    showToast('Please login first', 'warning');
+    return;
+  }
+
+  const paymentMethod = document.getElementById('paymentMethod').value;
+  const referenceNumber = document.getElementById('referenceNumber').value;
+  const proofImage = document.getElementById('proofImage').files[0]; // currently not uploaded
+
+  if (!paymentMethod) {
+    showToast('Please select a payment method', 'warning');
+    return;
+  }
+
+  if (!currentOrderDetails) {
+    showToast('No product selected', 'error');
+    return;
+  }
+
+  try {
+    const orderId = generateOrderId();
+
+    const order = {
+      id: orderId,
+      buyer_id: currentUser.id, // email
+      product_id: currentOrderDetails.productId,
+      account_type: currentOrderDetails.accountType,
+      duration: currentOrderDetails.duration,
+      price: currentOrderDetails.price,
+      payment_method: paymentMethod,
+      reference_number: referenceNumber || null,
+      invite_email: currentOrderDetails.inviteEmail,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+
+    await saveOrderToSupabase(order);
+    await sendTelegramNotification(order);
+
+    bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+    showToast(`Order submitted successfully! Your order ID is ${orderId}`, 'success');
+
+    document.getElementById('checkoutForm').reset();
+
+    await loadUserOrders();
+  } catch (err) {
+    console.error('Checkout error:', err);
+    showToast('Error submitting order', 'error');
+  }
+}
   </script>
 </body>
 </html>
