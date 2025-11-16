@@ -1556,63 +1556,78 @@ Payment Method: ${order.payment_method}
     // ======================
     // AUTH
     // ======================
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value; // not used yet
+    
+      async function handleSignup(e) {
+  e.preventDefault();
 
-      if (!email) {
-        showToast('Please enter email', 'warning');
-        return;
-      }
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
 
-      const normalized = email.toLowerCase();
-      const user = {
-        id: normalized,
-        name: normalized.split('@')[0],
-        email: normalized
-      };
+  if (!name || !email) {
+    showToast('Please fill in name and email', 'warning');
+    return;
+  }
+  if (password !== confirmPassword) {
+    showToast('Passwords do not match', 'error');
+    return;
+  }
 
-      currentUser = user;
-      localStorage.setItem('aiaxcart_user', JSON.stringify(user));
-      showUserProfile();
+  const normalizedEmail = email.toLowerCase();
 
-      bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-      showToast('Login successful!', 'success');
-    }
+  const user = {
+    // kung email as id (TEXT): id: normalizedEmail,
+    // kung UUID sa DB, wag nang mag-id dito:
+    name: name,
+    email: normalizedEmail
+  };
 
-    async function handleSignup(e) {
-      e.preventDefault();
-      const name = document.getElementById('signupName').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
+  // Save sa Supabase
+  await saveBuyerToSupabase(user);
 
-      if (!name || !email) {
-        showToast('Please fill in name and email', 'warning');
-        return;
-      }
-      if (password !== confirmPassword) {
-        showToast('Passwords do not match', 'error');
-        return;
-      }
+  currentUser = user;
+  localStorage.setItem('aiaxcart_user', JSON.stringify(user));
 
-      const normalized = email.toLowerCase();
-      const user = {
-        id: normalized,
-        name,
-        email: normalized
-      };
+  showUserProfile();
+  await loadUserOrders();
+  await loadDeliveredAccounts();
 
-      await saveBuyerToSupabase(user);
+  bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+  showToast('Account created successfully!', 'success');
+}
 
-      currentUser = user;
-      localStorage.setItem('aiaxcart_user', JSON.stringify(user));
-      showUserProfile();
+async function handleLogin(e) {
+  e.preventDefault();
 
-      bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
-      showToast('Account created!', 'success');
-    }
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value; // di pa natin ginagamit
+
+  if (!email) {
+    showToast('Please enter your email', 'warning');
+    return;
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  const name = normalizedEmail.split('@')[0];
+
+  const user = {
+    // kung email as id (TEXT sa buyers):
+    // id: normalizedEmail,
+    name: name,
+    email: normalizedEmail
+  };
+
+  currentUser = user;
+  localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+
+  showUserProfile();
+  await loadUserOrders();
+  await loadDeliveredAccounts();
+
+  bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+  showToast('Login successful!', 'success');
+}
 
     function handleLogout(e) {
       e.preventDefault();
