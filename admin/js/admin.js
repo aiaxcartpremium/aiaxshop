@@ -28,8 +28,9 @@ async function refreshTopStats() {
       : 0;
 
     const pendingOrders = Array.isArray(orderRows)
-      ? orderRows.filter((o) => (o.status || "").toLowerCase() === "pending")
-          .length
+      ? orderRows.filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        ).length
       : 0;
 
     const totalRevenue = Array.isArray(recordRows)
