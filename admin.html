@@ -323,13 +323,17 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Account Type</label>
-                <input id="stock-account-type" class="form-control" placeholder="solo account, shared account, etc.">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Duration</label>
-                <input id="stock-duration" class="form-control" placeholder="1m, 3m, 7d, etc.">
-              </div>
+  <label class="form-label">Account Type</label>
+  <select id="stock-account-type" class="form-select">
+    <option value="">Select account type</option>
+  </select>
+</div>
+<div class="col-md-4">
+  <label class="form-label">Duration</label>
+  <select id="stock-duration" class="form-select">
+    <option value="">Select duration</option>
+  </select>
+</div>
 
               <div class="col-md-3">
                 <label class="form-label">Account Email</label>
@@ -398,30 +402,32 @@
         </div>
 
         <!-- Pending Orders -->
-        <div id="panel-pending-orders" class="panel-admin">
-          <div class="card-clean">
-            <h3 class="mb-3">Pending Orders</h3>
-            <div class="table-responsive">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Buyer ID</th>
-                    <th>Product</th>
-                    <th>Type</th>
-                    <th>Duration</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="orders-table-body">
-                  <!-- JS will insert rows -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+<div id="panel-pending-orders" class="panel-admin">
+  <div class="card-clean">
+    <h3 class="mb-3">Pending Orders</h3>
+    <div class="table-responsive">
+      <table class="records-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Buyer</th>
+            <th>Product</th>
+            <th>Type</th>
+            <th>Duration</th>
+            <th>Price</th>
+            <th>Payment</th>
+            <th>Ref No.</th>
+            <th>Proof</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
         <!-- Records -->
         <div id="panel-records" class="panel-admin">
@@ -578,72 +584,83 @@
     }
 
     // ========= PRODUCTS =========
-    async function loadProducts() {
-      const tbody = document.getElementById("products-table-body");
-      const selectStockProduct = document.getElementById("stock-product");
-      if (!tbody) return;
+     
+          // ========= PRODUCTS =========
+async function loadProducts() {
+  const tbody = document.getElementById("products-table-body");
+  const selectStockProduct = document.getElementById("stock-product");
+  if (!tbody) return;
 
-      tbody.innerHTML = "";
-      if (selectStockProduct) {
-        selectStockProduct.innerHTML = '<option value="">Select product</option>';
-      }
+  tbody.innerHTML = "";
+  if (selectStockProduct) {
+    selectStockProduct.innerHTML = '<option value="">Select product</option>';
+  }
 
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("id, name, category, icon, stock")
-          .order("name", { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, name, category, icon, stock")
+      .order("name", { ascending: true });
 
-        if (error) throw error;
+    if (error) throw error;
 
-        if (!data || !data.length) {
-          const tr = document.createElement("tr");
-          const td = document.createElement("td");
-          td.colSpan = 5;
-          td.textContent = "No products found.";
-          tr.appendChild(td);
-          tbody.appendChild(tr);
-          return;
-        }
-
-        data.forEach((p) => {
-          const tr = document.createElement("tr");
-
-          const tdId = document.createElement("td");
-          tdId.textContent = p.id;
-          tr.appendChild(tdId);
-
-          const tdName = document.createElement("td");
-          tdName.textContent = p.name;
-          tr.appendChild(tdName);
-
-          const tdCat = document.createElement("td");
-          tdCat.textContent = p.category;
-          tr.appendChild(tdCat);
-
-          const tdIcon = document.createElement("td");
-          tdIcon.textContent = p.icon || "";
-          tr.appendChild(tdIcon);
-
-          const tdStock = document.createElement("td");
-          tdStock.textContent = p.stock ?? 0;
-          tr.appendChild(tdStock);
-
-          tbody.appendChild(tr);
-
-          if (selectStockProduct) {
-            const opt = document.createElement("option");
-            opt.value = p.id;
-            opt.textContent = `${p.name} (${p.category})`;
-            selectStockProduct.appendChild(opt);
-          }
-        });
-      } catch (err) {
-        console.error("[products] error:", err);
-        showToast("Failed to load products.", "danger");
-      }
+    if (!data || !data.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.textContent = "No products found.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
     }
 
+    data.forEach((p) => {
+      const tr = document.createElement("tr");
+
+      const tdId = document.createElement("td");
+      tdId.textContent = p.id;
+      tr.appendChild(tdId);
+
+      const tdName = document.createElement("td");
+      tdName.textContent = p.name;
+      tr.appendChild(tdName);
+
+      const tdCat = document.createElement("td");
+      tdCat.textContent = p.category;
+      tr.appendChild(tdCat);
+
+      const tdIcon = document.createElement("td");
+      tdIcon.textContent = p.icon || "";
+      tr.appendChild(tdIcon);
+
+      const tdStock = document.createElement("td");
+      tdStock.textContent = p.stock ?? 0;
+      tr.appendChild(tdStock);
+
+      tbody.appendChild(tr);
+
+      // Add to dropdown
+      if (selectStockProduct) {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.category})`;
+        selectStockProduct.appendChild(opt);
+      }
+    });
+
+    // ⭐⭐ IMPORTANT: ADD THIS EVENT LISTENER ⭐⭐
+    if (selectStockProduct) {
+      selectStockProduct.addEventListener("change", (e) => {
+        const pid = e.target.value;
+        loadAccountTypeOptions(pid);   // ← CALL THIS WHEN PRODUCT CHANGES
+      });
+    }
+
+  } catch (err) {
+    console.error("[products] error:", err);
+    showToast("Failed to load products.", "danger");
+  }
+}
     // ========= STOCKS =========
     async function loadStocks() {
       const tbody = document.getElementById("stocks-table-body");
@@ -713,172 +730,266 @@
         showToast("Failed to load stocks.", "danger");
       }
     }
+// ========= STOCK FORM DROPDOWNS (FROM product_prices) =========
+async function loadAccountTypeOptions(productId) {
+  const selType = document.getElementById("stock-account-type");
+  const selDur = document.getElementById("stock-duration");
+  if (!selType || !selDur) return;
 
-    async function saveStock() {
-      const product_id = document.getElementById("stock-product")?.value || "";
-      const account_type =
-        document.getElementById("stock-account-type")?.value.trim() || "";
-      const duration =
-        document.getElementById("stock-duration")?.value.trim() || "";
-      const email = document.getElementById("stock-email")?.value.trim() || "";
-      const password =
-        document.getElementById("stock-password")?.value.trim() || "";
-      const profile =
-        document.getElementById("stock-profile")?.value.trim() || "";
-      const pin = document.getElementById("stock-pin")?.value.trim() || "";
-      const archive_after = Number(
-        document.getElementById("stock-archive-after")?.value || 0
-      );
-      const premium_until =
-        document.getElementById("stock-premium-until")?.value || null;
-      const status = document.getElementById("stock-status")?.value || "available";
+  selType.innerHTML = '<option value="">Select account type</option>';
+  selDur.innerHTML = '<option value="">Select duration</option>';
 
-      if (!product_id) {
-        showToast("Please select a product first.", "warning");
-        return;
-      }
+  if (!productId) return;
 
-      try {
-        const { error } = await supabase.from("stocks").insert([
-          {
-            product_id,
-            account_type,
-            duration,
-            email,
-            password,
-            profile,
-            pin,
-            archive_after: Number.isFinite(archive_after) ? archive_after : 0,
-            premium_until: premium_until || null,
-            status,
-          },
-        ]);
+  try {
+    const { data, error } = await supabase
+      .from("product_prices")
+      .select("account_type, duration")
+      .eq("product_id", productId);
 
-        if (error) throw error;
+    if (error) throw error;
 
-        showToast("Stock saved!", "success");
-
-        ["stock-email", "stock-password", "stock-profile", "stock-pin"].forEach(
-          (id) => {
-            const input = document.getElementById(id);
-            if (input) input.value = "";
-          }
-        );
-
-        await loadStocks();
-        await refreshStats();
-      } catch (err) {
-        console.error("[saveStock] error:", err);
-        showToast("Failed to save stock.", "danger");
-      }
+    if (!data || !data.length) {
+      return;
     }
+
+    // unique account types
+    const typesSet = new Set();
+    data.forEach((row) => {
+      if (row.account_type) typesSet.add(row.account_type);
+    });
+
+    typesSet.forEach((t) => {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      selType.appendChild(opt);
+    });
+
+    // when type changes, update durations
+    selType.onchange = () => {
+      const chosenType = selType.value;
+      selDur.innerHTML = '<option value="">Select duration</option>';
+      if (!chosenType) return;
+
+      const dursSet = new Set();
+      data
+        .filter((row) => row.account_type === chosenType)
+        .forEach((row) => {
+          if (row.duration) dursSet.add(row.duration);
+        });
+
+      dursSet.forEach((d) => {
+        const opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = d;
+        selDur.appendChild(opt);
+      });
+    };
+  } catch (err) {
+    console.error("[loadAccountTypeOptions] error:", err);
+    showToast("Failed to load account types/durations for product.", "danger");
+  }
+}
+    async function saveStock() {
+  const product_id = document.getElementById("stock-product")?.value || "";
+  const account_type =
+    document.getElementById("stock-account-type")?.value.trim() || "";
+  const duration =
+    document.getElementById("stock-duration")?.value.trim() || "";
+  const email = document.getElementById("stock-email")?.value.trim() || "";
+  const password =
+    document.getElementById("stock-password")?.value.trim() || "";
+  const profile =
+    document.getElementById("stock-profile")?.value.trim() || "";
+  const pin = document.getElementById("stock-pin")?.value.trim() || "";
+  const status = document.getElementById("stock-status")?.value || "available";
+
+  if (!product_id) {
+    showToast("Please select a product first.", "warning");
+    return;
+  }
+  if (!account_type || !duration) {
+    showToast("Select account type and duration.", "warning");
+    return;
+  }
+
+  // payload: limit lang sa pinaka-common columns para iwas error
+  const payload = {
+    product_id,
+    account_type,
+    duration,
+    email,
+    password,
+    profile,
+    pin,
+    status,
+  };
+
+  try {
+    const { error } = await supabase.from("stocks").insert([payload]);
+
+    if (error) throw error;
+
+    showToast("Stock saved!", "success");
+
+    ["stock-email", "stock-password", "stock-profile", "stock-pin"].forEach(
+      (id) => {
+        const input = document.getElementById(id);
+        if (input) input.value = "";
+      }
+    );
+
+    await loadStocks();
+    await refreshStats();
+  } catch (err) {
+    console.error("[saveStock] error:", err);
+    showToast("Failed to save stock. Check columns in stocks table.", "danger");
+  }
+}
 
     // ========= ORDERS =========
     async function loadPendingOrders() {
-      const tbody = document.getElementById("orders-table-body");
-      if (!tbody) return;
-      tbody.innerHTML = "";
+  const tbody = document.getElementById("orders-table-body");
+  if (!tbody) return;
+  tbody.innerHTML = "";
 
-      try {
-        // IMPORTANT: use * so it works with both old + new schema
-        const { data, error } = await supabase
-          .from("orders")
-          .select("*")
-          .order("created_at", { ascending: false });
+  try {
+    // gumamit tayo ng * para mabasa lahat ng columns (buyer_email, payment_method, ref, proof, etc.)
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-        if (error) throw error;
+    if (error) throw error;
 
-        const pending = (data || []).filter(
-          (o) => (o.status || "").toLowerCase() === "pending"
-        );
+    const pending = (data || []).filter(
+      (o) => (o.status || "").toLowerCase() === "pending"
+    );
 
-        if (!pending.length) {
-          const tr = document.createElement("tr");
-          const td = document.createElement("td");
-          td.colSpan = 8;
-          td.textContent = "No pending orders.";
-          tr.appendChild(td);
-          tbody.appendChild(tr);
-          return;
-        }
-
-        pending.forEach((o) => {
-          const tr = document.createElement("tr");
-
-          // Order ID
-          const tdId = document.createElement("td");
-          tdId.textContent = o.id ?? "-";
-          tr.appendChild(tdId);
-
-          // Buyer (id or email)
-          const tdBuyer = document.createElement("td");
-          tdBuyer.textContent = o.buyer_id ?? o.buyer_email ?? "-";
-          tr.appendChild(tdBuyer);
-
-          // Product (name if available, else product_id)
-          const tdProd = document.createElement("td");
-          tdProd.textContent = o.product_name ?? o.product_id ?? "-";
-          tr.appendChild(tdProd);
-
-          // Account type
-          const tdType = document.createElement("td");
-          tdType.textContent = o.account_type || "-";
-          tr.appendChild(tdType);
-
-          // Duration
-          const tdDur = document.createElement("td");
-          tdDur.textContent = o.duration || "-";
-          tr.appendChild(tdDur);
-
-          // Price
-          const tdPrice = document.createElement("td");
-          tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
-          tr.appendChild(tdPrice);
-
-          // Status
-          const tdStatus = document.createElement("td");
-          tdStatus.textContent = o.status || "-";
-          tr.appendChild(tdStatus);
-
-          // Action
-          const tdAction = document.createElement("td");
-          const btn = document.createElement("button");
-          btn.className = "btn btn-sm btn-success";
-          btn.textContent = "Mark as Paid";
-          btn.addEventListener("click", () => markOrderPaid(o.id));
-          tdAction.appendChild(btn);
-          tr.appendChild(tdAction);
-
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error("[orders] error:", err);
-        showToast("Failed to load orders.", "danger");
-      }
+    if (!pending.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 11;
+      td.textContent = "No pending orders.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
     }
+
+    pending.forEach((o) => {
+      const tr = document.createElement("tr");
+
+      // Order ID
+      const tdId = document.createElement("td");
+      tdId.textContent = o.id ?? "-";
+      tr.appendChild(tdId);
+
+      // Buyer (id or email)
+      const tdBuyer = document.createElement("td");
+      tdBuyer.textContent = o.buyer_id ?? o.buyer_email ?? "-";
+      tr.appendChild(tdBuyer);
+
+      // Product
+      const tdProd = document.createElement("td");
+      tdProd.textContent = o.product_name ?? o.product_id ?? "-";
+      tr.appendChild(tdProd);
+
+      // Account type
+      const tdType = document.createElement("td");
+      tdType.textContent = o.account_type || "-";
+      tr.appendChild(tdType);
+
+      // Duration
+      const tdDur = document.createElement("td");
+      tdDur.textContent = o.duration || "-";
+      tr.appendChild(tdDur);
+
+      // Price
+      const tdPrice = document.createElement("td");
+      tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
+      tr.appendChild(tdPrice);
+
+      // Payment method (gcash / maya / etc.)
+      const tdPay = document.createElement("td");
+      tdPay.textContent = o.payment_method || o.payment || "-";
+      tr.appendChild(tdPay);
+
+      // Reference number (gagamit ng kahit anong field na meron sa table mo)
+      const tdRef = document.createElement("td");
+      tdRef.textContent =
+        o.reference_number ??
+        o.payment_reference ??
+        o.reference ??
+        "-";
+      tr.appendChild(tdRef);
+
+      // Proof of payment (link / image)
+      const tdProof = document.createElement("td");
+      const proofUrl =
+        o.proof_image_url ??
+        o.payment_proof_url ??
+        o.proof_url ??
+        null;
+
+      if (proofUrl) {
+        const link = document.createElement("a");
+        link.href = proofUrl;
+        link.target = "_blank";
+        link.textContent = "View";
+        tdProof.appendChild(link);
+      } else {
+        tdProof.textContent = "-";
+      }
+      tr.appendChild(tdProof);
+
+      // Status
+      const tdStatus = document.createElement("td");
+      tdStatus.textContent = o.status || "-";
+      tr.appendChild(tdStatus);
+
+      // Action
+      const tdAction = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.className = "btn btn-sm btn-success";
+      btn.textContent = "Confirm payment";
+      btn.addEventListener("click", () => markOrderPaid(o.id));
+      tdAction.appendChild(btn);
+      tr.appendChild(tdAction);
+
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("[orders] error:", err);
+    showToast("Failed to load orders.", "danger");
+  }
+}
 
     async function markOrderPaid(orderId) {
-      if (!confirm(`Mark order ${orderId} as PAID?`)) return;
+  if (!confirm(`Confirm payment for order ${orderId}?`)) return;
 
-      try {
-        const { error } = await supabase
-          .from("orders")
-          .update({ status: "paid" })
-          .eq("id", orderId);
+  try {
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        status: "confirmed",          // IMPORTANT: ito na yung kailangan ng trigger mo
+        confirmed_at: new Date().toISOString() // ok lang kahit wala yung column, kung wala man, i-ignore ng supabase-js
+      })
+      .eq("id", orderId);
 
-        if (error) throw error;
+    if (error) throw error;
 
-        showToast("Order marked as paid. Trigger will assign stock.", "success");
+    showToast("Payment confirmed. Account will be assigned automatically.", "success");
 
-        await loadPendingOrders();
-        await loadRecords();
-        await loadStocks();
-        await refreshStats();
-      } catch (err) {
-        console.error("[markOrderPaid] error:", err);
-        showToast("Failed to update order.", "danger");
-      }
-    }
+    await loadPendingOrders();
+    await loadRecords();
+    await loadStocks();
+    await refreshStats();
+  } catch (err) {
+    console.error("[markOrderPaid] error:", err);
+    showToast("Failed to update order.", "danger");
+  }
+}
 
     // ========= RECORDS =========
     async function loadRecords() {
