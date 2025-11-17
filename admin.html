@@ -210,13 +210,12 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="tblPending">
-              </tbody>
+              <tbody id="tblPending"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Confirmed -->
+        <!-- Confirmed (read-only actions) -->
         <div class="tab-pane fade" id="pane-confirmed" role="tabpanel">
           <div class="table-responsive">
             <table class="table table-sm align-middle">
@@ -235,8 +234,7 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="tblConfirmed">
-              </tbody>
+              <tbody id="tblConfirmed"></tbody>
             </table>
           </div>
         </div>
@@ -259,8 +257,7 @@
                   <th>Status</th>
                 </tr>
               </thead>
-              <tbody id="tblDelivered">
-              </tbody>
+              <tbody id="tblDelivered"></tbody>
             </table>
           </div>
         </div>
@@ -283,8 +280,7 @@
                   <th>Status</th>
                 </tr>
               </thead>
-              <tbody id="tblCancelled">
-              </tbody>
+              <tbody id="tblCancelled"></tbody>
             </table>
           </div>
         </div>
@@ -350,7 +346,7 @@
       try {
         const { data, error } = await supabase
           .from('orders')
-          .select('id, order_code, buyer_email, product_name, account_type, duration, price, payment_method, reference_number, invite_email, status, created_at')
+          .select('id, order_code, buyer_email, product_id, product_name, account_type, duration, price, payment_method, reference_number, invite_email, status, created_at')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -381,13 +377,13 @@
     }
 
     function renderAllOrderTables() {
-      renderOrdersByStatus('pending', document.getElementById('tblPending'), true);
-      renderOrdersByStatus('confirmed', document.getElementById('tblConfirmed'), true);
-      renderOrdersByStatus('delivered', document.getElementById('tblDelivered'), false);
-      renderOrdersByStatus('cancelled', document.getElementById('tblCancelled'), false);
+      renderOrdersByStatus('pending',   document.getElementById('tblPending'),   11, true);
+      renderOrdersByStatus('confirmed', document.getElementById('tblConfirmed'), 11, false);
+      renderOrdersByStatus('delivered', document.getElementById('tblDelivered'), 10, false);
+      renderOrdersByStatus('cancelled', document.getElementById('tblCancelled'), 10, false);
     }
 
-    function renderOrdersByStatus(statusKey, tbodyEl, withActions) {
+    function renderOrdersByStatus(statusKey, tbodyEl, colCount, withActions) {
       tbodyEl.innerHTML = '';
 
       const rows = ALL_ORDERS.filter(
@@ -396,9 +392,11 @@
 
       if (!rows.length) {
         tbodyEl.innerHTML = `
-          <tr><td colspan="${withActions ? 11 : 10}" class="text-center text-muted py-3">
-          No ${statusKey} orders.
-          </td></tr>
+          <tr>
+            <td colspan="${colCount}" class="text-center text-muted py-3">
+              No ${statusKey} orders.
+            </td>
+          </tr>
         `;
         return;
       }
@@ -424,59 +422,173 @@
           <td>${statusBadge(order.status)}</td>
           ${withActions ? `
           <td>
-            <select class="form-select form-select-sm mb-1 status-select" data-id="${order.id}">
-              <option value="">Change...</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            <button class="btn btn-sm btn-outline-primary w-100 btn-update-status" data-id="${order.id}">
-              Update
+            ${
+              statusKey === 'pending'
+                ? `
+            <button class="btn btn-sm btn-success w-100 mb-1 btn-confirm" data-id="${order.id}">
+              Confirm Payment & Deliver
             </button>
+            <button class="btn btn-sm btn-outline-danger w-100 btn-cancel" data-id="${order.id}">
+              Cancel
+            </button>`
+                : '<span class="text-muted small">No actions</span>'
+            }
           </td>` : ''}
         `;
         tbodyEl.appendChild(tr);
       });
 
-      if (withActions) {
-        tbodyEl.querySelectorAll('.btn-update-status').forEach(btn => {
+      if (withActions && statusKey === 'pending') {
+        tbodyEl.querySelectorAll('.btn-confirm').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = btn.getAttribute('data-id');
-            const select = tbodyEl.querySelector(`.status-select[data-id="${id}"]`);
-            const newStatus = (select.value || '').toLowerCase();
-            if (!newStatus) {
-              showToast('Please select a status first', 'warning');
-              return;
-            }
-            await updateOrderStatus(id, newStatus);
+            await confirmAndDeliverOrder(id);
+          });
+        });
+
+        tbodyEl.querySelectorAll('.btn-cancel').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            await cancelOrder(id);
           });
         });
       }
     }
 
     // ==============================
-    // UPDATE ORDER STATUS
+    // STOCK LOOKUP + DELIVERY LOGIC
     // ==============================
-    async function updateOrderStatus(orderId, newStatus) {
-      try {
-        const { data, error } = await supabase
-          .from('orders')
-          .update({ status: newStatus })
-          .eq('id', orderId)
-          .select('id');
 
-        if (error) {
-          console.error('Error updating status:', error);
-          showToast('Error updating order status', 'error');
+    async function findAvailableStockForOrder(order) {
+      // Adjust column names here if iba sa stocks table mo
+      const { data, error } = await supabase
+        .from('stocks')
+        .select('id, product_id, product_name, account_type, duration, email, password, profile, pin, status, created_at')
+        .eq('product_id', order.product_id)
+        .eq('account_type', order.account_type)
+        .eq('duration', order.duration)
+        .or('status.is.null,status.eq.available') // treat NULL or 'available' as usable
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error finding stock:', error);
+        showToast('Error finding stock for this order', 'error');
+        return null;
+      }
+      return data;
+    }
+
+    async function createRecordFromStock(order, stock) {
+      // Adjust field list if iba ang columns sa records table
+      const record = {
+        order_id: order.id,
+        buyer_email: order.buyer_email,
+        product_name: stock.product_name || order.product_name,
+        account_type: stock.account_type || order.account_type,
+        duration: stock.duration || order.duration,
+        price: order.price,
+        purchase_date: new Date().toISOString(),
+        email: stock.email,
+        password: stock.password,
+        profile: stock.profile || null,
+        pin: stock.pin || null
+      };
+
+      const { data, error } = await supabase
+        .from('records')
+        .insert(record)
+        .select('id')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error creating record:', error);
+        showToast('Error creating delivered record', 'error');
+        return null;
+      }
+      return data;
+    }
+
+    async function markStockAsUsed(stockId) {
+      // Adjust column names kung iba sa schema mo
+      const { error } = await supabase
+        .from('stocks')
+        .update({
+          status: 'used',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', stockId);
+
+      if (error) {
+        console.error('Error marking stock as used:', error);
+        showToast('Error updating stock status', 'error');
+        return false;
+      }
+      return true;
+    }
+
+    async function setOrderStatus(orderId, newStatus) {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) {
+        console.error('Error updating order:', error);
+        showToast('Error updating order status', 'error');
+        return false;
+      }
+      return true;
+    }
+
+    // ==============================
+    // ADMIN ACTIONS
+    // ==============================
+    async function confirmAndDeliverOrder(orderId) {
+      try {
+        const order = ALL_ORDERS.find(o => o.id === orderId);
+        if (!order) {
+          showToast('Order not found in memory', 'error');
           return;
         }
 
-        showToast(`Order ${orderId} updated to ${newStatus}`, 'success');
-        await loadOrders(); // reload para fresh data
+        // 1. Find a matching stock
+        const stock = await findAvailableStockForOrder(order);
+        if (!stock) {
+          showToast('No available stock for this order (check stocks table)', 'warning');
+          return;
+        }
+
+        // 2. Create delivered record
+        const rec = await createRecordFromStock(order, stock);
+        if (!rec) return;
+
+        // 3. Mark stock as used
+        const stockUpdated = await markStockAsUsed(stock.id);
+        if (!stockUpdated) return;
+
+        // 4. Update order -> delivered
+        const orderUpdated = await setOrderStatus(orderId, 'delivered');
+        if (!orderUpdated) return;
+
+        showToast(`Order ${orderId} confirmed and delivered.`, 'success');
+        await loadOrders();
       } catch (err) {
-        console.error('updateOrderStatus error:', err);
-        showToast('Unexpected error updating status', 'error');
+        console.error('confirmAndDeliverOrder error:', err);
+        showToast('Unexpected error while delivering order', 'error');
+      }
+    }
+
+    async function cancelOrder(orderId) {
+      try {
+        const ok = await setOrderStatus(orderId, 'cancelled');
+        if (!ok) return;
+        showToast(`Order ${orderId} has been cancelled.`, 'success');
+        await loadOrders();
+      } catch (err) {
+        console.error('cancelOrder error:', err);
+        showToast('Unexpected error while cancelling order', 'error');
       }
     }
 
