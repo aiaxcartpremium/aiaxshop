@@ -291,7 +291,38 @@
         <!-- Products List -->
         <div id="panel-products" class="panel-admin active">
           <div class="card-clean">
-            <h3 class="mb-3">Products</h3>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="mb-0">Products</h3>
+            </div>
+
+            <!-- Add Product Form -->
+            <div class="mb-3">
+              <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label">Product ID</label>
+                  <input id="new-prod-id" class="form-control" placeholder="e.g. netflix">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Name</label>
+                  <input id="new-prod-name" class="form-control" placeholder="Netflix Premium">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Category</label>
+                  <input id="new-prod-cat" class="form-control" placeholder="entertainment">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Icon</label>
+                  <input id="new-prod-icon" class="form-control" placeholder="📺">
+                </div>
+                <div class="col-md-1 d-grid">
+                  <button id="btn-add-product" class="btn btn-primary" type="button">Add</button>
+                </div>
+              </div>
+              <small class="text-muted">
+                Product IDs must match those used on the buyer site (e.g., <code>netflix</code>, <code>viu</code>, etc.).
+              </small>
+            </div>
+
             <div class="table-responsive">
               <table class="records-table">
                 <thead>
@@ -300,7 +331,8 @@
                     <th>Name</th>
                     <th>Category</th>
                     <th>Icon</th>
-                    <th>Stock</th>
+                    <th>Stock (display only)</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="products-table-body">
@@ -323,17 +355,17 @@
                 </select>
               </div>
               <div class="col-md-4">
-  <label class="form-label">Account Type</label>
-  <select id="stock-account-type" class="form-select">
-    <option value="">Select account type</option>
-  </select>
-</div>
-<div class="col-md-4">
-  <label class="form-label">Duration</label>
-  <select id="stock-duration" class="form-select">
-    <option value="">Select duration</option>
-  </select>
-</div>
+                <label class="form-label">Account Type</label>
+                <select id="stock-account-type" class="form-select" disabled>
+                  <option value="">Select account type</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Duration</label>
+                <select id="stock-duration" class="form-select" disabled>
+                  <option value="">Select duration</option>
+                </select>
+              </div>
 
               <div class="col-md-3">
                 <label class="form-label">Account Email</label>
@@ -361,18 +393,18 @@
                 <input id="stock-premium-until" type="date" class="form-control">
               </div>
               <div class="col-md-4">
-                <label class="form-label">Status</label>
-                <select id="stock-status" class="form-select">
-                  <option value="available">available</option>
-                  <option value="reserved">reserved</option>
-                  <option value="sold">sold</option>
-                </select>
+                <label class="form-label">Quantity (slots)</label>
+                <input id="stock-quantity" type="number" min="1" value="1" class="form-control">
               </div>
             </div>
 
             <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
               Save Stock
             </button>
+            <small class="text-muted d-block mt-2">
+              Every row represents one account; <strong>Quantity</strong> is number of slots. When buyers purchase, remaining slots
+              will auto decrement.
+            </small>
           </div>
         </div>
 
@@ -391,6 +423,8 @@
                     <th>Email</th>
                     <th>Status</th>
                     <th>Premium Until</th>
+                    <th>Qty</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="stocks-table-body">
@@ -402,37 +436,48 @@
         </div>
 
         <!-- Pending Orders -->
-<div id="panel-pending-orders" class="panel-admin">
-  <div class="card-clean">
-    <h3 class="mb-3">Pending Orders</h3>
-    <div class="table-responsive">
-      <table class="records-table">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Buyer</th>
-            <th>Product</th>
-            <th>Type</th>
-            <th>Duration</th>
-            <th>Price</th>
-            <th>Payment</th>
-            <th>Ref No.</th>
-            <th>Proof</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="orders-table-body">
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+        <div id="panel-pending-orders" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Pending Orders</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Buyer ID</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Price</th>
+                    <th>Payment</th>
+                    <th>Ref</th>
+                    <th>Proof</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
         <!-- Records -->
         <div id="panel-records" class="panel-admin">
           <div class="card-clean">
-            <h3 class="mb-3">Records</h3>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="mb-0">Records</h3>
+              <div>
+                <button id="btn-add-record" class="btn btn-sm btn-outline-primary me-2" type="button">
+                  Add Manual Record
+                </button>
+                <button id="btn-export-records" class="btn btn-sm btn-outline-secondary" type="button">
+                  Export CSV
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="records-table">
                 <thead>
@@ -461,9 +506,24 @@
           <div class="card-clean">
             <h3 class="mb-3">Store Rules</h3>
             <p class="text-muted mb-2">
-              This panel shows all rules from the <code>rules</code> table.
+              Manage rules in the <code>rules</code> table, with optional <code>product_id</code>.
             </p>
-            <ul id="rules-list" class="mb-0">
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-3">
+                <label class="form-label">Product ID (optional)</label>
+                <input id="rule-product-id" class="form-control" placeholder="e.g. netflix">
+              </div>
+              <div class="col-md-7">
+                <label class="form-label">Rule Text</label>
+                <input id="rule-text" class="form-control" placeholder="Do not change password...">
+              </div>
+              <div class="col-md-2 d-grid">
+                <button id="btn-add-rule" class="btn btn-primary" type="button">Add Rule</button>
+              </div>
+            </div>
+
+            <ul id="rules-list" class="list-unstyled mb-0">
               <!-- JS will insert <li> -->
             </ul>
           </div>
@@ -513,6 +573,92 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Static config for account types & durations per product (for dropdowns)
+    const DURATION_LABELS = {
+      "7d": "7 Days",
+      "14d": "14 Days",
+      "1m": "1 Month",
+      "2m": "2 Months",
+      "3m": "3 Months",
+      "4m": "4 Months",
+      "5m": "5 Months",
+      "6m": "6 Months",
+      "8m": "8 Months",
+      "10m": "10 Months",
+      "12m": "12 Months",
+      "24m": "24 Months",
+      "nw": "No Warranty",
+      "3m w": "3 Months Warranty",
+      "6m w": "6 Months Warranty",
+      "12m w": "12 Months Warranty"
+    };
+
+    const PRODUCTS_CONFIG = {
+      netflix: {
+        accountTypes: {
+          "solo profile": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"],
+          "shared profile": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"]
+        }
+      },
+      viu: {
+        accountTypes: {
+          "solo account": ["1m", "2m", "3m", "4m", "6m", "10m", "12m"],
+          "shared account": ["1m", "2m", "3m", "4m", "6m", "10m", "12m"]
+        }
+      },
+      "viva-max": {
+        accountTypes: {
+          "solo account": ["1m", "2m", "3m"],
+          "shared account": ["1m", "2m", "3m"]
+        }
+      },
+      wetv: {
+        accountTypes: {
+          "solo account": ["1m"],
+          "shared account": ["1m", "2m", "3m"]
+        }
+      },
+      "iwant-tfc": {
+        accountTypes: {
+          "solo account": ["1m"],
+          "shared account": ["1m", "2m", "3m"]
+        }
+      },
+      crunchyroll: {
+        accountTypes: {
+          "solo profile": ["1m", "2m", "3m", "4m"],
+          "shared profile": ["1m", "2m", "3m", "4m"]
+        }
+      },
+      "disney-plus": {
+        accountTypes: {
+          "solo account": ["1m"],
+          "solo profile": ["1m", "2m", "4m", "10m", "12m"],
+          "shared profile": ["1m", "2m", "4m", "10m", "12m"]
+        }
+      },
+      bilibili: {
+        accountTypes: {
+          "shared account": ["1m", "2m", "3m"]
+        }
+      },
+      loklok: {
+        accountTypes: {
+          "solo account": ["1m"]
+        }
+      },
+      spotify: {
+        accountTypes: {
+          "solo account": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"],
+          "shared account": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"]
+        }
+      }
+      // ... pwede ka magdagdag pa dito if needed
+    };
+
+    let CURRENT_STOCK_PRODUCT_ID = null;
+    let RECORDS_CACHE = [];
+
     function showToast(message, type = "info") {
       const container = document.getElementById("toastContainer");
       if (!container) return;
@@ -522,10 +668,10 @@
         type === "success"
           ? "success"
           : type === "danger" || type === "error"
-          ? "danger"
-          : type === "warning"
-          ? "warning"
-          : "secondary";
+            ? "danger"
+            : type === "warning"
+              ? "warning"
+              : "secondary";
 
       wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
       wrapper.role = "alert";
@@ -551,16 +697,16 @@
       try {
         const [{ data: prodRows }, { data: stockRows }, { data: orderRows }, { data: recRows }] =
           await Promise.all([
-            supabase.from("products").select("id, stock"),
-            supabase.from("stocks").select("id, status"),
+            supabase.from("products").select("id"),
+            supabase.from("stocks").select("id, status, quantity"),
             supabase.from("orders").select("id, status"),
             supabase.from("records").select("price"),
           ]);
 
         const productsCount = prodRows?.length || 0;
         const availableStock = (stockRows || []).filter(
-          (s) => (s.status || "").toLowerCase() === "available"
-        ).length;
+          (s) => (s.status || "").toLowerCase() === "available" && safeNumber(s.quantity) > 0
+        ).reduce((sum, s) => sum + safeNumber(s.quantity), 0);
         const pendingOrders = (orderRows || []).filter(
           (o) => (o.status || "").toLowerCase() === "pending"
         ).length;
@@ -584,83 +730,184 @@
     }
 
     // ========= PRODUCTS =========
-     
-          // ========= PRODUCTS =========
-async function loadProducts() {
-  const tbody = document.getElementById("products-table-body");
-  const selectStockProduct = document.getElementById("stock-product");
-  if (!tbody) return;
+    async function loadProducts() {
+      const tbody = document.getElementById("products-table-body");
+      const selectStockProduct = document.getElementById("stock-product");
+      if (!tbody) return;
 
-  tbody.innerHTML = "";
-  if (selectStockProduct) {
-    selectStockProduct.innerHTML = '<option value="">Select product</option>';
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, name, category, icon, stock")
-      .order("name", { ascending: true });
-
-    if (error) throw error;
-
-    if (!data || !data.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 5;
-      td.textContent = "No products found.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-
-    data.forEach((p) => {
-      const tr = document.createElement("tr");
-
-      const tdId = document.createElement("td");
-      tdId.textContent = p.id;
-      tr.appendChild(tdId);
-
-      const tdName = document.createElement("td");
-      tdName.textContent = p.name;
-      tr.appendChild(tdName);
-
-      const tdCat = document.createElement("td");
-      tdCat.textContent = p.category;
-      tr.appendChild(tdCat);
-
-      const tdIcon = document.createElement("td");
-      tdIcon.textContent = p.icon || "";
-      tr.appendChild(tdIcon);
-
-      const tdStock = document.createElement("td");
-      tdStock.textContent = p.stock ?? 0;
-      tr.appendChild(tdStock);
-
-      tbody.appendChild(tr);
-
-      // Add to dropdown
+      tbody.innerHTML = "";
       if (selectStockProduct) {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = `${p.name} (${p.category})`;
-        selectStockProduct.appendChild(opt);
+        selectStockProduct.innerHTML = '<option value="">Select product</option>';
       }
-    });
 
-    // ⭐⭐ IMPORTANT: ADD THIS EVENT LISTENER ⭐⭐
-    if (selectStockProduct) {
-      selectStockProduct.addEventListener("change", (e) => {
-        const pid = e.target.value;
-        loadAccountTypeOptions(pid);   // ← CALL THIS WHEN PRODUCT CHANGES
-      });
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, category, icon, stock")
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent = "No products found.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((p) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = p.id;
+          tr.appendChild(tdId);
+
+          const tdName = document.createElement("td");
+          tdName.textContent = p.name;
+          tr.appendChild(tdName);
+
+          const tdCat = document.createElement("td");
+          tdCat.textContent = p.category;
+          tr.appendChild(tdCat);
+
+          const tdIcon = document.createElement("td");
+          tdIcon.textContent = p.icon || "";
+          tr.appendChild(tdIcon);
+
+          const tdStock = document.createElement("td");
+          tdStock.textContent = p.stock ?? 0;
+          tr.appendChild(tdStock);
+
+          const tdActions = document.createElement("td");
+          const btnDel = document.createElement("button");
+          btnDel.className = "btn btn-sm btn-outline-danger";
+          btnDel.textContent = "Delete";
+          btnDel.addEventListener("click", () => deleteProduct(p.id));
+          tdActions.appendChild(btnDel);
+          tr.appendChild(tdActions);
+
+          tbody.appendChild(tr);
+
+          if (selectStockProduct) {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = `${p.name} (${p.category})`;
+            selectStockProduct.appendChild(opt);
+          }
+        });
+      } catch (err) {
+        console.error("[products] error:", err);
+        showToast("Failed to load products.", "danger");
+      }
     }
 
-  } catch (err) {
-    console.error("[products] error:", err);
-    showToast("Failed to load products.", "danger");
-  }
-}
+    async function addProduct() {
+      const idInput = document.getElementById("new-prod-id");
+      const nameInput = document.getElementById("new-prod-name");
+      const catInput = document.getElementById("new-prod-cat");
+      const iconInput = document.getElementById("new-prod-icon");
+
+      const id = (idInput.value || "").trim();
+      const name = (nameInput.value || "").trim();
+      const category = (catInput.value || "").trim();
+      const icon = (iconInput.value || "").trim();
+
+      if (!id || !name) {
+        showToast("Product ID and Name are required.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("products").insert([{ id, name, category, icon }]);
+        if (error) throw error;
+
+        showToast("Product added.", "success");
+        idInput.value = "";
+        nameInput.value = "";
+        catInput.value = "";
+        iconInput.value = "";
+
+        await loadProducts();
+        await refreshStats();
+      } catch (err) {
+        console.error("[addProduct] error:", err);
+        showToast("Failed to add product: " + (err.message || err), "danger");
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm(`Delete product "${id}"? This will not touch stocks.`)) return;
+      try {
+        const { error } = await supabase.from("products").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Product deleted.", "success");
+        await loadProducts();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteProduct] error:", err);
+        showToast("Failed to delete product: " + (err.message || err), "danger");
+      }
+    }
+
+    // ========= ADD STOCK HELPERS =========
+    function getProductConfig(productId) {
+      return PRODUCTS_CONFIG[productId] || null;
+    }
+
+    function loadAccountTypeOptions(productId) {
+      CURRENT_STOCK_PRODUCT_ID = productId || null;
+      const accSelect = document.getElementById("stock-account-type");
+      const durSelect = document.getElementById("stock-duration");
+      if (!accSelect || !durSelect) return;
+
+      accSelect.innerHTML = '<option value="">Select account type</option>';
+      durSelect.innerHTML = '<option value="">Select duration</option>';
+      accSelect.disabled = true;
+      durSelect.disabled = true;
+
+      if (!productId) return;
+
+      const cfg = getProductConfig(productId);
+      if (!cfg || !cfg.accountTypes) {
+        accSelect.innerHTML = '<option value="">(No presets, enter custom in DB)</option>';
+        accSelect.disabled = true;
+        durSelect.disabled = true;
+        return;
+      }
+
+      Object.keys(cfg.accountTypes).forEach((type) => {
+        const opt = document.createElement("option");
+        opt.value = type;
+        opt.textContent = type;
+        accSelect.appendChild(opt);
+      });
+
+      accSelect.disabled = false;
+    }
+
+    function loadDurationOptions(productId, accountType) {
+      const durSelect = document.getElementById("stock-duration");
+      if (!durSelect) return;
+      durSelect.innerHTML = '<option value="">Select duration</option>';
+      durSelect.disabled = true;
+
+      if (!productId || !accountType) return;
+      const cfg = getProductConfig(productId);
+      if (!cfg || !cfg.accountTypes) return;
+
+      const list = cfg.accountTypes[accountType] || [];
+      list.forEach((code) => {
+        const opt = document.createElement("option");
+        opt.value = code;
+        opt.textContent = DURATION_LABELS[code] || code;
+        durSelect.appendChild(opt);
+      });
+      durSelect.disabled = false;
+    }
+
     // ========= STOCKS =========
     async function loadStocks() {
       const tbody = document.getElementById("stocks-table-body");
@@ -672,7 +919,7 @@ async function loadProducts() {
           await Promise.all([
             supabase
               .from("stocks")
-              .select("id, product_id, account_type, duration, email, status, premium_until"),
+              .select("id, product_id, account_type, duration, email, status, premium_until, quantity"),
             supabase.from("products").select("id, name"),
           ]);
 
@@ -685,7 +932,7 @@ async function loadProducts() {
         if (!stocks || !stocks.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 7;
+          td.colSpan = 9;
           td.textContent = "No stocks yet.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -723,6 +970,18 @@ async function loadProducts() {
           tdPrem.textContent = s.premium_until || "-";
           tr.appendChild(tdPrem);
 
+          const tdQty = document.createElement("td");
+          tdQty.textContent = s.quantity ?? 1;
+          tr.appendChild(tdQty);
+
+          const tdActions = document.createElement("td");
+          const btnDel = document.createElement("button");
+          btnDel.className = "btn btn-sm btn-outline-danger";
+          btnDel.textContent = "Delete";
+          btnDel.addEventListener("click", () => deleteStock(s.id));
+          tdActions.appendChild(btnDel);
+          tr.appendChild(tdActions);
+
           tbody.appendChild(tr);
         });
       } catch (err) {
@@ -730,266 +989,278 @@ async function loadProducts() {
         showToast("Failed to load stocks.", "danger");
       }
     }
-// ========= STOCK FORM DROPDOWNS (FROM product_prices) =========
-async function loadAccountTypeOptions(productId) {
-  const selType = document.getElementById("stock-account-type");
-  const selDur = document.getElementById("stock-duration");
-  if (!selType || !selDur) return;
 
-  selType.innerHTML = '<option value="">Select account type</option>';
-  selDur.innerHTML = '<option value="">Select duration</option>';
+    async function saveStock() {
+      const product_id = document.getElementById("stock-product")?.value || "";
+      const account_type = document.getElementById("stock-account-type")?.value || "";
+      const duration = document.getElementById("stock-duration")?.value || "";
+      const email = document.getElementById("stock-email")?.value.trim() || "";
+      const password = document.getElementById("stock-password")?.value.trim() || "";
+      const profile = document.getElementById("stock-profile")?.value.trim() || "";
+      const pin = document.getElementById("stock-pin")?.value.trim() || "";
+      const archive_after = Number(
+        document.getElementById("stock-archive-after")?.value || 0
+      );
+      const premium_until =
+        document.getElementById("stock-premium-until")?.value || null;
+      const quantity = Number(
+        document.getElementById("stock-quantity")?.value || 1
+      );
 
-  if (!productId) return;
+      if (!product_id) {
+        showToast("Please select a product.", "warning");
+        return;
+      }
+      if (!account_type) {
+        showToast("Please select an account type.", "warning");
+        return;
+      }
+      if (!duration) {
+        showToast("Please select a duration.", "warning");
+        return;
+      }
+      if (!email || !password) {
+        showToast("Email and password are required for the stock.", "warning");
+        return;
+      }
 
-  try {
-    const { data, error } = await supabase
-      .from("product_prices")
-      .select("account_type, duration")
-      .eq("product_id", productId);
+      try {
+        const { error } = await supabase.from("stocks").insert([
+          {
+            product_id,
+            account_type,
+            duration,
+            email,
+            password,
+            profile,
+            pin,
+            archive_after: Number.isFinite(archive_after) ? archive_after : 0,
+            premium_until: premium_until || null,
+            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+            status: "available",
+          },
+        ]);
 
-    if (error) throw error;
+        if (error) throw error;
 
-    if (!data || !data.length) {
-      return;
+        showToast("Stock saved!", "success");
+
+        ["stock-email", "stock-password", "stock-profile", "stock-pin"].forEach(
+          (id) => {
+            const input = document.getElementById(id);
+            if (input) input.value = "";
+          }
+        );
+        document.getElementById("stock-quantity").value = 1;
+
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveStock] error:", err);
+        showToast("Failed to save stock: " + (err.message || err), "danger");
+      }
     }
 
-    // unique account types
-    const typesSet = new Set();
-    data.forEach((row) => {
-      if (row.account_type) typesSet.add(row.account_type);
-    });
-
-    typesSet.forEach((t) => {
-      const opt = document.createElement("option");
-      opt.value = t;
-      opt.textContent = t;
-      selType.appendChild(opt);
-    });
-
-    // when type changes, update durations
-    selType.onchange = () => {
-      const chosenType = selType.value;
-      selDur.innerHTML = '<option value="">Select duration</option>';
-      if (!chosenType) return;
-
-      const dursSet = new Set();
-      data
-        .filter((row) => row.account_type === chosenType)
-        .forEach((row) => {
-          if (row.duration) dursSet.add(row.duration);
-        });
-
-      dursSet.forEach((d) => {
-        const opt = document.createElement("option");
-        opt.value = d;
-        opt.textContent = d;
-        selDur.appendChild(opt);
-      });
-    };
-  } catch (err) {
-    console.error("[loadAccountTypeOptions] error:", err);
-    showToast("Failed to load account types/durations for product.", "danger");
-  }
-}
-    async function saveStock() {
-  const product_id = document.getElementById("stock-product")?.value || "";
-  const account_type =
-    document.getElementById("stock-account-type")?.value.trim() || "";
-  const duration =
-    document.getElementById("stock-duration")?.value.trim() || "";
-  const email = document.getElementById("stock-email")?.value.trim() || "";
-  const password =
-    document.getElementById("stock-password")?.value.trim() || "";
-  const profile =
-    document.getElementById("stock-profile")?.value.trim() || "";
-  const pin = document.getElementById("stock-pin")?.value.trim() || "";
-  const status = document.getElementById("stock-status")?.value || "available";
-
-  if (!product_id) {
-    showToast("Please select a product first.", "warning");
-    return;
-  }
-  if (!account_type || !duration) {
-    showToast("Select account type and duration.", "warning");
-    return;
-  }
-
-  // payload: limit lang sa pinaka-common columns para iwas error
-  const payload = {
-    product_id,
-    account_type,
-    duration,
-    email,
-    password,
-    profile,
-    pin,
-    status,
-  };
-
-  try {
-    const { error } = await supabase.from("stocks").insert([payload]);
-
-    if (error) throw error;
-
-    showToast("Stock saved!", "success");
-
-    ["stock-email", "stock-password", "stock-profile", "stock-pin"].forEach(
-      (id) => {
-        const input = document.getElementById(id);
-        if (input) input.value = "";
+    async function deleteStock(id) {
+      if (!confirm(`Delete stock #${id}?`)) return;
+      try {
+        const { error } = await supabase.from("stocks").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Stock deleted.", "success");
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteStock] error:", err);
+        showToast("Failed to delete stock: " + (err.message || err), "danger");
       }
-    );
-
-    await loadStocks();
-    await refreshStats();
-  } catch (err) {
-    console.error("[saveStock] error:", err);
-    showToast("Failed to save stock. Check columns in stocks table.", "danger");
-  }
-}
+    }
 
     // ========= ORDERS =========
     async function loadPendingOrders() {
-  const tbody = document.getElementById("orders-table-body");
-  if (!tbody) return;
-  tbody.innerHTML = "";
+      const tbody = document.getElementById("orders-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
 
-  try {
-    // gumamit tayo ng * para mabasa lahat ng columns (buyer_email, payment_method, ref, proof, etc.)
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("id, buyer_id, product_id, account_type, duration, price, status, payment_method, reference_number, proof_image_url")
+          .order("created_at", { ascending: false });
 
-    if (error) throw error;
+        if (error) throw error;
 
-    const pending = (data || []).filter(
-      (o) => (o.status || "").toLowerCase() === "pending"
-    );
+        const pending = (data || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        );
 
-    if (!pending.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 11;
-      td.textContent = "No pending orders.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
+        if (!pending.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 11;
+          td.textContent = "No pending orders.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        pending.forEach((o) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = o.id;
+          tr.appendChild(tdId);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = o.buyer_id ?? "-";
+          tr.appendChild(tdBuyer);
+
+          const tdProd = document.createElement("td");
+          tdProd.textContent = o.product_id;
+          tr.appendChild(tdProd);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = o.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDur = document.createElement("td");
+          tdDur.textContent = o.duration || "-";
+          tr.appendChild(tdDur);
+
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          const tdPay = document.createElement("td");
+          tdPay.textContent = o.payment_method || "-";
+          tr.appendChild(tdPay);
+
+          const tdRef = document.createElement("td");
+          tdRef.textContent = o.reference_number || "-";
+          tr.appendChild(tdRef);
+
+          const tdProof = document.createElement("td");
+          if (o.proof_image_url) {
+            const link = document.createElement("a");
+            link.href = o.proof_image_url;
+            link.target = "_blank";
+            link.textContent = "View";
+            tdProof.appendChild(link);
+          } else {
+            tdProof.textContent = "-";
+          }
+          tr.appendChild(tdProof);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = o.status;
+          tr.appendChild(tdStatus);
+
+          const tdAction = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.className = "btn btn-sm btn-success";
+          btn.textContent = "Confirm & Assign";
+          btn.addEventListener("click", () => markOrderPaid(o.id));
+          tdAction.appendChild(btn);
+          tr.appendChild(tdAction);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[orders] error:", err);
+        showToast("Failed to load orders.", "danger");
+      }
     }
 
-    pending.forEach((o) => {
-      const tr = document.createElement("tr");
-
-      // Order ID
-      const tdId = document.createElement("td");
-      tdId.textContent = o.id ?? "-";
-      tr.appendChild(tdId);
-
-      // Buyer (id or email)
-      const tdBuyer = document.createElement("td");
-      tdBuyer.textContent = o.buyer_id ?? o.buyer_email ?? "-";
-      tr.appendChild(tdBuyer);
-
-      // Product
-      const tdProd = document.createElement("td");
-      tdProd.textContent = o.product_name ?? o.product_id ?? "-";
-      tr.appendChild(tdProd);
-
-      // Account type
-      const tdType = document.createElement("td");
-      tdType.textContent = o.account_type || "-";
-      tr.appendChild(tdType);
-
-      // Duration
-      const tdDur = document.createElement("td");
-      tdDur.textContent = o.duration || "-";
-      tr.appendChild(tdDur);
-
-      // Price
-      const tdPrice = document.createElement("td");
-      tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
-      tr.appendChild(tdPrice);
-
-      // Payment method (gcash / maya / etc.)
-      const tdPay = document.createElement("td");
-      tdPay.textContent = o.payment_method || o.payment || "-";
-      tr.appendChild(tdPay);
-
-      // Reference number (gagamit ng kahit anong field na meron sa table mo)
-      const tdRef = document.createElement("td");
-      tdRef.textContent =
-        o.reference_number ??
-        o.payment_reference ??
-        o.reference ??
-        "-";
-      tr.appendChild(tdRef);
-
-      // Proof of payment (link / image)
-      const tdProof = document.createElement("td");
-      const proofUrl =
-        o.proof_image_url ??
-        o.payment_proof_url ??
-        o.proof_url ??
-        null;
-
-      if (proofUrl) {
-        const link = document.createElement("a");
-        link.href = proofUrl;
-        link.target = "_blank";
-        link.textContent = "View";
-        tdProof.appendChild(link);
-      } else {
-        tdProof.textContent = "-";
-      }
-      tr.appendChild(tdProof);
-
-      // Status
-      const tdStatus = document.createElement("td");
-      tdStatus.textContent = o.status || "-";
-      tr.appendChild(tdStatus);
-
-      // Action
-      const tdAction = document.createElement("td");
-      const btn = document.createElement("button");
-      btn.className = "btn btn-sm btn-success";
-      btn.textContent = "Confirm payment";
-      btn.addEventListener("click", () => markOrderPaid(o.id));
-      tdAction.appendChild(btn);
-      tr.appendChild(tdAction);
-
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error("[orders] error:", err);
-    showToast("Failed to load orders.", "danger");
-  }
-}
-
     async function markOrderPaid(orderId) {
-  if (!confirm(`Confirm payment for order ${orderId}?`)) return;
+      if (!confirm(`Confirm payment and assign account for order ${orderId}?`)) return;
 
-  try {
-    const { error } = await supabase
-      .from("orders")
-      .update({
-        status: "confirmed",          // IMPORTANT: ito na yung kailangan ng trigger mo
-        confirmed_at: new Date().toISOString() // ok lang kahit wala yung column, kung wala man, i-ignore ng supabase-js
-      })
-      .eq("id", orderId);
+      try {
+        // 1) Get order details
+        const { data: order, error: oErr } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("id", orderId)
+          .maybeSingle();
 
-    if (error) throw error;
+        if (oErr) throw oErr;
+        if (!order) {
+          showToast("Order not found.", "danger");
+          return;
+        }
 
-    showToast("Payment confirmed. Account will be assigned automatically.", "success");
+        // 2) Find available stock matching product + type + duration
+        const { data: stocks, error: sErr } = await supabase
+          .from("stocks")
+          .select("*")
+          .eq("product_id", order.product_id)
+          .eq("account_type", order.account_type)
+          .eq("duration", order.duration)
+          .eq("status", "available")
+          .gt("quantity", 0)
+          .order("id", { ascending: true })
+          .limit(1);
 
-    await loadPendingOrders();
-    await loadRecords();
-    await loadStocks();
-    await refreshStats();
-  } catch (err) {
-    console.error("[markOrderPaid] error:", err);
-    showToast("Failed to update order.", "danger");
-  }
-}
+        if (sErr) throw sErr;
+
+        const stock = stocks && stocks[0];
+        if (!stock) {
+          showToast("No available stock for this product / type / duration.", "warning");
+          return;
+        }
+
+        const currentQty = safeNumber(stock.quantity || 1);
+        const newQty = currentQty - 1;
+        const newStatus = newQty <= 0 ? "sold" : "available";
+
+        // 3) Update stock quantity
+        const { error: upStockErr } = await supabase
+          .from("stocks")
+          .update({
+            quantity: newQty < 0 ? 0 : newQty,
+            status: newStatus,
+          })
+          .eq("id", stock.id);
+
+        if (upStockErr) throw upStockErr;
+
+        // 4) Update order status to delivered (or paid)
+        const { error: upOrderErr } = await supabase
+          .from("orders")
+          .update({ status: "delivered" })
+          .eq("id", orderId);
+
+        if (upOrderErr) throw upOrderErr;
+
+        // 5) Insert record (for logs / reports)
+        const { error: recErr } = await supabase
+          .from("records")
+          .insert([
+            {
+              order_id: order.id,
+              buyer: order.buyer_id,
+              source: "shop",
+              product_id: order.product_id,
+              account_type: order.account_type,
+              duration: order.duration,
+              purchase_date: new Date().toISOString(),
+              price: order.price,
+            },
+          ]);
+
+        if (recErr) throw recErr;
+
+        showToast("Payment confirmed and account assigned.", "success");
+
+        await Promise.all([
+          loadPendingOrders(),
+          loadRecords(),
+          loadStocks(),
+          refreshStats()
+        ]);
+      } catch (err) {
+        console.error("[markOrderPaid] error:", err);
+        showToast("Failed to confirm payment: " + (err.message || err), "danger");
+      }
+    }
 
     // ========= RECORDS =========
     async function loadRecords() {
@@ -1006,6 +1277,8 @@ async function loadAccountTypeOptions(productId) {
           .order("created_at", { ascending: false });
 
         if (error) throw error;
+
+        RECORDS_CACHE = data || [];
 
         if (!data || !data.length) {
           const tr = document.createElement("tr");
@@ -1064,6 +1337,84 @@ async function loadAccountTypeOptions(productId) {
       }
     }
 
+    async function addManualRecord() {
+      const buyer = prompt("Buyer name/email (for record):");
+      if (buyer === null) return;
+
+      const product_id = prompt("Product ID (e.g. netflix):") || "";
+      const account_type = prompt("Account type (solo/shared/etc):") || "";
+      const duration = prompt("Duration (1m, 3m, 7d, etc.):") || "";
+      const priceStr = prompt("Price (number):") || "0";
+      const price = Number(priceStr) || 0;
+      const today = new Date().toISOString();
+
+      try {
+        const { error } = await supabase.from("records").insert([
+          {
+            buyer,
+            source: "manual",
+            product_id,
+            account_type,
+            duration,
+            purchase_date: today,
+            price,
+          },
+        ]);
+        if (error) throw error;
+
+        showToast("Manual record added.", "success");
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[addManualRecord] error:", err);
+        showToast("Failed to add record: " + (err.message || err), "danger");
+      }
+    }
+
+    function exportRecordsCSV() {
+      if (!RECORDS_CACHE || !RECORDS_CACHE.length) {
+        showToast("No records to export.", "warning");
+        return;
+      }
+
+      const headers = [
+        "id",
+        "order_id",
+        "buyer",
+        "source",
+        "product_id",
+        "account_type",
+        "duration",
+        "purchase_date",
+        "price",
+      ];
+
+      const lines = [headers.join(",")];
+
+      RECORDS_CACHE.forEach((r) => {
+        const row = headers.map((h) => {
+          let v = r[h] ?? "";
+          if (typeof v === "string") {
+            v = '"' + v.replace(/"/g, '""') + '"';
+          }
+          return v;
+        });
+        lines.push(row.join(","));
+      });
+
+      const blob = new Blob([lines.join("\n")], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "records.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     // ========= RULES =========
     async function loadRules() {
       const ul = document.getElementById("rules-list");
@@ -1087,14 +1438,68 @@ async function loadAccountTypeOptions(productId) {
 
         data.forEach((r) => {
           const li = document.createElement("li");
-          li.textContent = r.product_id
+          li.className = "d-flex justify-content-between align-items-center mb-1";
+
+          const span = document.createElement("span");
+          span.textContent = r.product_id
             ? `[${r.product_id}] ${r.rule_text}`
             : r.rule_text;
+
+          const btnDel = document.createElement("button");
+          btnDel.className = "btn btn-sm btn-outline-danger";
+          btnDel.textContent = "Delete";
+          btnDel.addEventListener("click", () => deleteRule(r.id));
+
+          li.appendChild(span);
+          li.appendChild(btnDel);
           ul.appendChild(li);
         });
       } catch (err) {
         console.error("[rules] error:", err);
         showToast("Failed to load rules.", "danger");
+      }
+    }
+
+    async function addRule() {
+      const productIdInput = document.getElementById("rule-product-id");
+      const ruleTextInput = document.getElementById("rule-text");
+      const product_id = (productIdInput.value || "").trim() || null;
+      const rule_text = (ruleTextInput.value || "").trim();
+
+      if (!rule_text) {
+        showToast("Rule text is required.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("rules").insert([
+          {
+            product_id,
+            rule_text,
+          },
+        ]);
+        if (error) throw error;
+
+        showToast("Rule added.", "success");
+        productIdInput.value = "";
+        ruleTextInput.value = "";
+        await loadRules();
+      } catch (err) {
+        console.error("[addRule] error:", err);
+        showToast("Failed to add rule: " + (err.message || err), "danger");
+      }
+    }
+
+    async function deleteRule(id) {
+      if (!confirm(`Delete rule #${id}?`)) return;
+      try {
+        const { error } = await supabase.from("rules").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Rule deleted.", "success");
+        await loadRules();
+      } catch (err) {
+        console.error("[deleteRule] error:", err);
+        showToast("Failed to delete rule: " + (err.message || err), "danger");
       }
     }
 
@@ -1179,13 +1584,51 @@ async function loadAccountTypeOptions(productId) {
       });
     }
 
+    function initAddStockForm() {
+      const prodSelect = document.getElementById("stock-product");
+      const accSelect = document.getElementById("stock-account-type");
+
+      if (prodSelect) {
+        prodSelect.addEventListener("change", (e) => {
+          loadAccountTypeOptions(e.target.value);
+        });
+      }
+
+      if (accSelect) {
+        accSelect.addEventListener("change", (e) => {
+          loadDurationOptions(CURRENT_STOCK_PRODUCT_ID, e.target.value);
+        });
+      }
+    }
+
     // ========= INIT =========
     document.addEventListener("DOMContentLoaded", () => {
       initTabs();
+      initAddStockForm();
 
       const btnSaveStock = document.getElementById("btn-save-stock");
       if (btnSaveStock) {
         btnSaveStock.addEventListener("click", saveStock);
+      }
+
+      const btnAddProd = document.getElementById("btn-add-product");
+      if (btnAddProd) {
+        btnAddProd.addEventListener("click", addProduct);
+      }
+
+      const btnAddRecord = document.getElementById("btn-add-record");
+      if (btnAddRecord) {
+        btnAddRecord.addEventListener("click", addManualRecord);
+      }
+
+      const btnExportRecords = document.getElementById("btn-export-records");
+      if (btnExportRecords) {
+        btnExportRecords.addEventListener("click", exportRecordsCSV);
+      }
+
+      const btnAddRule = document.getElementById("btn-add-rule");
+      if (btnAddRule) {
+        btnAddRule.addEventListener("click", addRule);
       }
 
       // Initial loads
