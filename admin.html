@@ -559,7 +559,7 @@
     </div>
   </main>
 
-  <!-- Bootstrap JS -->
+<!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Supabase JS (CDN) -->
@@ -573,92 +573,6 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Static config for account types & durations per product (for dropdowns)
-    const DURATION_LABELS = {
-      "7d": "7 Days",
-      "14d": "14 Days",
-      "1m": "1 Month",
-      "2m": "2 Months",
-      "3m": "3 Months",
-      "4m": "4 Months",
-      "5m": "5 Months",
-      "6m": "6 Months",
-      "8m": "8 Months",
-      "10m": "10 Months",
-      "12m": "12 Months",
-      "24m": "24 Months",
-      "nw": "No Warranty",
-      "3m w": "3 Months Warranty",
-      "6m w": "6 Months Warranty",
-      "12m w": "12 Months Warranty"
-    };
-
-    const PRODUCTS_CONFIG = {
-      netflix: {
-        accountTypes: {
-          "solo profile": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"],
-          "shared profile": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"]
-        }
-      },
-      viu: {
-        accountTypes: {
-          "solo account": ["1m", "2m", "3m", "4m", "6m", "10m", "12m"],
-          "shared account": ["1m", "2m", "3m", "4m", "6m", "10m", "12m"]
-        }
-      },
-      "viva-max": {
-        accountTypes: {
-          "solo account": ["1m", "2m", "3m"],
-          "shared account": ["1m", "2m", "3m"]
-        }
-      },
-      wetv: {
-        accountTypes: {
-          "solo account": ["1m"],
-          "shared account": ["1m", "2m", "3m"]
-        }
-      },
-      "iwant-tfc": {
-        accountTypes: {
-          "solo account": ["1m"],
-          "shared account": ["1m", "2m", "3m"]
-        }
-      },
-      crunchyroll: {
-        accountTypes: {
-          "solo profile": ["1m", "2m", "3m", "4m"],
-          "shared profile": ["1m", "2m", "3m", "4m"]
-        }
-      },
-      "disney-plus": {
-        accountTypes: {
-          "solo account": ["1m"],
-          "solo profile": ["1m", "2m", "4m", "10m", "12m"],
-          "shared profile": ["1m", "2m", "4m", "10m", "12m"]
-        }
-      },
-      bilibili: {
-        accountTypes: {
-          "shared account": ["1m", "2m", "3m"]
-        }
-      },
-      loklok: {
-        accountTypes: {
-          "solo account": ["1m"]
-        }
-      },
-      spotify: {
-        accountTypes: {
-          "solo account": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"],
-          "shared account": ["1m", "2m", "3m", "4m", "6m", "8m", "12m"]
-        }
-      }
-      // ... pwede ka magdagdag pa dito if needed
-    };
-
-    let CURRENT_STOCK_PRODUCT_ID = null;
-    let RECORDS_CACHE = [];
-
     function showToast(message, type = "info") {
       const container = document.getElementById("toastContainer");
       if (!container) return;
@@ -668,10 +582,10 @@
         type === "success"
           ? "success"
           : type === "danger" || type === "error"
-            ? "danger"
-            : type === "warning"
-              ? "warning"
-              : "secondary";
+          ? "danger"
+          : type === "warning"
+          ? "warning"
+          : "secondary";
 
       wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
       wrapper.role = "alert";
@@ -697,19 +611,22 @@
       try {
         const [{ data: prodRows }, { data: stockRows }, { data: orderRows }, { data: recRows }] =
           await Promise.all([
-            supabase.from("products").select("id"),
+            supabase.from("products").select("id, stock"),
             supabase.from("stocks").select("id, status, quantity"),
             supabase.from("orders").select("id, status"),
             supabase.from("records").select("price"),
           ]);
 
         const productsCount = prodRows?.length || 0;
+
         const availableStock = (stockRows || []).filter(
           (s) => (s.status || "").toLowerCase() === "available" && safeNumber(s.quantity) > 0
-        ).reduce((sum, s) => sum + safeNumber(s.quantity), 0);
+        ).length;
+
         const pendingOrders = (orderRows || []).filter(
           (o) => (o.status || "").toLowerCase() === "pending"
         ).length;
+
         const totalRevenue = (recRows || []).reduce(
           (sum, r) => sum + safeNumber(r.price),
           0
@@ -751,7 +668,7 @@
         if (!data || !data.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 6;
+          td.colSpan = 5;
           td.textContent = "No products found.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -781,14 +698,6 @@
           tdStock.textContent = p.stock ?? 0;
           tr.appendChild(tdStock);
 
-          const tdActions = document.createElement("td");
-          const btnDel = document.createElement("button");
-          btnDel.className = "btn btn-sm btn-outline-danger";
-          btnDel.textContent = "Delete";
-          btnDel.addEventListener("click", () => deleteProduct(p.id));
-          tdActions.appendChild(btnDel);
-          tr.appendChild(tdActions);
-
           tbody.appendChild(tr);
 
           if (selectStockProduct) {
@@ -802,110 +711,6 @@
         console.error("[products] error:", err);
         showToast("Failed to load products.", "danger");
       }
-    }
-
-    async function addProduct() {
-      const idInput = document.getElementById("new-prod-id");
-      const nameInput = document.getElementById("new-prod-name");
-      const catInput = document.getElementById("new-prod-cat");
-      const iconInput = document.getElementById("new-prod-icon");
-
-      const id = (idInput.value || "").trim();
-      const name = (nameInput.value || "").trim();
-      const category = (catInput.value || "").trim();
-      const icon = (iconInput.value || "").trim();
-
-      if (!id || !name) {
-        showToast("Product ID and Name are required.", "warning");
-        return;
-      }
-
-      try {
-        const { error } = await supabase.from("products").insert([{ id, name, category, icon }]);
-        if (error) throw error;
-
-        showToast("Product added.", "success");
-        idInput.value = "";
-        nameInput.value = "";
-        catInput.value = "";
-        iconInput.value = "";
-
-        await loadProducts();
-        await refreshStats();
-      } catch (err) {
-        console.error("[addProduct] error:", err);
-        showToast("Failed to add product: " + (err.message || err), "danger");
-      }
-    }
-
-    async function deleteProduct(id) {
-      if (!confirm(`Delete product "${id}"? This will not touch stocks.`)) return;
-      try {
-        const { error } = await supabase.from("products").delete().eq("id", id);
-        if (error) throw error;
-        showToast("Product deleted.", "success");
-        await loadProducts();
-        await refreshStats();
-      } catch (err) {
-        console.error("[deleteProduct] error:", err);
-        showToast("Failed to delete product: " + (err.message || err), "danger");
-      }
-    }
-
-    // ========= ADD STOCK HELPERS =========
-    function getProductConfig(productId) {
-      return PRODUCTS_CONFIG[productId] || null;
-    }
-
-    function loadAccountTypeOptions(productId) {
-      CURRENT_STOCK_PRODUCT_ID = productId || null;
-      const accSelect = document.getElementById("stock-account-type");
-      const durSelect = document.getElementById("stock-duration");
-      if (!accSelect || !durSelect) return;
-
-      accSelect.innerHTML = '<option value="">Select account type</option>';
-      durSelect.innerHTML = '<option value="">Select duration</option>';
-      accSelect.disabled = true;
-      durSelect.disabled = true;
-
-      if (!productId) return;
-
-      const cfg = getProductConfig(productId);
-      if (!cfg || !cfg.accountTypes) {
-        accSelect.innerHTML = '<option value="">(No presets, enter custom in DB)</option>';
-        accSelect.disabled = true;
-        durSelect.disabled = true;
-        return;
-      }
-
-      Object.keys(cfg.accountTypes).forEach((type) => {
-        const opt = document.createElement("option");
-        opt.value = type;
-        opt.textContent = type;
-        accSelect.appendChild(opt);
-      });
-
-      accSelect.disabled = false;
-    }
-
-    function loadDurationOptions(productId, accountType) {
-      const durSelect = document.getElementById("stock-duration");
-      if (!durSelect) return;
-      durSelect.innerHTML = '<option value="">Select duration</option>';
-      durSelect.disabled = true;
-
-      if (!productId || !accountType) return;
-      const cfg = getProductConfig(productId);
-      if (!cfg || !cfg.accountTypes) return;
-
-      const list = cfg.accountTypes[accountType] || [];
-      list.forEach((code) => {
-        const opt = document.createElement("option");
-        opt.value = code;
-        opt.textContent = DURATION_LABELS[code] || code;
-        durSelect.appendChild(opt);
-      });
-      durSelect.disabled = false;
     }
 
     // ========= STOCKS =========
@@ -932,7 +737,7 @@
         if (!stocks || !stocks.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 9;
+          td.colSpan = 7;
           td.textContent = "No stocks yet.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -963,24 +768,14 @@
           tr.appendChild(tdEmail);
 
           const tdStatus = document.createElement("td");
-          tdStatus.textContent = s.status || "-";
+          const q = safeNumber(s.quantity);
+          tdStatus.textContent =
+            (s.status || "-") + (q ? ` (qty: ${q})` : "");
           tr.appendChild(tdStatus);
 
           const tdPrem = document.createElement("td");
           tdPrem.textContent = s.premium_until || "-";
           tr.appendChild(tdPrem);
-
-          const tdQty = document.createElement("td");
-          tdQty.textContent = s.quantity ?? 1;
-          tr.appendChild(tdQty);
-
-          const tdActions = document.createElement("td");
-          const btnDel = document.createElement("button");
-          btnDel.className = "btn btn-sm btn-outline-danger";
-          btnDel.textContent = "Delete";
-          btnDel.addEventListener("click", () => deleteStock(s.id));
-          tdActions.appendChild(btnDel);
-          tr.appendChild(tdActions);
 
           tbody.appendChild(tr);
         });
@@ -992,35 +787,32 @@
 
     async function saveStock() {
       const product_id = document.getElementById("stock-product")?.value || "";
-      const account_type = document.getElementById("stock-account-type")?.value || "";
-      const duration = document.getElementById("stock-duration")?.value || "";
+      const account_type =
+        document.getElementById("stock-account-type")?.value.trim() || "";
+      const duration =
+        document.getElementById("stock-duration")?.value.trim() || "";
       const email = document.getElementById("stock-email")?.value.trim() || "";
-      const password = document.getElementById("stock-password")?.value.trim() || "";
-      const profile = document.getElementById("stock-profile")?.value.trim() || "";
+      const password =
+        document.getElementById("stock-password")?.value.trim() || "";
+      const profile =
+        document.getElementById("stock-profile")?.value.trim() || "";
       const pin = document.getElementById("stock-pin")?.value.trim() || "";
       const archive_after = Number(
         document.getElementById("stock-archive-after")?.value || 0
       );
       const premium_until =
         document.getElementById("stock-premium-until")?.value || null;
+      // quantity-based, status auto: available
       const quantity = Number(
         document.getElementById("stock-quantity")?.value || 1
       );
 
       if (!product_id) {
-        showToast("Please select a product.", "warning");
+        showToast("Please select a product first.", "warning");
         return;
       }
-      if (!account_type) {
-        showToast("Please select an account type.", "warning");
-        return;
-      }
-      if (!duration) {
-        showToast("Please select a duration.", "warning");
-        return;
-      }
-      if (!email || !password) {
-        showToast("Email and password are required for the stock.", "warning");
+      if (!account_type || !duration) {
+        showToast("Please fill account type and duration.", "warning");
         return;
       }
 
@@ -1036,8 +828,8 @@
             pin,
             archive_after: Number.isFinite(archive_after) ? archive_after : 0,
             premium_until: premium_until || null,
-            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
             status: "available",
+            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
           },
         ]);
 
@@ -1051,31 +843,16 @@
             if (input) input.value = "";
           }
         );
-        document.getElementById("stock-quantity").value = 1;
 
         await loadStocks();
         await refreshStats();
       } catch (err) {
         console.error("[saveStock] error:", err);
-        showToast("Failed to save stock: " + (err.message || err), "danger");
+        showToast("Failed to save stock.", "danger");
       }
     }
 
-    async function deleteStock(id) {
-      if (!confirm(`Delete stock #${id}?`)) return;
-      try {
-        const { error } = await supabase.from("stocks").delete().eq("id", id);
-        if (error) throw error;
-        showToast("Stock deleted.", "success");
-        await loadStocks();
-        await refreshStats();
-      } catch (err) {
-        console.error("[deleteStock] error:", err);
-        showToast("Failed to delete stock: " + (err.message || err), "danger");
-      }
-    }
-
-    // ========= ORDERS =========
+    // ========= ORDERS (PENDING + CONFIRM PAYMENT) =========
     async function loadPendingOrders() {
       const tbody = document.getElementById("orders-table-body");
       if (!tbody) return;
@@ -1084,7 +861,9 @@
       try {
         const { data, error } = await supabase
           .from("orders")
-          .select("id, buyer_id, product_id, account_type, duration, price, status, payment_method, reference_number, proof_image_url")
+          .select(
+            "id, buyer_id, product_id, account_type, duration, price, status, payment_method, reference_number, proof_url, created_at"
+          )
           .order("created_at", { ascending: false });
 
         if (error) throw error;
@@ -1096,7 +875,7 @@
         if (!pending.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 11;
+          td.colSpan = 9;
           td.textContent = "No pending orders.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -1139,26 +918,23 @@
           tr.appendChild(tdRef);
 
           const tdProof = document.createElement("td");
-          if (o.proof_image_url) {
-            const link = document.createElement("a");
-            link.href = o.proof_image_url;
-            link.target = "_blank";
-            link.textContent = "View";
-            tdProof.appendChild(link);
+          if (o.proof_url) {
+            const a = document.createElement("a");
+            a.href = o.proof_url;
+            a.target = "_blank";
+            a.textContent = "View";
+            tr.appendChild(tdProof);
+            tdProof.appendChild(a);
           } else {
             tdProof.textContent = "-";
+            tr.appendChild(tdProof);
           }
-          tr.appendChild(tdProof);
-
-          const tdStatus = document.createElement("td");
-          tdStatus.textContent = o.status;
-          tr.appendChild(tdStatus);
 
           const tdAction = document.createElement("td");
           const btn = document.createElement("button");
           btn.className = "btn btn-sm btn-success";
-          btn.textContent = "Confirm & Assign";
-          btn.addEventListener("click", () => markOrderPaid(o.id));
+          btn.textContent = "Confirm Payment";
+          btn.addEventListener("click", () => confirmPayment(o.id));
           tdAction.appendChild(btn);
           tr.appendChild(tdAction);
 
@@ -1170,27 +946,35 @@
       }
     }
 
-    async function markOrderPaid(orderId) {
-      if (!confirm(`Confirm payment and assign account for order ${orderId}?`)) return;
+    async function confirmPayment(orderId) {
+      if (!confirm(`Confirm payment for order ${orderId}?`)) return;
 
       try {
-        // 1) Get order details
-        const { data: order, error: oErr } = await supabase
+        // 1) kunin ang order
+        const { data: order, error: orderErr } = await supabase
           .from("orders")
-          .select("*")
+          .select(
+            "id, buyer_id, product_id, account_type, duration, price, status"
+          )
           .eq("id", orderId)
           .maybeSingle();
 
-        if (oErr) throw oErr;
+        if (orderErr) throw orderErr;
         if (!order) {
           showToast("Order not found.", "danger");
           return;
         }
 
-        // 2) Find available stock matching product + type + duration
-        const { data: stocks, error: sErr } = await supabase
+        if ((order.status || "").toLowerCase() !== "pending") {
+          showToast("Order is not pending anymore.", "warning");
+          await loadPendingOrders();
+          return;
+        }
+
+        // 2) hanap matching stock (product_id + account_type + duration + available + quantity>0)
+        const { data: stocks, error: stockErr } = await supabase
           .from("stocks")
-          .select("*")
+          .select("id, quantity, status, product_id, account_type, duration")
           .eq("product_id", order.product_id)
           .eq("account_type", order.account_type)
           .eq("duration", order.duration)
@@ -1199,70 +983,67 @@
           .order("id", { ascending: true })
           .limit(1);
 
-        if (sErr) throw sErr;
+        if (stockErr) throw stockErr;
 
-        const stock = stocks && stocks[0];
-        if (!stock) {
-          showToast("No available stock for this product / type / duration.", "warning");
+        if (!stocks || !stocks.length) {
+          showToast("No available stock matching this order.", "warning");
           return;
         }
 
-        const currentQty = safeNumber(stock.quantity || 1);
-        const newQty = currentQty - 1;
+        const stock = stocks[0];
+        const currentQty = safeNumber(stock.quantity);
+        const newQty = currentQty > 0 ? currentQty - 1 : 0;
         const newStatus = newQty <= 0 ? "sold" : "available";
 
-        // 3) Update stock quantity
-        const { error: upStockErr } = await supabase
+        // 3) update order -> delivered (paid + account assigned)
+        const { error: updOrderErr } = await supabase
+          .from("orders")
+          .update({ status: "delivered" })
+          .eq("id", order.id);
+
+        if (updOrderErr) throw updOrderErr;
+
+        // 4) insert sa records (sold account / delivered)
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const { error: recErr } = await supabase.from("records").insert([
+          {
+            order_id: order.id,
+            buyer: order.buyer_id,
+            source: "Aiaxcart Premium Shop",
+            product_id: order.product_id,
+            account_type: order.account_type,
+            duration: order.duration,
+            purchase_date: today,
+            price: order.price,
+          },
+        ]);
+
+        if (recErr) throw recErr;
+
+        // 5) update stock quantity + status
+        const { error: updStockErr } = await supabase
           .from("stocks")
           .update({
-            quantity: newQty < 0 ? 0 : newQty,
+            quantity: newQty,
             status: newStatus,
           })
           .eq("id", stock.id);
 
-        if (upStockErr) throw upStockErr;
+        if (updStockErr) throw updStockErr;
 
-        // 4) Update order status to delivered (or paid)
-        const { error: upOrderErr } = await supabase
-          .from("orders")
-          .update({ status: "delivered" })
-          .eq("id", orderId);
+        showToast("Payment confirmed and account delivered.", "success");
 
-        if (upOrderErr) throw upOrderErr;
-
-        // 5) Insert record (for logs / reports)
-        const { error: recErr } = await supabase
-          .from("records")
-          .insert([
-            {
-              order_id: order.id,
-              buyer: order.buyer_id,
-              source: "shop",
-              product_id: order.product_id,
-              account_type: order.account_type,
-              duration: order.duration,
-              purchase_date: new Date().toISOString(),
-              price: order.price,
-            },
-          ]);
-
-        if (recErr) throw recErr;
-
-        showToast("Payment confirmed and account assigned.", "success");
-
-        await Promise.all([
-          loadPendingOrders(),
-          loadRecords(),
-          loadStocks(),
-          refreshStats()
-        ]);
+        await loadPendingOrders();
+        await loadStocks();
+        await loadRecords();
+        await refreshStats();
       } catch (err) {
-        console.error("[markOrderPaid] error:", err);
-        showToast("Failed to confirm payment: " + (err.message || err), "danger");
+        console.error("[confirmPayment] error:", err);
+        showToast("Failed to confirm payment.", "danger");
       }
     }
 
-    // ========= RECORDS =========
+    // ========= RECORDS (SOLD ACCOUNTS) =========
     async function loadRecords() {
       const tbody = document.getElementById("records-table-body");
       if (!tbody) return;
@@ -1277,8 +1058,6 @@
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-
-        RECORDS_CACHE = data || [];
 
         if (!data || !data.length) {
           const tr = document.createElement("tr");
@@ -1337,84 +1116,6 @@
       }
     }
 
-    async function addManualRecord() {
-      const buyer = prompt("Buyer name/email (for record):");
-      if (buyer === null) return;
-
-      const product_id = prompt("Product ID (e.g. netflix):") || "";
-      const account_type = prompt("Account type (solo/shared/etc):") || "";
-      const duration = prompt("Duration (1m, 3m, 7d, etc.):") || "";
-      const priceStr = prompt("Price (number):") || "0";
-      const price = Number(priceStr) || 0;
-      const today = new Date().toISOString();
-
-      try {
-        const { error } = await supabase.from("records").insert([
-          {
-            buyer,
-            source: "manual",
-            product_id,
-            account_type,
-            duration,
-            purchase_date: today,
-            price,
-          },
-        ]);
-        if (error) throw error;
-
-        showToast("Manual record added.", "success");
-        await loadRecords();
-        await refreshStats();
-      } catch (err) {
-        console.error("[addManualRecord] error:", err);
-        showToast("Failed to add record: " + (err.message || err), "danger");
-      }
-    }
-
-    function exportRecordsCSV() {
-      if (!RECORDS_CACHE || !RECORDS_CACHE.length) {
-        showToast("No records to export.", "warning");
-        return;
-      }
-
-      const headers = [
-        "id",
-        "order_id",
-        "buyer",
-        "source",
-        "product_id",
-        "account_type",
-        "duration",
-        "purchase_date",
-        "price",
-      ];
-
-      const lines = [headers.join(",")];
-
-      RECORDS_CACHE.forEach((r) => {
-        const row = headers.map((h) => {
-          let v = r[h] ?? "";
-          if (typeof v === "string") {
-            v = '"' + v.replace(/"/g, '""') + '"';
-          }
-          return v;
-        });
-        lines.push(row.join(","));
-      });
-
-      const blob = new Blob([lines.join("\n")], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "records.csv";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
     // ========= RULES =========
     async function loadRules() {
       const ul = document.getElementById("rules-list");
@@ -1438,68 +1139,14 @@
 
         data.forEach((r) => {
           const li = document.createElement("li");
-          li.className = "d-flex justify-content-between align-items-center mb-1";
-
-          const span = document.createElement("span");
-          span.textContent = r.product_id
+          li.textContent = r.product_id
             ? `[${r.product_id}] ${r.rule_text}`
             : r.rule_text;
-
-          const btnDel = document.createElement("button");
-          btnDel.className = "btn btn-sm btn-outline-danger";
-          btnDel.textContent = "Delete";
-          btnDel.addEventListener("click", () => deleteRule(r.id));
-
-          li.appendChild(span);
-          li.appendChild(btnDel);
           ul.appendChild(li);
         });
       } catch (err) {
         console.error("[rules] error:", err);
         showToast("Failed to load rules.", "danger");
-      }
-    }
-
-    async function addRule() {
-      const productIdInput = document.getElementById("rule-product-id");
-      const ruleTextInput = document.getElementById("rule-text");
-      const product_id = (productIdInput.value || "").trim() || null;
-      const rule_text = (ruleTextInput.value || "").trim();
-
-      if (!rule_text) {
-        showToast("Rule text is required.", "warning");
-        return;
-      }
-
-      try {
-        const { error } = await supabase.from("rules").insert([
-          {
-            product_id,
-            rule_text,
-          },
-        ]);
-        if (error) throw error;
-
-        showToast("Rule added.", "success");
-        productIdInput.value = "";
-        ruleTextInput.value = "";
-        await loadRules();
-      } catch (err) {
-        console.error("[addRule] error:", err);
-        showToast("Failed to add rule: " + (err.message || err), "danger");
-      }
-    }
-
-    async function deleteRule(id) {
-      if (!confirm(`Delete rule #${id}?`)) return;
-      try {
-        const { error } = await supabase.from("rules").delete().eq("id", id);
-        if (error) throw error;
-        showToast("Rule deleted.", "success");
-        await loadRules();
-      } catch (err) {
-        console.error("[deleteRule] error:", err);
-        showToast("Failed to delete rule: " + (err.message || err), "danger");
       }
     }
 
@@ -1584,51 +1231,13 @@
       });
     }
 
-    function initAddStockForm() {
-      const prodSelect = document.getElementById("stock-product");
-      const accSelect = document.getElementById("stock-account-type");
-
-      if (prodSelect) {
-        prodSelect.addEventListener("change", (e) => {
-          loadAccountTypeOptions(e.target.value);
-        });
-      }
-
-      if (accSelect) {
-        accSelect.addEventListener("change", (e) => {
-          loadDurationOptions(CURRENT_STOCK_PRODUCT_ID, e.target.value);
-        });
-      }
-    }
-
     // ========= INIT =========
     document.addEventListener("DOMContentLoaded", () => {
       initTabs();
-      initAddStockForm();
 
       const btnSaveStock = document.getElementById("btn-save-stock");
       if (btnSaveStock) {
         btnSaveStock.addEventListener("click", saveStock);
-      }
-
-      const btnAddProd = document.getElementById("btn-add-product");
-      if (btnAddProd) {
-        btnAddProd.addEventListener("click", addProduct);
-      }
-
-      const btnAddRecord = document.getElementById("btn-add-record");
-      if (btnAddRecord) {
-        btnAddRecord.addEventListener("click", addManualRecord);
-      }
-
-      const btnExportRecords = document.getElementById("btn-export-records");
-      if (btnExportRecords) {
-        btnExportRecords.addEventListener("click", exportRecordsCSV);
-      }
-
-      const btnAddRule = document.getElementById("btn-add-rule");
-      if (btnAddRule) {
-        btnAddRule.addEventListener("click", addRule);
       }
 
       // Initial loads
