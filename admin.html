@@ -296,21 +296,21 @@
       <div class="card mb-3">
         <div class="card-body">
           <form id="addStockForm" class="row g-2">
-            <div class="col-md-2">
-              <label class="form-label small mb-1">Product ID</label>
-              <input type="text" id="stockProductId" class="form-control form-control-sm" placeholder="e.g. netflix" required>
+            <div class="col-md-3">
+              <label class="form-label small mb-1">Product</label>
+              <select id="stockProductId" class="form-select form-select-sm" required></select>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
               <label class="form-label small mb-1">Product Name</label>
-              <input type="text" id="stockProductName" class="form-control form-control-sm" placeholder="Netflix Premium">
+              <input type="text" id="stockProductName" class="form-control form-control-sm" placeholder="Auto-filled" readonly>
             </div>
             <div class="col-md-2">
               <label class="form-label small mb-1">Account Type</label>
-              <input type="text" id="stockAccountType" class="form-control form-control-sm" placeholder="solo profile" required>
+              <select id="stockAccountType" class="form-select form-select-sm" required></select>
             </div>
             <div class="col-md-2">
               <label class="form-label small mb-1">Duration</label>
-              <input type="text" id="stockDuration" class="form-control form-control-sm" placeholder="1m" required>
+              <select id="stockDuration" class="form-select form-select-sm" required></select>
             </div>
             <div class="col-md-2">
               <label class="form-label small mb-1">Login Email</label>
@@ -335,8 +335,8 @@
             </div>
             <div class="col-md-6 d-flex align-items-end">
               <small class="text-muted">
-                Note: This will insert into <strong>stocks</strong> table with status <code>available</code>.  
-                Make sure column names match: product_id, product_name, account_type, duration, email, password, profile, pin, status.
+                Inserts into <strong>stocks</strong> table with status <code>available</code>.  
+                Columns used: product_id, product_name, account_type, duration, email, password, profile, pin, status, created_at.
               </small>
             </div>
           </form>
@@ -374,6 +374,82 @@
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let ALL_ORDERS = [];
+
+    // DROPDOWN OPTIONS (static – pareho dapat sa buyer side IDs)
+    const PRODUCT_OPTIONS = [
+      { id: 'netflix',            label: 'Netflix Premium' },
+      { id: 'viu',                label: 'Viu Premium' },
+      { id: 'viva-max',           label: 'VIVAMAX / VIVAONE' },
+      { id: 'wetv',               label: 'WeTV' },
+      { id: 'iwant-tfc',          label: 'IWANT TFC' },
+      { id: 'crunchyroll',        label: 'Crunchyroll' },
+      { id: 'disney-plus',        label: 'Disney+' },
+      { id: 'bilibili',           label: 'Bilibili' },
+      { id: 'loklok',             label: 'Loklok' },
+      { id: 'iqiyi',              label: 'iQiyi' },
+      { id: 'hbo-max',            label: 'HBO Max' },
+      { id: 'amazon-prime',       label: 'Amazon Prime' },
+      { id: 'youku',              label: 'Youku' },
+      { id: 'nba-league-pass',    label: 'NBA League Pass Premium' },
+      { id: 'youtube',            label: 'YouTube Premium' },
+      { id: 'spotify',            label: 'Spotify Premium' },
+      { id: 'apple-music',        label: 'Apple Music' },
+      { id: 'chatgpt',            label: 'ChatGPT Plus' },
+      { id: 'blackbox-ai',        label: 'Blackbox AI' },
+      { id: 'perplexity',         label: 'Perplexity AI' },
+      { id: 'google-one',         label: 'Google One + Gemini' },
+      { id: 'quizlet',            label: 'Quizlet+' },
+      { id: 'scribd',             label: 'Scribd Premium' },
+      { id: 'studocu',            label: 'Studocu Premium' },
+      { id: 'duolingo',           label: 'Duolingo Super' },
+      { id: 'turnitin-student',   label: 'Turnitin Student' },
+      { id: 'turnitin-instructor',label: 'Turnitin Instructor' },
+      { id: 'canva',              label: 'Canva Pro' },
+      { id: 'picsart',            label: 'Picsart Gold' },
+      { id: 'capcut',             label: 'CapCut Pro' },
+      { id: 'alight-motion',      label: 'Alight Motion Pro' },
+      { id: 'remini',             label: 'Remini Web' },
+      { id: 'grammarly',          label: 'Grammarly Premium' },
+      { id: 'quillbot',           label: 'Quillbot Premium' },
+      { id: 'ms-365',             label: 'Microsoft 365' },
+      { id: 'cams-canner',        label: 'CamScanner Pro' },
+      { id: 'small-pdf',          label: 'Small PDF Pro' },
+      { id: 'zoom',               label: 'Zoom Pro' }
+    ];
+
+    const ACCOUNT_TYPE_OPTIONS = [
+      'solo account',
+      'shared account',
+      'solo profile',
+      'shared profile',
+      'famhead',
+      'solo',
+      'invite',
+      'edu lifetime',
+      'teamhead',
+      'teamhead account',
+      'solo fw',
+      'solo nw'
+    ];
+
+    const DURATION_OPTIONS = [
+      '7d',
+      '14d',
+      '1m',
+      '2m',
+      '3m',
+      '4m',
+      '5m',
+      '6m',
+      '8m',
+      '10m',
+      '12m',
+      '24m',
+      'nw',
+      '3m w',
+      '6m w',
+      '12m w'
+    ];
 
     // ==============================
     // UTILITIES
@@ -531,16 +607,14 @@
     // ==============================
     // STOCK LOOKUP + DELIVERY LOGIC
     // ==============================
-
     async function findAvailableStockForOrder(order) {
-      // I-adjust mo kung iba column names mo sa stocks
       const { data, error } = await supabase
         .from('stocks')
         .select('id, product_id, product_name, account_type, duration, email, password, profile, pin, status, created_at')
         .eq('product_id', order.product_id)
         .eq('account_type', order.account_type)
         .eq('duration', order.duration)
-        .or('status.is.null,status.eq.available') // NULL or 'available' = usable
+        .or('status.is.null,status.eq.available')
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -592,7 +666,7 @@
         .eq('id', stockId);
 
       if (error) {
-        console.error('Error marking stock as used:', error);
+        console.error('Error updating stock status:', error);
         showToast('Error updating stock status', 'error');
         return false;
       }
@@ -606,7 +680,7 @@
         .eq('id', orderId);
 
       if (error) {
-        console.error('Error updating order:', error);
+        console.error('Error updating order status:', error);
         showToast('Error updating order status', 'error');
         return false;
       }
@@ -641,7 +715,7 @@
 
         showToast(`Order ${orderId} confirmed and delivered.`, 'success');
         await loadOrders();
-        await loadStocks(); // refresh stocks view
+        await loadStocks();
       } catch (err) {
         console.error('confirmAndDeliverOrder error:', err);
         showToast('Unexpected error while delivering order', 'error');
@@ -751,6 +825,7 @@
 
         showToast('Stock added successfully.', 'success');
         (document.getElementById('addStockForm')).reset();
+        populateStockFormOptions(); // refill default dropdown values
         await loadStocks();
       } catch (err) {
         console.error('handleAddStock error:', err);
@@ -759,11 +834,56 @@
     }
 
     // ==============================
+    // INIT DROPDOWNS
+    // ==============================
+    function populateStockFormOptions() {
+      const productSelect = document.getElementById('stockProductId');
+      const accountTypeSelect = document.getElementById('stockAccountType');
+      const durationSelect = document.getElementById('stockDuration');
+      const productNameInput = document.getElementById('stockProductName');
+
+      // products
+      productSelect.innerHTML = '<option value="">Select product</option>';
+      PRODUCT_OPTIONS.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.label;
+        productSelect.appendChild(opt);
+      });
+
+      // account types
+      accountTypeSelect.innerHTML = '<option value="">Select account type</option>';
+      ACCOUNT_TYPE_OPTIONS.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        accountTypeSelect.appendChild(opt);
+      });
+
+      // durations
+      durationSelect.innerHTML = '<option value="">Select duration</option>';
+      DURATION_OPTIONS.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        durationSelect.appendChild(opt);
+      });
+
+      // auto-fill product name when product changes
+      productSelect.addEventListener('change', () => {
+        const chosen = PRODUCT_OPTIONS.find(p => p.id === productSelect.value);
+        productNameInput.value = chosen ? chosen.label : '';
+      });
+    }
+
+    // ==============================
     // INIT
     // ==============================
     document.addEventListener('DOMContentLoaded', () => {
+      populateStockFormOptions();
       loadOrders();
       loadStocks();
+
       const addStockForm = document.getElementById('addStockForm');
       if (addStockForm) {
         addStockForm.addEventListener('submit', handleAddStock);
