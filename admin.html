@@ -158,7 +158,7 @@
     </section>
 
     <!-- ORDERS TABS -->
-    <section>
+    <section class="mb-5">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">Orders</h4>
       </div>
@@ -215,7 +215,7 @@
           </div>
         </div>
 
-        <!-- Confirmed (read-only actions) -->
+        <!-- Confirmed -->
         <div class="tab-pane fade" id="pane-confirmed" role="tabpanel">
           <div class="table-responsive">
             <table class="table table-sm align-middle">
@@ -284,6 +284,79 @@
             </table>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- STOCKS SECTION (ADD STOCK + LIST) -->
+    <section>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Stocks</h4>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <form id="addStockForm" class="row g-2">
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Product ID</label>
+              <input type="text" id="stockProductId" class="form-control form-control-sm" placeholder="e.g. netflix" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Product Name</label>
+              <input type="text" id="stockProductName" class="form-control form-control-sm" placeholder="Netflix Premium">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Account Type</label>
+              <input type="text" id="stockAccountType" class="form-control form-control-sm" placeholder="solo profile" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Duration</label>
+              <input type="text" id="stockDuration" class="form-control form-control-sm" placeholder="1m" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Login Email</label>
+              <input type="text" id="stockEmail" class="form-control form-control-sm" placeholder="email for account" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Password</label>
+              <input type="text" id="stockPassword" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Profile (optional)</label>
+              <input type="text" id="stockProfile" class="form-control form-control-sm" placeholder="Profile 1">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">PIN (optional)</label>
+              <input type="text" id="stockPin" class="form-control form-control-sm" placeholder="PIN">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button class="btn btn-sm btn-primary w-100" type="submit">
+                <i class="fas fa-plus me-1"></i>Add Stock
+              </button>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <small class="text-muted">
+                Note: This will insert into <strong>stocks</strong> table with status <code>available</code>.  
+                Make sure column names match: product_id, product_name, account_type, duration, email, password, profile, pin, status.
+              </small>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>Type / Duration</th>
+              <th>Login</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="tblStocks"></tbody>
+        </table>
       </div>
     </section>
   </main>
@@ -460,14 +533,14 @@
     // ==============================
 
     async function findAvailableStockForOrder(order) {
-      // Adjust column names here if iba sa stocks table mo
+      // I-adjust mo kung iba column names mo sa stocks
       const { data, error } = await supabase
         .from('stocks')
         .select('id, product_id, product_name, account_type, duration, email, password, profile, pin, status, created_at')
         .eq('product_id', order.product_id)
         .eq('account_type', order.account_type)
         .eq('duration', order.duration)
-        .or('status.is.null,status.eq.available') // treat NULL or 'available' as usable
+        .or('status.is.null,status.eq.available') // NULL or 'available' = usable
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -481,7 +554,6 @@
     }
 
     async function createRecordFromStock(order, stock) {
-      // Adjust field list if iba ang columns sa records table
       const record = {
         order_id: order.id,
         buyer_email: order.buyer_email,
@@ -511,7 +583,6 @@
     }
 
     async function markStockAsUsed(stockId) {
-      // Adjust column names kung iba sa schema mo
       const { error } = await supabase
         .from('stocks')
         .update({
@@ -553,27 +624,24 @@
           return;
         }
 
-        // 1. Find a matching stock
         const stock = await findAvailableStockForOrder(order);
         if (!stock) {
-          showToast('No available stock for this order (check stocks table)', 'warning');
+          showToast('Cannot confirm: no available stock for this product / type / duration.', 'warning');
           return;
         }
 
-        // 2. Create delivered record
         const rec = await createRecordFromStock(order, stock);
         if (!rec) return;
 
-        // 3. Mark stock as used
         const stockUpdated = await markStockAsUsed(stock.id);
         if (!stockUpdated) return;
 
-        // 4. Update order -> delivered
         const orderUpdated = await setOrderStatus(orderId, 'delivered');
         if (!orderUpdated) return;
 
         showToast(`Order ${orderId} confirmed and delivered.`, 'success');
         await loadOrders();
+        await loadStocks(); // refresh stocks view
       } catch (err) {
         console.error('confirmAndDeliverOrder error:', err);
         showToast('Unexpected error while delivering order', 'error');
@@ -593,10 +661,113 @@
     }
 
     // ==============================
+    // STOCKS: LOAD + ADD
+    // ==============================
+    async function loadStocks() {
+      try {
+        const { data, error } = await supabase
+          .from('stocks')
+          .select('id, product_id, product_name, account_type, duration, email, status, created_at')
+          .order('created_at', { ascending: false });
+
+        const tbody = document.getElementById('tblStocks');
+        if (error) {
+          console.error('Error loading stocks:', error);
+          showToast('Error loading stocks', 'error');
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Failed to load stocks.</td></tr>';
+          return;
+        }
+
+        if (!data || !data.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No stocks yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        data.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${s.id}</td>
+            <td>
+              <div class="small fw-semibold">${s.product_name || '-'}</div>
+              <div class="small text-muted">${s.product_id || '-'}</div>
+            </td>
+            <td>
+              <div class="small">${s.account_type || '-'}</div>
+              <div class="small text-muted">${s.duration || '-'}</div>
+            </td>
+            <td class="small">${s.email || '-'}</td>
+            <td class="small text-capitalize">${(s.status || 'available')}</td>
+            <td class="small">${formatDate(s.created_at)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('loadStocks error:', err);
+        showToast('Unexpected error loading stocks', 'error');
+      }
+    }
+
+    async function handleAddStock(e) {
+      e.preventDefault();
+
+      const product_id   = document.getElementById('stockProductId').value.trim();
+      const product_name = document.getElementById('stockProductName').value.trim() || null;
+      const account_type = document.getElementById('stockAccountType').value.trim();
+      const duration     = document.getElementById('stockDuration').value.trim();
+      const email        = document.getElementById('stockEmail').value.trim();
+      const password     = document.getElementById('stockPassword').value.trim();
+      const profile      = document.getElementById('stockProfile').value.trim() || null;
+      const pin          = document.getElementById('stockPin').value.trim() || null;
+
+      if (!product_id || !account_type || !duration || !email || !password) {
+        showToast('Please fill in all required fields for stock', 'warning');
+        return;
+      }
+
+      const payload = {
+        product_id,
+        product_name,
+        account_type,
+        duration,
+        email,
+        password,
+        profile,
+        pin,
+        status: 'available',
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        const { error } = await supabase
+          .from('stocks')
+          .insert(payload);
+
+        if (error) {
+          console.error('Error adding stock:', error);
+          showToast('Error adding stock (check columns in stocks table)', 'error');
+          return;
+        }
+
+        showToast('Stock added successfully.', 'success');
+        (document.getElementById('addStockForm')).reset();
+        await loadStocks();
+      } catch (err) {
+        console.error('handleAddStock error:', err);
+        showToast('Unexpected error adding stock', 'error');
+      }
+    }
+
+    // ==============================
     // INIT
     // ==============================
     document.addEventListener('DOMContentLoaded', () => {
       loadOrders();
+      loadStocks();
+      const addStockForm = document.getElementById('addStockForm');
+      if (addStockForm) {
+        addStockForm.addEventListener('submit', handleAddStock);
+      }
     });
   </script>
 </body>
