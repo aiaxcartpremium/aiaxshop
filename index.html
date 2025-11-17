@@ -204,7 +204,6 @@
               <a class="nav-link active" href="#" data-section="home">Home</a>
             </li>
             <li class="nav-item">
-              <!-- IMPORTANT: relative path for GitHub Pages -->
               <a class="nav-link" href="admin.html" target="_blank">Admin</a>
             </li>
             <li class="nav-item">
@@ -295,7 +294,7 @@
                     <label class="form-label" for="feedbackImage">Image (Optional)</label>
                     <input type="file" id="feedbackImage" class="form-control" accept="image/*">
                   </div>
-                  <button class="btn btn-primary w-100" type="submit">Submit Feedback</button>
+                  <button class="btn btn-primary w-100" type="submit">Submit Feedback (mock)</button>
                 </form>
               </div>
             </div>
@@ -323,9 +322,6 @@
                 <a class="nav-link active" data-bs-toggle="tab" href="#pendingOrders">Pending</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#confirmedOrders">Confirmed</a>
-              </li>
-              <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#deliveredAccounts">Delivered</a>
               </li>
               <li class="nav-item">
@@ -336,9 +332,6 @@
             <div class="tab-content mt-3">
               <div class="tab-pane fade show active" id="pendingOrders">
                 <div id="pendingOrdersList"></div>
-              </div>
-              <div class="tab-pane fade" id="confirmedOrders">
-                <div id="confirmedOrdersList"></div>
               </div>
               <div class="tab-pane fade" id="deliveredAccounts">
                 <div id="deliveredAccountsList"></div>
@@ -375,7 +368,7 @@
                     <label class="form-label" for="reportScreenshot">Screenshot (Optional)</label>
                     <input type="file" id="reportScreenshot" class="form-control" accept="image/*">
                   </div>
-                  <button class="btn btn-primary" type="submit">Submit Report</button>
+                  <button class="btn btn-primary" type="submit">Submit Report (mock)</button>
                 </form>
               </div>
             </div>
@@ -459,15 +452,15 @@
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="referenceNumber">Reference Number</label>
-              <input type="text" id="referenceNumber" class="form-control" placeholder="Enter reference number">
+              <label class="form-label" for="referenceNumber">Reference Number (optional)</label>
+              <input type="text" id="referenceNumber" class="form-control" placeholder="Enter reference number (optional)">
             </div>
             <div class="mb-3">
-              <label class="form-label" for="proofImage">Proof of Payment (Screenshot)</label>
-              <input type="file" id="proofImage" class="form-control" accept="image/*">
+              <label class="form-label" for="proofImage">Proof of Payment (Screenshot) <span class="text-danger">*</span></label>
+              <input type="file" id="proofImage" class="form-control" accept="image/*" required>
             </div>
             <div class="alert alert-info">
-              <small>After submitting, your order will be processed and you'll receive a confirmation.</small>
+              <small>After submitting, your order will be processed and you'll receive a delivered account once payment is confirmed.</small>
             </div>
             <button class="btn btn-primary w-100" type="submit">Submit Order</button>
           </form>
@@ -534,142 +527,530 @@
     </div>
   </div>
 
-  
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ==============================
+    // SUPABASE CONFIG
+    // ==============================
+    const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
+    const SUPABASE_ANON_KEY =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
 
- <script>
-  // ==============================
-  // SUPABASE CONFIG
-  // ==============================
-  const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
-  const SUPABASE_ANON_KEY =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+    let currentProduct = null;
+    let currentOrderDetails = null;
+    let PRODUCT_STOCK_COUNTS = {};     // per product_id
+    let COMBO_STOCK_COUNTS = {};       // key: product_id|account_type|duration
 
-  let currentUser = null;
-  let currentProduct = null;
-  let currentOrderDetails = null;
-  let PRODUCT_STOCK_COUNTS = {}; // product_id -> count of available stocks
+    // ==============================
+    // DURATION MAP
+    // ==============================
+    const durationMap = {
+      '7d': '7 Days',
+      '14d': '14 Days',
+      '1m': '1 Month',
+      '2m': '2 Months',
+      '3m': '3 Months',
+      '4m': '4 Months',
+      '5m': '5 Months',
+      '6m': '6 Months',
+      '8m': '8 Months',
+      '10m': '10 Months',
+      '12m': '12 Months',
+      '24m': '24 Months',
+      'nw': 'No Warranty',
+      '3m w': '3 Months Warranty',
+      '6m w': '6 Months Warranty',
+      '12m w': '12 Months Warranty'
+    };
 
-  // ==============================
-  // DURATION MAP
-  // ==============================
-  const durationMap = {
-    '7d': '7 Days',
-    '14d': '14 Days',
-    '1m': '1 Month',
-    '2m': '2 Months',
-    '3m': '3 Months',
-    '4m': '4 Months',
-    '5m': '5 Months',
-    '6m': '6 Months',
-    '8m': '8 Months',
-    '10m': '10 Months',
-    '12m': '12 Months',
-    '24m': '24 Months',
-    'nw': 'No Warranty',
-    '3m w': '3 Months Warranty',
-    '6m w': '6 Months Warranty',
-    '12m w': '12 Months Warranty'
-  };
+    // ==============================
+    // STATIC PRODUCTS DATA (ALWAYS SHOWN)
+    // ==============================
+    const PRODUCTS_DATA = [
+      // Entertainment
+      {
+        id: 'netflix',
+        name: 'Netflix Premium',
+        category: 'entertainment',
+        icon: '📺',
+        pricing: {
+          'solo profile': { '1m': 160, '2m': 280, '3m': 435, '4m': 565, '6m': 850, '8m': 1090, '12m': 1500 },
+          'shared profile': { '1m': 80, '2m': 145, '3m': 205, '4m': 270, '6m': 410, '8m': 520, '12m': 800 }
+        }
+      },
+      {
+        id: 'viu',
+        name: 'Viu Premium',
+        category: 'entertainment',
+        icon: '🎬',
+        pricing: {
+          'solo account': { '1m': 70, '2m': 105, '3m': 145, '4m': 170, '6m': 205, '10m': 280, '12m': 310 },
+          'shared account': { '1m': 30, '2m': 55, '3m': 75, '4m': 90, '6m': 120, '10m': 190, '12m': 220 }
+        }
+      },
+      {
+        id: 'viva-max',
+        name: 'VIVAMAX VIVAONE',
+        category: 'entertainment',
+        icon: '🎭',
+        pricing: {
+          'solo account': { '1m': 110, '2m': 145, '3m': 170 },
+          'shared account': { '1m': 65, '2m': 90, '3m': 120 }
+        }
+      },
+      {
+        id: 'wetv',
+        name: 'WeTV',
+        category: 'entertainment',
+        icon: '📱',
+        pricing: {
+          'solo account': { '1m': 150 },
+          'shared account': { '1m': 55, '2m': 95, '3m': 135 }
+        }
+      },
+      {
+        id: 'iwant-tfc',
+        name: 'IWANT TFC',
+        category: 'entertainment',
+        icon: '📺',
+        pricing: {
+          'solo account': { '1m': 145 },
+          'shared account': { '1m': 50, '2m': 90, '3m': 125 }
+        }
+      },
+      {
+        id: 'crunchyroll',
+        name: 'Crunchyroll',
+        category: 'entertainment',
+        icon: '🎮',
+        pricing: {
+          'solo profile': { '1m': 75, '2m': 115, '3m': 160, '4m': 195 },
+          'shared profile': { '1m': 35, '2m': 60, '3m': 90, '4m': 115 }
+        }
+      },
+      {
+        id: 'disney-plus',
+        name: 'Disney+',
+        category: 'entertainment',
+        icon: '🦁',
+        pricing: {
+          'solo account': { '1m': 390 },
+          'solo profile': { '1m': 160, '2m': 315, '4m': 630, '10m': 1480, '12m': 1700 },
+          'shared profile': { '1m': 85, '2m': 165, '4m': 330, '10m': 720, '12m': 880 }
+        }
+      },
+      {
+        id: 'bilibili',
+        name: 'Bilibili',
+        category: 'entertainment',
+        icon: '📺',
+        pricing: {
+          'shared account': { '1m': 45, '2m': 75, '3m': 105 }
+        }
+      },
+      {
+        id: 'loklok',
+        name: 'Loklok',
+        category: 'entertainment',
+        icon: '📱',
+        pricing: {
+          'solo account': { '1m': 150 },
+          'shared account': { '1m': 65, '2m': 115, '3m': 170 }
+        }
+      },
+      {
+        id: 'iqiyi',
+        name: 'iQiyi',
+        category: 'entertainment',
+        icon: '📺',
+        pricing: {
+          'shared account': { '1m': 50, '2m': 90, '3m': 135 }
+        }
+      },
+      {
+        id: 'hbo-max',
+        name: 'HBO Max',
+        category: 'entertainment',
+        icon: '📹',
+        pricing: {
+          'solo account': { '1m': 240, '2m': 360, '3m': 480 },
+          'solo profile': { '1m': 135, '2m': 240, '3m': 350 },
+          'shared profile': { '1m': 70, '2m': 120, '3m': 170 }
+        }
+      },
+      {
+        id: 'amazon-prime',
+        name: 'Amazon Prime',
+        category: 'entertainment',
+        icon: '🛒',
+        pricing: {
+          'solo account': { '1m': 80, '2m': 110, '3m': 135, '4m': 160, '5m': 185, '6m': 210 },
+          'solo profile': { '1m': 50, '2m': 80, '3m': 110, '4m': 135, '5m': 150, '6m': 170 },
+          'shared profile': { '1m': 30, '2m': 50, '3m': 70, '4m': 80, '5m': 90, '6m': 100 }
+        }
+      },
+      {
+        id: 'youku',
+        name: 'Youku',
+        category: 'entertainment',
+        icon: '📺',
+        pricing: {
+          'solo account': { '1m': 125 },
+          'shared account': { '1m': 50, '2m': 90, '3m': 125 }
+        }
+      },
+      {
+        id: 'nba-league-pass',
+        name: 'NBA League Pass Premium',
+        category: 'entertainment',
+        icon: '🏀',
+        pricing: {
+          'solo account': { '1m': 150 },
+          'shared account': { '1m': 75 }
+        }
+      },
 
-  // ==============================
-  // STATIC PRODUCTS DATA (same as dati)
-  // ==============================
-  const PRODUCTS_DATA = [/* === ILAGAY DITO EXACTLY YUNG PRODUCTS_DATA MO NA MERON NA NGAYON (huwag galawin) === */];
-  // Note: ok lang iwan yung "stock" field sa objects, pero hindi na natin siya gagamitin.
-  // Gagamit tayo ng real count galing sa stocks table.
+      // Streaming
+      {
+        id: 'youtube',
+        name: 'YouTube Premium',
+        category: 'streaming',
+        icon: '📹',
+        pricing: {
+          'famhead': { '1m': 70, '2m': 90, '3m': 125, '4m': 150, '5m': 175, '6m': 200 },
+          'solo': { '1m': 45, '2m': 60, '3m': 85, '4m': 105, '5m': 125, '6m': 145 },
+          'invite': { '1m': 20, '2m': 35, '3m': 50, '4m': 60, '5m': 70, '6m': 80 }
+        }
+      },
+      {
+        id: 'spotify',
+        name: 'Spotify Premium',
+        category: 'streaming',
+        icon: '🎵',
+        pricing: {
+          'solo fw': { '1m': 60, '2m': 110, '3m': 150, '4m': 200 },
+          'solo nw': { '1m': 45, '2m': 80, '3m': 120, '4m': 150 }
+        }
+      },
+      {
+        id: 'apple-music',
+        name: 'Apple Music',
+        category: 'streaming',
+        icon: '🎧',
+        pricing: {
+          'solo account': { '1m': 49, '2m': 89, '3m': 129, '4m': 159 }
+        }
+      },
 
-  // ==============================
-  // UTILITIES
-  // ==============================
-  function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    const bsType = type === 'error' ? 'danger' : type;
-    toast.className = `toast align-items-center text-bg-${bsType} border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.innerHTML = `
-      <div class="d-flex">
-        <div class="toast-body">${message}</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-      </div>
-    `;
-    document.getElementById('toastContainer').appendChild(toast);
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
-    toast.addEventListener('hidden.bs.toast', () => toast.remove());
-  }
+      // AI
+      {
+        id: 'chatgpt',
+        name: 'ChatGPT Plus',
+        category: 'ai',
+        icon: '🧠',
+        pricing: {
+          'solo account': { '1m': 600, '2m': 1050, '3m': 1500 },
+          'shared account': { '1m': 120, '2m': 200, '3m': 290 }
+        }
+      },
+      {
+        id: 'blackbox-ai',
+        name: 'Blackbox AI',
+        category: 'ai',
+        icon: '🤖',
+        pricing: {
+          'solo account': { '1m': 90, '2m': 170, '3m': 250 }
+        }
+      },
+      {
+        id: 'perplexity',
+        name: 'Perplexity AI',
+        category: 'ai',
+        icon: '🔍',
+        pricing: {
+          'solo account': { '1m': 120, '4m': 200, '6m': 250, '12m': 300, '24m': 450 },
+          'shared account': { '1m': 55, '4m': 140, '6m': 190, '12m': 230, '24m': 350 }
+        }
+      },
+      {
+        id: 'google-one',
+        name: 'Google One + Gemini AI',
+        category: 'ai',
+        icon: '☁️',
+        pricing: {
+          'solo account': { '1m': 50, '2m': 85, '3m': 120, '12m': 280 },
+          'shared account': { '1m': 30, '2m': 50, '3m': 80, '12m': 150 }
+        }
+      },
 
-  function getInitials(name) {
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .map(part => part[0])
-      .join('')
-      .toUpperCase();
-  }
+      // Educational
+      {
+        id: 'quizlet',
+        name: 'Quizlet+',
+        category: 'educational',
+        icon: '📚',
+        pricing: {
+          'solo account': { '1m': 45, '2m': 65, '3m': 100 },
+          'shared account': { '1m': 20, '2m': 35, '3m': 50 }
+        }
+      },
+      {
+        id: 'scribd',
+        name: 'Scribd Premium',
+        category: 'educational',
+        icon: '📖',
+        pricing: {
+          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+          'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+        }
+      },
+      {
+        id: 'studocu',
+        name: 'Studocu Premium',
+        category: 'educational',
+        icon: '🎓',
+        pricing: {
+          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+          'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+        }
+      },
+      {
+        id: 'duolingo',
+        name: 'Duolingo Super',
+        category: 'educational',
+        icon: '🧑‍🎓',
+        pricing: {
+          'solo account': { '1m': 80, '2m': 130, '3m': 170 }
+        }
+      },
+      {
+        id: 'turnitin-student',
+        name: 'Turnitin Student',
+        category: 'educational',
+        icon: '📝',
+        pricing: {
+          'solo account': { '7d': 35, '14d': 50, '1m': 80, '2m': 140, '3m': 160, '6m': 330, '12m': 580 }
+        }
+      },
+      {
+        id: 'turnitin-instructor',
+        name: 'Turnitin Instructor',
+        category: 'educational',
+        icon: '👨‍🏫',
+        pricing: {
+          'solo account': { '1m': 520 },
+          'shared account': { '7d': 120, '14d': 175, '1m': 280 }
+        }
+      },
 
-  function formatDate(dateString) {
-    const d = new Date(dateString);
-    if (isNaN(d.getTime())) return dateString || '-';
-    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+      // Editing / Mixed
+      {
+        id: 'canva',
+        name: 'Canva Pro',
+        category: 'editing',
+        icon: '🎨',
+        pricing: {
+          'edu lifetime': { 'nw': 19, '3m w': 39, '6m w': 49, '12m w': 69 },
+          'teamhead': { '1m': 45, '2m': 55, '3m': 65, '4m': 75, '5m': 85, '6m': 95 },
+          'solo': { '1m': 25, '2m': 35, '3m': 45, '4m': 55, '5m': 65, '6m': 75 },
+          'invite': { '1m': 10, '2m': 15, '3m': 20, '4m': 25, '5m': 30, '6m': 35 }
+        }
+      },
+      {
+        id: 'picsart',
+        name: 'Picsart Gold',
+        category: 'editing',
+        icon: '👏',
+        pricing: {
+          'teamhead account': { '1m': 70, '2m': 115, '3m': 150 },
+          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+          'shared account': { '1m': 25, '2m': 45, '3m': 70 }
+        }
+      },
+      {
+        id: 'capcut',
+        name: 'CapCut Pro',
+        category: 'editing',
+        icon: '📝',
+        pricing: {
+          'solo account': { '7d': 50, '1m': 130, '2m': 190, '3m': 240 },
+          'shared account': { '1m': 70, '2m': 120, '3m': 155 }
+        }
+      },
+      {
+        id: 'alight-motion',
+        name: 'Alight Motion Pro',
+        category: 'editing',
+        icon: '📱',
+        pricing: {
+          'solo account': { '1m': 90, '12m': 149 },
+          'shared account': { '1m': 35, '12m': 69 }
+        }
+      },
+      {
+        id: 'remini',
+        name: 'Remini Web',
+        category: 'editing',
+        icon: '✨',
+        pricing: {
+          'solo account': { '7d': 30, '1m': 50 },
+          'shared account': { '7d': 15, '1m': 25 }
+        }
+      },
+      {
+        id: 'grammarly',
+        name: 'Grammarly Premium',
+        category: 'educational',
+        icon: '✍️',
+        pricing: {
+          'solo account': { '1m': 85 },
+          'shared account': { '1m': 35, '2m': 65, '3m': 95 }
+        }
+      },
+      {
+        id: 'quillbot',
+        name: 'Quillbot Premium',
+        category: 'educational',
+        icon: '📝',
+        pricing: {
+          'solo account': { '1m': 100 },
+          'shared account': { '1m': 45, '2m': 75, '3m': 110 }
+        }
+      },
+      {
+        id: 'ms-365',
+        name: 'Microsoft 365',
+        category: 'educational',
+        icon: '💻',
+        pricing: {
+          'solo account': { '1m': 55, '2m': 90, '3m': 120 },
+          'shared account': { '1m': 25, '2m': 45, '3m': 65 }
+        }
+      },
+      {
+        id: 'cams-canner',
+        name: 'CamScanner Pro',
+        category: 'editing',
+        icon: '📁',
+        pricing: {
+          'solo account': { '1m': 100, '2m': 180, '3m': 250 },
+          'shared account': { '1m': 50, '2m': 90, '3m': 120 }
+        }
+      },
+      {
+        id: 'small-pdf',
+        name: 'Small PDF Pro',
+        category: 'editing',
+        icon: '📁',
+        pricing: {
+          'solo account': { '1m': 55, '2m': 95, '3m': 130 },
+          'shared account': { '1m': 30, '2m': 50, '3m': 70 }
+        }
+      },
+      {
+        id: 'zoom',
+        name: 'Zoom Pro',
+        category: 'educational',
+        icon: '📽️',
+        pricing: {
+          'solo account': { '14d': 45, '1m': 70, '2m': 120, '3m': 160 }
+        }
+      }
+    ];
 
-  function isValidGmail(email) {
-    return /^[a-zA-Z0-9.]+@gmail\.com$/.test(email);
-  }
+    // ==============================
+    // UTILITIES
+    // ==============================
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const bsType = type === 'error' ? 'danger' : type;
+      toast.className = `toast align-items-center text-bg-${bsType} border-0`;
+      toast.setAttribute('role', 'alert');
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      document.getElementById('toastContainer').appendChild(toast);
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
 
-  function generateOrderCode() {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const rand = Math.floor(1000 + Math.random() * 9000);
-    return `AXP-${y}${m}${d}-${rand}`;
-  }
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .map(part => part[0])
+        .join('')
+        .toUpperCase();
+    }
 
-  // ==============================
-  // SUPABASE HELPERS
-  // ==============================
-  async function saveBuyerToSupabase(buyer) {
-    try {
-      const { data, error } = await supabase
-        .from('buyers')
-        .insert({
-          name: buyer.name,
-          email: buyer.email.toLowerCase()
-        });
+    function formatDate(dateString) {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString || '-';
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
 
-      if (error) {
-        console.error('Error saving buyer:', error.message, error.details, error.hint);
+    function isValidGmail(email) {
+      return /^[a-zA-Z0-9.]+@gmail\.com$/.test(email);
+    }
+
+    function generateOrderCode() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      return `AXP-${y}${m}${d}-${rand}`;
+    }
+
+    // ==============================
+    // SUPABASE HELPERS
+    // ==============================
+    async function saveBuyerToSupabase(buyer) {
+      try {
+        const { data, error } = await supabase
+          .from('buyers')
+          .insert({
+            name: buyer.name,
+            email: buyer.email.toLowerCase()
+          });
+
+        if (error) {
+          console.error('Error saving buyer:', error.message, error.details, error.hint);
+          showToast('Error saving buyer to database', 'error');
+          return null;
+        }
+        return data;
+      } catch (err) {
+        console.error('saveBuyerToSupabase error:', err);
         showToast('Error saving buyer to database', 'error');
         return null;
       }
+    }
+
+    async function saveOrderToSupabase(order) {
+      const { data, error } = await supabase
+        .from('orders')
+        .insert(order)
+        .select();
+
+      if (error) {
+        console.error('Error saving order:', error.message, error.details, error.hint);
+        showToast('Error saving order to database', 'error');
+        return null;
+      }
       return data;
-    } catch (err) {
-      console.error('saveBuyerToSupabase error:', err);
-      showToast('Error saving buyer to database', 'error');
-      return null;
     }
-  }
 
-  async function saveOrderToSupabase(order) {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert(order)
-      .select();
-
-    if (error) {
-      console.error('Error saving order:', error.message, error.details, error.hint);
-      showToast('Error saving order to database', 'error');
-      return null;
-    }
-    return data;
-  }
-
-  async function sendTelegramNotification(order) {
-    const message = `
+    async function sendTelegramNotification(order) {
+      const message = `
 🛒 NEW ORDER RECEIVED!
 Order ID: ${order.id || order.order_code}
 Buyer: ${order.buyer_email}
@@ -678,729 +1059,747 @@ Account Type: ${order.account_type}
 Duration: ${order.duration}
 Price: ₱${order.price}
 Payment Method: ${order.payment_method}
-    `;
-    console.log('[Telegram mock]', message);
-  }
-
-  // ==============================
-  // SECTIONS / NAV
-  // ==============================
-  function showSection(sectionKey) {
-    const id = sectionKey.endsWith('Section') ? sectionKey : `${sectionKey}Section`;
-    document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
-    const target = document.getElementById(id);
-    if (target) target.classList.remove('hidden');
-
-    document.querySelectorAll('.nav-link[data-section]').forEach(a => a.classList.remove('active'));
-    const nav = document.querySelector(`.nav-link[data-section="${sectionKey.replace('Section', '')}"]`);
-    if (nav) nav.classList.add('active');
-  }
-
-  function showUserAuth() {
-    document.getElementById('userAuth').classList.remove('hidden');
-    document.getElementById('userProfile').classList.add('hidden');
-  }
-
-  function showUserProfile() {
-    document.getElementById('userAuth').classList.add('hidden');
-    document.getElementById('userProfile').classList.remove('hidden');
-    document.getElementById('userName').textContent = currentUser.name;
-    document.getElementById('profileName').textContent = currentUser.name;
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('profileAvatar').textContent = getInitials(currentUser.name);
-
-    loadUserOrders();
-    loadDeliveredAccounts();
-  }
-
-  // ==============================
-  // STOCK AVAILABILITY (from Supabase)
-  // ==============================
-  async function loadAvailableStockCounts() {
-    PRODUCT_STOCK_COUNTS = {};
-    try {
-      const { data, error } = await supabase
-        .from('stocks')
-        .select('product_id, status')
-        .or('status.is.null,status.eq.available');
-
-      if (error) {
-        console.error('Error loading stocks availability:', error);
-        showToast('Error loading stock availability (showing products anyway)', 'error');
-        displayProducts(PRODUCTS_DATA);
-        return;
-      }
-
-      (data || []).forEach(row => {
-        if (!row.product_id) return;
-        const pid = row.product_id;
-        PRODUCT_STOCK_COUNTS[pid] = (PRODUCT_STOCK_COUNTS[pid] || 0) + 1;
-      });
-    } catch (err) {
-      console.error('loadAvailableStockCounts error:', err);
-      showToast('Unexpected error loading stock availability', 'error');
+      `;
+      console.log('[Telegram mock]', message);
     }
 
-    // After counting, render all product cards
-    displayProducts(PRODUCTS_DATA);
-  }
+    // ==============================
+    // STOCK COUNTS FROM SUPABASE
+    // ==============================
+    async function loadStockCountsFromSupabase() {
+      PRODUCT_STOCK_COUNTS = {};
+      COMBO_STOCK_COUNTS = {};
 
-  // ==============================
-  // PRODUCTS DISPLAY
-  // ==============================
-  function displayProducts(products) {
-    const container = document.getElementById('productsContainer');
-    container.innerHTML = '';
+      try {
+        const { data, error } = await supabase
+          .from('stocks')
+          .select('product_id, account_type, duration, status');
 
-    products.forEach(product => {
+        if (error) {
+          console.error('Error loading stocks:', error);
+          showToast('Error loading stocks from database', 'error');
+          return;
+        }
+
+        (data || []).forEach(row => {
+          const status = (row.status || '').toLowerCase();
+          if (status !== 'available') return;
+
+          const pid = row.product_id;
+          if (!pid) return;
+
+          PRODUCT_STOCK_COUNTS[pid] = (PRODUCT_STOCK_COUNTS[pid] || 0) + 1;
+
+          const type = (row.account_type || '').toLowerCase();
+          const duration = (row.duration || '').toLowerCase();
+          if (type && duration) {
+            const key = `${pid}|${type}|${duration}`;
+            COMBO_STOCK_COUNTS[key] = (COMBO_STOCK_COUNTS[key] || 0) + 1;
+          }
+        });
+      } catch (err) {
+        console.error('loadStockCountsFromSupabase error:', err);
+        showToast('Error loading stocks', 'error');
+      }
+    }
+
+    function getProductStockCount(productId) {
+      return PRODUCT_STOCK_COUNTS[productId] || 0;
+    }
+
+    function getComboStockCount(productId, accountType, duration) {
+      const key = `${productId}|${(accountType || '').toLowerCase()}|${(duration || '').toLowerCase()}`;
+      return COMBO_STOCK_COUNTS[key] || 0;
+    }
+
+    // ==============================
+    // SECTIONS / NAV
+    // ==============================
+    function showSection(sectionKey) {
+      const id = sectionKey.endsWith('Section') ? sectionKey : `${sectionKey}Section`;
+      document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
+      const target = document.getElementById(id);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-link[data-section]').forEach(a => a.classList.remove('active'));
+      const nav = document.querySelector(`.nav-link[data-section="${sectionKey.replace('Section', '')}"]`);
+      if (nav) nav.classList.add('active');
+    }
+
+    function showUserAuth() {
+      document.getElementById('userAuth').classList.remove('hidden');
+      document.getElementById('userProfile').classList.add('hidden');
+    }
+
+    function showUserProfile() {
+      document.getElementById('userAuth').classList.add('hidden');
+      document.getElementById('userProfile').classList.remove('hidden');
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('profileName').textContent = currentUser.name;
+      document.getElementById('profileEmail').textContent = currentUser.email;
+      document.getElementById('profileAvatar').textContent = getInitials(currentUser.name);
+
+      loadUserOrders();
+      loadDeliveredAccounts();
+    }
+
+    // ==============================
+    // PRODUCTS DISPLAY
+    // ==============================
+    function computeMinPrice(product) {
       let minPrice = Infinity;
-      Object.values(product.pricing).forEach(tier => {
-        Object.values(tier).forEach(price => {
-          if (price < minPrice) minPrice = price;
+      Object.values(product.pricing || {}).forEach(tier => {
+        Object.values(tier || {}).forEach(price => {
+          if (typeof price === 'number' && price < minPrice) {
+            minPrice = price;
+          }
         });
       });
-      if (!Number.isFinite(minPrice)) minPrice = 0;
-
-      const available = PRODUCT_STOCK_COUNTS[product.id] ?? 0;
-
-      const col = document.createElement('div');
-      col.className = 'col-6 col-md-4 col-lg-3 mb-4';
-      col.innerHTML = `
-        <div class="card product-card" data-product-id="${product.id}" data-category="${product.category}">
-          <div class="card-body text-center">
-            <div class="product-img mb-3">
-              <span style="font-size: 2.5rem;">${product.icon}</span>
-            </div>
-            <h6 class="card-title mb-1">${product.name}</h6>
-            <p class="card-text text-muted small mb-2 text-capitalize">${product.category}</p>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="badge bg-secondary text-capitalize">${product.category}</span>
-              <span class="text-primary fw-bold small">From ₱${minPrice}</span>
-            </div>
-            <small class="text-muted d-block mb-2">Stock: ${available}</small>
-            <button class="btn btn-primary btn-sm w-100 view-product-btn" ${available === 0 ? 'disabled' : ''}>
-              ${available === 0 ? 'Out of stock' : 'View Details'}
-            </button>
-          </div>
-        </div>
-      `;
-      container.appendChild(col);
-    });
-
-    document.querySelectorAll('.view-product-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const card = btn.closest('.product-card');
-        const id = card.getAttribute('data-product-id');
-        openProductModal(id);
-      });
-    });
-  }
-
-  function filterProducts(category) {
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-      const c = card.getAttribute('data-category');
-      if (category === 'all' || !category) {
-        card.style.display = '';
-      } else {
-        card.style.display = c === category ? '' : 'none';
-      }
-    });
-  }
-
-  function openProductModal(productId) {
-    const product = PRODUCTS_DATA.find(p => p.id === productId);
-    if (!product) {
-      showToast('Product not found', 'error');
-      return;
+      if (!Number.isFinite(minPrice)) return 0;
+      return minPrice;
     }
 
-    currentProduct = product;
-
-    const available = PRODUCT_STOCK_COUNTS[product.id] ?? 0;
-
-    document.getElementById('productModalTitle').textContent = product.name;
-    document.getElementById('productModalIcon').textContent = product.icon;
-    document.getElementById('productModalName').textContent = product.name;
-    document.getElementById('productModalDescription').textContent =
-      `${product.category} • ${available} in stock`;
-    document.getElementById('availableStock').textContent = available;
-    document.getElementById('productPrice').textContent = '₱0.00';
-    document.getElementById('buyNowForm').reset();
-
-    const inviteField = document.getElementById('inviteEmailField');
-    inviteField.classList.add('hidden');
-
-    const accountTypeSelect = document.getElementById('accountType');
-    const durationSelect = document.getElementById('duration');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-
-    accountTypeSelect.innerHTML = '<option value="">Select account type</option>';
-    durationSelect.innerHTML = '<option value="">Select duration</option>';
-
-    Object.keys(product.pricing).forEach(typeKey => {
-      const opt = document.createElement('option');
-      opt.value = typeKey;
-      opt.textContent = typeKey;
-      accountTypeSelect.appendChild(opt);
-    });
-
-    accountTypeSelect.onchange = () => {
-      const type = accountTypeSelect.value;
-      durationSelect.innerHTML = '<option value="">Select duration</option>';
-      if (type && product.pricing[type]) {
-        Object.keys(product.pricing[type]).forEach(dKey => {
-          const opt = document.createElement('option');
-          opt.value = dKey;
-          opt.textContent = durationMap[dKey] || dKey;
-          durationSelect.appendChild(opt);
-        });
-      }
-      updateInviteField();
-      updatePrice();
-    };
-
-    durationSelect.onchange = () => {
-      updatePrice();
-    };
-
-    document.getElementById('buyNowForm').onsubmit = (e) => {
-      e.preventDefault();
-      handleBuyNow();
-    };
-
-    // disable Buy Now if 0 stock
-    if (available <= 0) {
-      checkoutBtn.disabled = true;
-      checkoutBtn.textContent = 'Out of stock';
-    } else {
-      checkoutBtn.disabled = false;
-      checkoutBtn.textContent = 'Buy Now';
-    }
-
-    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
-    productModal.show();
-  }
-
-  function updateInviteField() {
-    const type = (document.getElementById('accountType').value || '').toLowerCase();
-    const inviteField = document.getElementById('inviteEmailField');
-    if (type.includes('invite')) {
-      inviteField.classList.remove('hidden');
-    } else {
-      inviteField.classList.add('hidden');
-    }
-  }
-
-  function updatePrice() {
-    const type = document.getElementById('accountType').value;
-    const duration = document.getElementById('duration').value;
-    if (currentProduct && type && duration && currentProduct.pricing[type]) {
-      const price = currentProduct.pricing[type][duration];
-      if (price != null) {
-        document.getElementById('productPrice').textContent = `₱${price}`;
-        return;
-      }
-    }
-    document.getElementById('productPrice').textContent = '₱0.00';
-  }
-
-  function handleBuyNow() {
-    if (!currentUser) {
-      showToast('Please login to continue', 'warning');
-      const modal = new bootstrap.Modal(document.getElementById('loginModal'));
-      modal.show();
-      return;
-    }
-
-    if (!currentProduct) {
-      showToast('No product selected', 'error');
-      return;
-    }
-
-    const available = PRODUCT_STOCK_COUNTS[currentProduct.id] ?? 0;
-    if (available <= 0) {
-      showToast('This product is currently out of stock.', 'warning');
-      return;
-    }
-
-    const type = document.getElementById('accountType').value;
-    const duration = document.getElementById('duration').value;
-    if (!type || !duration) {
-      showToast('Please select account type and duration', 'warning');
-      return;
-    }
-
-    let inviteEmail = null;
-    if (type.toLowerCase().includes('invite')) {
-      inviteEmail = document.getElementById('gmail').value.trim();
-      if (!inviteEmail || !isValidGmail(inviteEmail)) {
-        showToast('Please enter a valid Gmail address', 'warning');
-        return;
-      }
-    }
-
-    const priceText = document.getElementById('productPrice').textContent;
-    const price = Number(priceText.replace('₱', '')) || 0;
-
-    currentOrderDetails = {
-      productId: currentProduct.id,
-      productName: currentProduct.name,
-      accountType: type,
-      duration,
-      price,
-      inviteEmail
-    };
-
-    bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-    const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-    checkoutModal.show();
-  }
-
-  // ==============================
-  // STATIC RULES & FEEDBACK (as is)
-  // ==============================
-  function loadRules() {
-    const rules = [
-      { id: 1, rule_text: 'All accounts are guaranteed for the duration purchased.' },
-      { id: 2, rule_text: 'Refunds only if the account does not work within 24 hours.' },
-      { id: 3, rule_text: 'Sharing account details with others may result in suspension.' }
-    ];
-    const container = document.getElementById('rulesContainer');
-    container.innerHTML = `
-      <div class="card">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">General Rules</h5>
-        </div>
-        <div class="card-body">
-          <ul class="list-group list-group-flush">
-            ${rules.map(r => `<li class="list-group-item">${r.rule_text}</li>`).join('')}
-          </ul>
-        </div>
-      </div>
-    `;
-  }
-
-  function loadFeedback() {
-    const feedback = [
-      { id: 1, buyer_name: 'John D.', feedback_text: 'Great service! My account works perfectly.', photo_url: null, created_at: '2023-05-15T10:30:00Z' },
-      { id: 2, buyer_name: 'Sarah M.', feedback_text: 'Fast delivery and good support.', photo_url: null, created_at: '2023-05-10T14:22:00Z' },
-      { id: 3, buyer_name: 'Mike T.', feedback_text: 'Had an issue but support fixed it quickly.', photo_url: null, created_at: '2023-05-05T09:15:00Z' }
-    ];
-    const container = document.getElementById('feedbackList');
-    container.innerHTML = '';
-    feedback.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'card mb-3';
-      card.innerHTML = `
-        <div class="card-body">
-          <div class="d-flex">
-            <div class="feedback-avatar me-3">${getInitials(item.buyer_name)}</div>
-            <div class="flex-grow-1">
-              <h6 class="mb-1">${item.buyer_name}</h6>
-              <p class="mb-2">${item.feedback_text}</p>
-              ${item.photo_url ? `<img src="${item.photo_url}" class="img-fluid rounded mb-2" style="max-height:200px;">` : ''}
-              <small class="text-muted">${formatDate(item.created_at)}</small>
-            </div>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  function submitFeedback(e) {
-    e.preventDefault();
-    const name = document.getElementById('feedbackName').value.trim();
-    const text = document.getElementById('feedbackText').value.trim();
-    if (!name || !text) {
-      showToast('Please fill in all required fields', 'warning');
-      return;
-    }
-    showToast('Feedback submitted! (mock only)', 'success');
-    document.getElementById('feedbackForm').reset();
-    loadFeedback();
-  }
-
-  // ==============================
-  // LOAD USER ORDERS (REAL)
-  // ==============================
-  async function loadUserOrders() {
-    if (!currentUser) return;
-
-    try {
-      const { data: orderRows, error } = await supabase
-        .from('orders')
-        .select('id, product_id, product_name, account_type, duration, price, status, created_at, buyer_email, order_code')
-        .eq('buyer_email', currentUser.email.toLowerCase())
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading user orders:', error);
-        showToast('Error loading your orders', 'error');
-        return;
-      }
-
-      if (!orderRows || !orderRows.length) {
-        displayUserOrders([]);
-        return;
-      }
-
-      const orders = orderRows.map(o => ({
-        id: o.id,
-        product_name: o.product_name || o.product_id,
-        account_type: o.account_type,
-        duration: o.duration,
-        price: o.price,
-        status: (o.status || 'pending').toLowerCase(),
-        created_at: o.created_at
-      }));
-
-      displayUserOrders(orders);
-    } catch (err) {
-      console.error('loadUserOrders error:', err);
-      showToast('Error loading your orders', 'error');
-    }
-  }
-
-  function displayUserOrders(orders) {
-    const pending = document.getElementById('pendingOrdersList');
-    const confirmed = document.getElementById('confirmedOrdersList');
-    const history = document.getElementById('orderHistoryList');
-
-    pending.innerHTML = '';
-    confirmed.innerHTML = '';
-    history.innerHTML = '';
-
-    orders.forEach(order => {
-      const card = document.createElement('div');
-      card.className = 'card mb-3';
-      card.innerHTML = `
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6 class="mb-1">${order.product_name}</h6>
-              <p class="mb-1 small">Order ID: ${order.id}</p>
-              <p class="mb-1 small">Account Type: ${order.account_type} • Duration: ${order.duration}</p>
-              <p class="mb-0 fw-bold">₱${order.price}</p>
-            </div>
-            <div class="text-end">
-              <span class="order-status status-${order.status} text-capitalize">${order.status}</span>
-              <div class="mt-2">
-                <small class="text-muted">${formatDate(order.created_at)}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      if (order.status === 'pending') pending.appendChild(card.cloneNode(true));
-      if (order.status === 'confirmed') confirmed.appendChild(card.cloneNode(true));
-      history.appendChild(card);
-    });
-
-    if (!orders.length) {
-      pending.innerHTML = '<p class="text-muted">No pending orders.</p>';
-      confirmed.innerHTML = '<p class="text-muted">No confirmed orders.</p>';
-      history.innerHTML = '<p class="text-muted">No order history yet.</p>';
-    }
-  }
-
-  // ==============================
-  // LOAD DELIVERED ACCOUNTS (records)
-  // ==============================
-  async function loadDeliveredAccounts() {
-    if (!currentUser) return;
-
-    const container = document.getElementById('deliveredAccountsList');
-    if (!container) return;
-
-    container.innerHTML = '<p class="text-muted">Loading delivered accounts...</p>';
-
-    try {
-      const { data, error } = await supabase
-        .from('records')
-        .select('id, order_id, product_name, account_type, duration, price, purchase_date, email, password, profile, pin, buyer_email')
-        .eq('buyer_email', currentUser.email.toLowerCase())
-        .order('purchase_date', { ascending: false });
-
-      if (error) {
-        console.error('Error loading delivered accounts:', error);
-        showToast('Error loading delivered accounts', 'error');
-        container.innerHTML = '<p class="text-muted">Failed to load delivered accounts.</p>';
-        return;
-      }
-
-      if (!data || !data.length) {
-        container.innerHTML = '<p class="text-muted">No delivered accounts yet.</p>';
-        return;
-      }
-
+    function displayProducts(products) {
+      const container = document.getElementById('productsContainer');
       container.innerHTML = '';
-      data.forEach(rec => {
+
+      products.forEach(product => {
+        const minPrice = computeMinPrice(product);
+        const stockCount = getProductStockCount(product.id);
+        const outOfStock = stockCount <= 0;
+
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-4 col-lg-3 mb-4';
+        col.innerHTML = `
+          <div class="card product-card" data-product-id="${product.id}" data-category="${product.category}">
+            <div class="card-body text-center">
+              <div class="product-img mb-3">
+                <span style="font-size: 2.5rem;">${product.icon}</span>
+              </div>
+              <h6 class="card-title mb-1">${product.name}</h6>
+              <p class="card-text text-muted small mb-2 text-capitalize">${product.category}</p>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-secondary text-capitalize">${product.category}</span>
+                <span class="text-primary fw-bold small">From ₱${minPrice}</span>
+              </div>
+              <small class="text-muted d-block mb-2">
+                Stock: ${stockCount} ${outOfStock ? '(Out of stock)' : ''}
+              </small>
+              <button class="btn btn-primary btn-sm w-100 view-product-btn"
+                ${outOfStock ? 'disabled' : ''}>
+                ${outOfStock ? 'Out of Stock' : 'View Details'}
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(col);
+      });
+
+      document.querySelectorAll('.view-product-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const card = btn.closest('.product-card');
+          const id = card.getAttribute('data-product-id');
+          openProductModal(id);
+        });
+      });
+    }
+
+    function filterProducts(category) {
+      const cards = document.querySelectorAll('.product-card');
+      cards.forEach(card => {
+        const c = card.getAttribute('data-category');
+        if (category === 'all' || !category) {
+          card.style.display = '';
+        } else {
+          card.style.display = c === category ? '' : 'none';
+        }
+      });
+    }
+
+    function openProductModal(productId) {
+      const product = PRODUCTS_DATA.find(p => p.id === productId);
+      if (!product) {
+        showToast('Product not found', 'error');
+        return;
+      }
+
+      currentProduct = product;
+
+      const totalStock = getProductStockCount(product.id);
+
+      document.getElementById('productModalTitle').textContent = product.name;
+      document.getElementById('productModalIcon').textContent = product.icon;
+      document.getElementById('productModalName').textContent = product.name;
+      document.getElementById('productModalDescription').textContent =
+        `${product.category}`;
+      document.getElementById('availableStock').textContent = totalStock;
+      document.getElementById('productPrice').textContent = '₱0.00';
+      document.getElementById('buyNowForm').reset();
+
+      const inviteField = document.getElementById('inviteEmailField');
+      inviteField.classList.add('hidden');
+
+      const accountTypeSelect = document.getElementById('accountType');
+      const durationSelect = document.getElementById('duration');
+      accountTypeSelect.innerHTML = '<option value="">Select account type</option>';
+      durationSelect.innerHTML = '<option value="">Select duration</option>';
+
+      Object.keys(product.pricing).forEach(typeKey => {
+        const opt = document.createElement('option');
+        opt.value = typeKey;
+        opt.textContent = typeKey;
+        accountTypeSelect.appendChild(opt);
+      });
+
+      accountTypeSelect.onchange = () => {
+        const type = accountTypeSelect.value;
+        durationSelect.innerHTML = '<option value="">Select duration</option>';
+        if (type && product.pricing[type]) {
+          Object.keys(product.pricing[type]).forEach(dKey => {
+            const opt = document.createElement('option');
+            opt.value = dKey;
+            opt.textContent = durationMap[dKey] || dKey;
+            durationSelect.appendChild(opt);
+          });
+        }
+        updateInviteField();
+        updatePrice();
+      };
+
+      durationSelect.onchange = () => {
+        updatePrice();
+      };
+
+      document.getElementById('buyNowForm').onsubmit = (e) => {
+        e.preventDefault();
+        handleBuyNow();
+      };
+
+      const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+      productModal.show();
+    }
+
+    function updateInviteField() {
+      const type = (document.getElementById('accountType').value || '').toLowerCase();
+      const inviteField = document.getElementById('inviteEmailField');
+      if (type.includes('invite')) {
+        inviteField.classList.remove('hidden');
+      } else {
+        inviteField.classList.add('hidden');
+      }
+    }
+
+    function updatePrice() {
+      const type = document.getElementById('accountType').value;
+      const duration = document.getElementById('duration').value;
+      if (currentProduct && type && duration && currentProduct.pricing[type]) {
+        const price = currentProduct.pricing[type][duration];
+        if (price != null) {
+          document.getElementById('productPrice').textContent = `₱${price}`;
+          return;
+        }
+      }
+      document.getElementById('productPrice').textContent = '₱0.00';
+    }
+
+    async function handleBuyNow() {
+      if (!currentUser) {
+        showToast('Please login to continue', 'warning');
+        const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+        modal.show();
+        return;
+      }
+
+      const type = document.getElementById('accountType').value;
+      const duration = document.getElementById('duration').value;
+      if (!type || !duration) {
+        showToast('Please select account type and duration', 'warning');
+        return;
+      }
+
+      let inviteEmail = null;
+      if (type.toLowerCase().includes('invite')) {
+        inviteEmail = document.getElementById('gmail').value.trim();
+        if (!inviteEmail || !isValidGmail(inviteEmail)) {
+          showToast('Please enter a valid Gmail address', 'warning');
+          return;
+        }
+      }
+
+      // CHECK STOCK FOR THIS SPECIFIC COMBO BEFORE ALLOWING CHECKOUT
+      const comboStock = getComboStockCount(currentProduct.id, type, duration);
+      if (comboStock <= 0) {
+        showToast('This account type & duration is currently out of stock.', 'error');
+        return;
+      }
+
+      const priceText = document.getElementById('productPrice').textContent;
+      const price = Number(priceText.replace('₱', '')) || 0;
+
+      currentOrderDetails = {
+        productId: currentProduct.id,
+        productName: currentProduct.name,
+        accountType: type,
+        duration,
+        price,
+        inviteEmail
+      };
+
+      bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+      const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+      checkoutModal.show();
+    }
+
+    // ==============================
+    // RULES & FEEDBACK (STATIC / MOCK)
+    // ==============================
+    function loadRules() {
+      const rules = [
+        { id: 1, rule_text: 'All accounts are guaranteed for the duration purchased.' },
+        { id: 2, rule_text: 'Refunds only if the account does not work within 24 hours.' },
+        { id: 3, rule_text: 'Sharing account details with others may result in suspension.' }
+      ];
+      const container = document.getElementById('rulesContainer');
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">General Rules</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              ${rules.map(r => `<li class="list-group-item">${r.rule_text}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    function loadFeedback() {
+      const feedback = [
+        { id: 1, buyer_name: 'John D.', feedback_text: 'Great service! My account works perfectly.', photo_url: null, created_at: '2023-05-15T10:30:00Z' },
+        { id: 2, buyer_name: 'Sarah M.', feedback_text: 'Fast delivery and good support.', photo_url: null, created_at: '2023-05-10T14:22:00Z' },
+        { id: 3, buyer_name: 'Mike T.', feedback_text: 'Had an issue but support fixed it quickly.', photo_url: null, created_at: '2023-05-05T09:15:00Z' }
+      ];
+      const container = document.getElementById('feedbackList');
+      container.innerHTML = '';
+      feedback.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card mb-3';
         card.innerHTML = `
           <div class="card-body">
-            <h6 class="mb-1">${rec.product_name || 'Delivered Account'}</h6>
-            <p class="mb-1 small">Order ID: ${rec.order_id || rec.id}</p>
-            <p class="mb-1 small">Account Type: ${rec.account_type || '-'} • Duration: ${rec.duration || '-'}</p>
-            <p class="mb-1 small">Account Email: <strong>${rec.email || '-'}</strong></p>
-            <p class="mb-1 small">Password: <strong>${rec.password || '-'}</strong></p>
-            ${rec.profile ? `<p class="mb-1 small">Profile: <strong>${rec.profile}</strong></p>` : ''}
-            ${rec.pin ? `<p class="mb-1 small">PIN: <strong>${rec.pin}</strong></p>` : ''}
-            <p class="mb-1 small">Purchase Date: ${rec.purchase_date ? formatDate(rec.purchase_date) : '-'}</p>
-            <p class="mb-0 fw-bold">₱${rec.price ?? 0}</p>
+            <div class="d-flex">
+              <div class="feedback-avatar me-3">${getInitials(item.buyer_name)}</div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1">${item.buyer_name}</h6>
+                <p class="mb-2">${item.feedback_text}</p>
+                ${item.photo_url ? `<img src="${item.photo_url}" class="img-fluid rounded mb-2" style="max-height:200px;">` : ''}
+                <small class="text-muted">${formatDate(item.created_at)}</small>
+              </div>
+            </div>
           </div>
         `;
         container.appendChild(card);
       });
-    } catch (err) {
-      console.error('loadDeliveredAccounts error:', err);
-      showToast('Error loading delivered accounts', 'error');
-    }
-  }
-
-  // ==============================
-  // REPORT
-  // ==============================
-  function submitReport(e) {
-    e.preventDefault();
-    const orderId = document.getElementById('reportOrderId').value.trim();
-    const issue = document.getElementById('reportIssue').value.trim();
-    if (!orderId || !issue) {
-      showToast('Please fill in all required fields', 'warning');
-      return;
-    }
-    showToast('Report submitted! (mock only)', 'success');
-    document.getElementById('reportForm').reset();
-    showSection('profile');
-  }
-
-  // ==============================
-  // AUTH (SIGNUP / LOGIN / LOGOUT)
-  // ==============================
-  async function handleSignup(e) {
-    e.preventDefault();
-
-    const name = document.getElementById('signupName').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
-    const password = document.getElementById('signupPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    if (!name || !email) {
-      showToast('Please fill in name and email', 'warning');
-      return;
-    }
-    if (password !== confirmPassword) {
-      showToast('Passwords do not match', 'error');
-      return;
     }
 
-    const normalizedEmail = email.toLowerCase();
-
-    const user = {
-      name: name,
-      email: normalizedEmail
-    };
-
-    await saveBuyerToSupabase(user);
-
-    currentUser = user;
-    localStorage.setItem('aiaxcart_user', JSON.stringify(user));
-
-    showUserProfile();
-    await loadUserOrders();
-    await loadDeliveredAccounts();
-
-    bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
-    showToast('Account created successfully!', 'success');
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value; // not used yet
-
-    if (!email) {
-      showToast('Please enter your email', 'warning');
-      return;
+    function submitFeedback(e) {
+      e.preventDefault();
+      const name = document.getElementById('feedbackName').value.trim();
+      const text = document.getElementById('feedbackText').value.trim();
+      if (!name || !text) {
+        showToast('Please fill in all required fields', 'warning');
+        return;
+      }
+      showToast('Feedback submitted! (mock only)', 'success');
+      document.getElementById('feedbackForm').reset();
+      loadFeedback();
     }
 
-    const normalizedEmail = email.toLowerCase();
-    const name = normalizedEmail.split('@')[0];
+    // ==============================
+    // LOAD USER ORDERS (REAL)
+    // ==============================
+    async function loadUserOrders() {
+      if (!currentUser) return;
 
-    const user = {
-      name: name,
-      email: normalizedEmail
-    };
+      try {
+        const { data: orderRows, error } = await supabase
+          .from('orders')
+          .select('id, product_id, product_name, account_type, duration, price, status, created_at, buyer_email, order_code')
+          .eq('buyer_email', currentUser.email.toLowerCase())
+          .order('created_at', { ascending: false });
 
-    currentUser = user;
-    localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+        if (error) {
+          console.error('Error loading user orders:', error);
+          showToast('Error loading your orders', 'error');
+          return;
+        }
 
-    showUserProfile();
-    await loadUserOrders();
-    await loadDeliveredAccounts();
+        if (!orderRows || !orderRows.length) {
+          displayUserOrders([]);
+          return;
+        }
 
-    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-    showToast('Login successful!', 'success');
-  }
+        const orders = orderRows.map(o => ({
+          id: o.id,
+          product_name: o.product_name || o.product_id,
+          account_type: o.account_type,
+          duration: o.duration,
+          price: o.price,
+          status: (o.status || 'pending').toLowerCase(),
+          created_at: o.created_at
+        }));
 
-  function handleLogout(e) {
-    e.preventDefault();
-    currentUser = null;
-    localStorage.removeItem('aiaxcart_user');
-    showUserAuth();
-    showSection('home');
-    showToast('Logged out.', 'success');
-  }
-
-  // ==============================
-  // CHECKOUT (REAL ORDER)
-  // ==============================
-  async function handleCheckout(e) {
-    e.preventDefault();
-
-    if (!currentUser) {
-      showToast('Please login first', 'warning');
-      return;
+        displayUserOrders(orders);
+      } catch (err) {
+        console.error('loadUserOrders error:', err);
+        showToast('Error loading your orders', 'error');
+      }
     }
 
-    if (!currentOrderDetails) {
-      showToast('No product selected', 'error');
-      return;
+    function displayUserOrders(orders) {
+      const pending = document.getElementById('pendingOrdersList');
+      const delivered = document.getElementById('deliveredAccountsList');
+      const history = document.getElementById('orderHistoryList');
+
+      pending.innerHTML = '';
+      delivered.innerHTML = '';
+      history.innerHTML = '';
+
+      orders.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'card mb-3';
+        card.innerHTML = `
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="mb-1">${order.product_name}</h6>
+                <p class="mb-1 small">Order ID: ${order.id}</p>
+                <p class="mb-1 small">Account Type: ${order.account_type} • Duration: ${order.duration}</p>
+                <p class="mb-0 fw-bold">₱${order.price}</p>
+              </div>
+              <div class="text-end">
+                <span class="order-status status-${order.status} text-capitalize">${order.status}</span>
+                <div class="mt-2">
+                  <small class="text-muted">${formatDate(order.created_at)}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (order.status === 'pending' || order.status === 'confirmed') {
+          pending.appendChild(card.cloneNode(true));
+        }
+        if (order.status === 'delivered') {
+          delivered.appendChild(card.cloneNode(true));
+        }
+        history.appendChild(card);
+      });
+
+      if (!orders.length) {
+        pending.innerHTML = '<p class="text-muted">No pending/confirmed orders.</p>';
+        delivered.innerHTML = '<p class="text-muted">No delivered accounts yet.</p>';
+        history.innerHTML = '<p class="text-muted">No order history yet.</p>';
+      }
     }
 
-    const paymentMethod = document.getElementById('paymentMethod').value;
-    const referenceNumber = document.getElementById('referenceNumber').value;
-    const proofInput = document.getElementById('proofImage');
-    const proofFile = proofInput.files[0];
+    // ==============================
+    // LOAD DELIVERED ACCOUNTS (records)
+    // ==============================
+    async function loadDeliveredAccounts() {
+      if (!currentUser) return;
 
-    if (!paymentMethod) {
-      showToast('Please select a payment method', 'warning');
-      return;
+      const container = document.getElementById('deliveredAccountsList');
+      if (!container) return;
+
+      container.innerHTML = '<p class="text-muted">Loading delivered accounts...</p>';
+
+      try {
+        const { data, error } = await supabase
+          .from('records')
+          .select('id, order_id, product_name, account_type, duration, price, purchase_date, email, password, profile, pin, buyer_email')
+          .eq('buyer_email', currentUser.email.toLowerCase())
+          .order('purchase_date', { ascending: false });
+
+        if (error) {
+          console.error('Error loading delivered accounts:', error);
+          showToast('Error loading delivered accounts', 'error');
+          container.innerHTML = '<p class="text-muted">Failed to load delivered accounts.</p>';
+          return;
+        }
+
+        if (!data || !data.length) {
+          container.innerHTML = '<p class="text-muted">No delivered accounts yet.</p>';
+          return;
+        }
+
+        container.innerHTML = '';
+        data.forEach(rec => {
+          const card = document.createElement('div');
+          card.className = 'card mb-3';
+          card.innerHTML = `
+            <div class="card-body">
+              <h6 class="mb-1">${rec.product_name || 'Delivered Account'}</h6>
+              <p class="mb-1 small">Order ID: ${rec.order_id || rec.id}</p>
+              <p class="mb-1 small">Account Type: ${rec.account_type || '-'} • Duration: ${rec.duration || '-'}</p>
+              <p class="mb-1 small">Account Email: <strong>${rec.email || '-'}</strong></p>
+              <p class="mb-1 small">Password: <strong>${rec.password || '-'}</strong></p>
+              ${rec.profile ? `<p class="mb-1 small">Profile: <strong>${rec.profile}</strong></p>` : ''}
+              ${rec.pin ? `<p class="mb-1 small">PIN: <strong>${rec.pin}</strong></p>` : ''}
+              <p class="mb-1 small">Purchase Date: ${rec.purchase_date ? formatDate(rec.purchase_date) : '-'}</p>
+              <p class="mb-0 fw-bold">₱${rec.price ?? 0}</p>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('loadDeliveredAccounts error:', err);
+        showToast('Error loading delivered accounts', 'error');
+      }
     }
 
-    // Picture required, reference number optional (per request)
-    if (!proofFile) {
-      showToast('Please attach a screenshot of your payment as proof.', 'warning');
-      return;
+    // ==============================
+    // REPORT (MOCK)
+    // ==============================
+    function submitReport(e) {
+      e.preventDefault();
+      const orderId = document.getElementById('reportOrderId').value.trim();
+      const issue = document.getElementById('reportIssue').value.trim();
+      if (!orderId || !issue) {
+        showToast('Please fill in all required fields', 'warning');
+        return;
+      }
+      showToast('Report submitted! (mock only)', 'success');
+      document.getElementById('reportForm').reset();
+      showSection('profile');
     }
 
-    try {
-      const orderCode = generateOrderCode();
+    // ==============================
+    // AUTH (SIGNUP / LOGIN / LOGOUT)
+    // ==============================
+    async function handleSignup(e) {
+      e.preventDefault();
 
-      const order = {
-        buyer_email: currentUser.email.toLowerCase(),
-        product_id: currentOrderDetails.productId,
-        product_name: currentOrderDetails.productName,
-        account_type: currentOrderDetails.accountType,
-        duration: currentOrderDetails.duration,
-        price: currentOrderDetails.price,
-        payment_method: paymentMethod,
-        reference_number: referenceNumber || null,
-        invite_email: currentOrderDetails.inviteEmail,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-        order_code: orderCode
-        // NOTE: wala tayong column para sa image sa orders table mo ngayon,
-        // so hindi muna siya isi-save sa Supabase – validation lang muna.
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (!name || !email) {
+        showToast('Please fill in name and email', 'warning');
+        return;
+      }
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        return;
+      }
+
+      const normalizedEmail = email.toLowerCase();
+
+      const user = {
+        name: name,
+        email: normalizedEmail
       };
 
-      const saved = await saveOrderToSupabase(order);
-      if (!saved || !saved.length) return;
+      await saveBuyerToSupabase(user);
 
-      const newOrder = saved[0];
+      currentUser = user;
+      localStorage.setItem('aiaxcart_user', JSON.stringify(user));
 
-      await sendTelegramNotification({
-        ...order,
-        id: newOrder.id
-      });
-
-      bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-      showToast(
-        `Order submitted successfully! Your order ID is ${newOrder.id}`,
-        'success'
-      );
-
-      document.getElementById('checkoutForm').reset();
+      showUserProfile();
       await loadUserOrders();
-    } catch (err) {
-      console.error('Checkout error:', err);
-      showToast('Error submitting order', 'error');
+      await loadDeliveredAccounts();
+
+      bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+      showToast('Account created successfully!', 'success');
     }
-  }
 
-  // ==============================
-  // INIT & EVENTS
-  // ==============================
-  function setupEventListeners() {
-    // Nav sections
-    document.querySelectorAll('[data-section]').forEach(link => {
-      link.addEventListener('click', e => {
-        const section = link.getAttribute('data-section');
-        if (!section) return;
-        e.preventDefault();
-        showSection(section);
-      });
-    });
+    async function handleLogin(e) {
+      e.preventDefault();
 
-    // Category tabs
-    document.querySelectorAll('.category-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const cat = tab.getAttribute('data-category');
-        filterProducts(cat);
-      });
-    });
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value; // not used yet
 
-    // Auth buttons
-    document.getElementById('loginBtn').addEventListener('click', () => {
-      const modal = new bootstrap.Modal(document.getElementById('loginModal'));
-      modal.show();
-    });
-    document.getElementById('signupBtn').addEventListener('click', () => {
-      const modal = new bootstrap.Modal(document.getElementById('signupModal'));
-      modal.show();
-    });
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+      if (!email) {
+        showToast('Please enter your email', 'warning');
+        return;
+      }
 
-    // Forms
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('signupForm').addEventListener('submit', handleSignup);
-    document.getElementById('checkoutForm').addEventListener('submit', handleCheckout);
-    document.getElementById('feedbackForm').addEventListener('submit', submitFeedback);
-    document.getElementById('reportForm').addEventListener('submit', submitReport);
-  }
+      const normalizedEmail = email.toLowerCase();
+      const name = normalizedEmail.split('@')[0];
 
-  function initializeApp() {
-    const stored = localStorage.getItem('aiaxcart_user');
-    if (stored) {
+      const user = {
+        name: name,
+        email: normalizedEmail
+      };
+
+      currentUser = user;
+      localStorage.setItem('aiaxcart_user', JSON.stringify(user));
+
+      showUserProfile();
+      await loadUserOrders();
+      await loadDeliveredAccounts();
+
+      bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+      showToast('Login successful!', 'success');
+    }
+
+    function handleLogout(e) {
+      e.preventDefault();
+      currentUser = null;
+      localStorage.removeItem('aiaxcart_user');
+      showUserAuth();
+      showSection('home');
+      showToast('Logged out.', 'success');
+    }
+
+    // ==============================
+    // CHECKOUT (REAL ORDER)
+    // ==============================
+    async function handleCheckout(e) {
+      e.preventDefault();
+
+      if (!currentUser) {
+        showToast('Please login first', 'warning');
+        return;
+      }
+
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const referenceNumber = document.getElementById('referenceNumber').value;
+      const proofFile = document.getElementById('proofImage').files[0];
+
+      if (!paymentMethod) {
+        showToast('Please select a payment method', 'warning');
+        return;
+      }
+      if (!proofFile) {
+        showToast('Please upload your proof of payment screenshot', 'warning');
+        return;
+      }
+      if (!currentOrderDetails) {
+        showToast('No product selected', 'error');
+        return;
+      }
+
       try {
-        currentUser = JSON.parse(stored);
-        showUserProfile();
-      } catch {
+        const orderCode = generateOrderCode();
+
+        const order = {
+          buyer_email: currentUser.email.toLowerCase(),
+          product_id: currentOrderDetails.productId,
+          product_name: currentOrderDetails.productName,
+          account_type: currentOrderDetails.accountType,
+          duration: currentOrderDetails.duration,
+          price: currentOrderDetails.price,
+          payment_method: paymentMethod,
+          reference_number: referenceNumber || null,
+          invite_email: currentOrderDetails.inviteEmail,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+          order_code: orderCode
+        };
+
+        const saved = await saveOrderToSupabase(order);
+        if (!saved || !saved.length) return;
+
+        const newOrder = saved[0];
+
+        await sendTelegramNotification({
+          ...order,
+          id: newOrder.id
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+        showToast(
+          `Order submitted successfully! Your order ID is ${newOrder.id}`,
+          'success'
+        );
+
+        document.getElementById('checkoutForm').reset();
+        await loadUserOrders();
+      } catch (err) {
+        console.error('Checkout error:', err);
+        showToast('Error submitting order', 'error');
+      }
+    }
+
+    // ==============================
+    // INIT & EVENTS
+    // ==============================
+    function setupEventListeners() {
+      // Nav sections
+      document.querySelectorAll('[data-section]').forEach(link => {
+        link.addEventListener('click', e => {
+          const section = link.getAttribute('data-section');
+          if (!section) return;
+          e.preventDefault();
+          if (section === 'profile') {
+            showSection('profile');
+          } else if (section === 'rules') {
+            showSection('rules');
+          } else if (section === 'feedback') {
+            showSection('feedback');
+          } else if (section === 'report') {
+            showSection('report');
+          } else if (section === 'home') {
+            showSection('home');
+          }
+        });
+      });
+
+      // Category tabs
+      document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const cat = tab.getAttribute('data-category');
+          filterProducts(cat);
+        });
+      });
+
+      // Auth buttons
+      document.getElementById('loginBtn').addEventListener('click', () => {
+        const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+        modal.show();
+      });
+      document.getElementById('signupBtn').addEventListener('click', () => {
+        const modal = new bootstrap.Modal(document.getElementById('signupModal'));
+        modal.show();
+      });
+      document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+      // Forms
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+      document.getElementById('signupForm').addEventListener('submit', handleSignup);
+      document.getElementById('checkoutForm').addEventListener('submit', handleCheckout);
+      document.getElementById('feedbackForm').addEventListener('submit', submitFeedback);
+      document.getElementById('reportForm').addEventListener('submit', submitReport);
+    }
+
+    async function initializeApp() {
+      const stored = localStorage.getItem('aiaxcart_user');
+      if (stored) {
+        try {
+          currentUser = JSON.parse(stored);
+          showUserProfile();
+        } catch {
+          showUserAuth();
+        }
+      } else {
         showUserAuth();
       }
-    } else {
-      showUserAuth();
+
+      showSection('home');
+      await loadStockCountsFromSupabase();  // load stocks from Supabase
+      displayProducts(PRODUCTS_DATA);       // then render product list
+      loadRules();
+      loadFeedback();
     }
 
-    showSection('home');
-    // important: this now loads cards AND binds them to real stock in Supabase
-    loadAvailableStockCounts();
-    loadRules();
-    loadFeedback();
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    setupEventListeners();
-  });
-</script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeApp();
+      setupEventListeners();
+    });
+  </script>
 </body>
 </html>
-
-      
