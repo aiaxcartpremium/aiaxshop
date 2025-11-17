@@ -1,1161 +1,1090 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Aiaxcart Premium | Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Bootstrap / Icons / Supabase -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Bootstrap + Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
 
   <style>
     :root {
-      --primary: #FFB0B5;
-      --secondary: #FFD3D6;
+      --primary: #ffb0b5;
+      --secondary: #ffd3d6;
       --dark: #382f2c;
       --light: #fefaf7;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--light);
+      margin: 0;
+      background: var(--light);
       color: var(--dark);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
     header {
       background: var(--secondary);
-      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .logo {
+      font-size: 1.4rem;
       font-weight: 700;
-      font-size: 1.6rem;
       display: flex;
       align-items: center;
-      gap: .5rem;
-      color: var(--dark);
+      gap: 0.4rem;
     }
 
-    .logo span {
-      color: var(--primary);
+    .top-nav a {
+      text-decoration: none;
+      color: var(--dark);
+      margin-left: 1rem;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+
+    .top-nav a.active,
+    .top-nav a:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .admin-wrapper {
+      max-width: 1100px;
+      margin: 1.5rem auto 2.5rem;
+      padding: 0 1.25rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .stat-card {
-      border-radius: 16px;
+      background: #fff;
+      border-radius: 14px;
       padding: 1rem 1.2rem;
-      background: #ffffff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
-    .stat-label {
-      font-size: .85rem;
-      color: #7c6a63;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: .2rem;
+    .stat-card h3 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: var(--primary);
     }
 
-    .stat-value {
-      font-size: 1.3rem;
-      font-weight: 700;
+    .stat-card span {
+      font-size: 0.9rem;
+      color: #6a5c58;
     }
 
-    .badge-status {
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .sidebar {
+      background: #fff;
+      border-radius: 16px;
+      padding: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 5rem;
+    }
+
+    .sidebar button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      padding: 0.45rem 0.8rem;
       border-radius: 999px;
-      padding: 4px 10px;
-      font-size: .75rem;
+      font-size: 0.92rem;
+      margin-bottom: 0.3rem;
+      cursor: pointer;
+      color: #5a4b47;
+    }
+
+    .sidebar button.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .sidebar button i {
+      width: 1rem;
+      text-align: center;
+      margin-right: 0.5rem;
+    }
+
+    .admin-main {
+      min-height: 400px;
+    }
+
+    .panel-admin {
+      display: none;
+    }
+
+    .panel-admin.active {
+      display: block;
+    }
+
+    .card-clean {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.25rem 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .records-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .records-table th,
+    .records-table td {
+      border-bottom: 1px solid #eee;
+      padding: 0.45rem 0.55rem;
+      vertical-align: top;
+    }
+
+    .records-table th {
+      background: #ffeef0;
       font-weight: 600;
     }
 
-    .badge-pending { background:#fff3cd; color:#856404; }
-    .badge-confirmed { background:#d1ecf1; color:#0c5460; }
-    .badge-delivered { background:#d4edda; color:#155724; }
-    .badge-cancelled { background:#f8d7da; color:#721c24; }
-
-    .nav-pills .nav-link {
-      border-radius: 999px;
+    .records-table tr:hover td {
+      background: #fff7f8;
     }
 
-    .nav-pills .nav-link.active {
-      background-color: var(--primary);
+    .form-label {
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
     }
 
-    .table thead th {
-      font-size: .8rem;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      color: #7c6a63;
-    }
-
-    .table tbody td {
-      vertical-align: middle;
-      font-size: .9rem;
-    }
-
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
+    .toast-container {
       z-index: 9999;
-      min-width: 260px;
     }
 
-    @media (max-width: 768px) {
-      .stat-card {
-        margin-bottom: .75rem;
+    @media (max-width: 900px) {
+      .admin-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
   </style>
 </head>
+
 <body>
-  <!-- Toast container -->
+  <!-- Toasts -->
   <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
 
-  <!-- HEADER -->
-  <header class="py-3 mb-4">
-    <div class="container d-flex justify-content-between align-items-center">
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
       <div class="logo">
-        <i class="fas fa-crown"></i>
-        <span>Aiaxcart</span> Premium Admin
+        <span>🛒</span>
+        <span>Aiaxcart Premium – Admin</span>
       </div>
-      <a href="index.html" class="btn btn-outline-dark btn-sm">
-        <i class="fas fa-store me-1"></i>Buyer Site
-      </a>
+      <nav class="top-nav">
+        <a href="./index.html">Home</a>
+        <a href="./admin.html" class="active">Admin</a>
+      </nav>
     </div>
   </header>
 
-  <main class="container mb-5">
-    <!-- ANALYTICS -->
-    <section class="mb-4">
-      <div class="row g-3" id="analyticsRow">
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="stat-label">Total Orders</div>
-            <div class="stat-value" id="totalOrders">0</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="stat-label">Pending</div>
-            <div class="stat-value text-warning" id="pendingOrders">0</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="stat-label">Delivered</div>
-            <div class="stat-value text-success" id="deliveredOrders">0</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="stat-label">Cancelled</div>
-            <div class="stat-value text-danger" id="cancelledOrders">0</div>
-          </div>
-        </div>
+  <!-- Main Admin Wrapper -->
+  <main class="admin-wrapper">
+    <h1 class="h4 mb-3">Admin Console</h1>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3 id="stat-products">0</h3>
+        <span>Products</span>
       </div>
-    </section>
-
-    <!-- ORDERS TABS -->
-    <section class="mb-5">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Orders</h4>
+      <div class="stat-card">
+        <h3 id="stat-stock">0</h3>
+        <span>Available Stocks</span>
       </div>
+      <div class="stat-card">
+        <h3 id="stat-pending">0</h3>
+        <span>Pending Orders</span>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-revenue">₱0.00</h3>
+        <span>Total Revenue</span>
+      </div>
+    </div>
 
-      <ul class="nav nav-pills mb-3" id="ordersTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-pending" data-bs-toggle="pill"
-                  data-bs-target="#pane-pending" type="button" role="tab">
-            Pending
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-delivered" data-bs-toggle="pill"
-                  data-bs-target="#pane-delivered" type="button" role="tab">
-            Delivered
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-cancelled" data-bs-toggle="pill"
-                  data-bs-target="#pane-cancelled" type="button" role="tab">
-            Cancelled
-          </button>
-        </li>
-      </ul>
+    <div class="admin-layout">
+      <!-- Sidebar Tabs -->
+      <aside class="sidebar">
+        <button class="active" data-target="panel-products">
+          <i class="fa fa-list"></i> Products
+        </button>
+        <button data-target="panel-add-stock">
+          <i class="fa fa-plus-square"></i> Add Stock
+        </button>
+        <button data-target="panel-manage-stocks">
+          <i class="fa fa-layer-group"></i> Stocks List
+        </button>
+        <button data-target="panel-pending-orders">
+          <i class="fa fa-clock"></i> Pending Orders
+        </button>
+        <button data-target="panel-records">
+          <i class="fa fa-book"></i> Records
+        </button>
+        <button data-target="panel-store-rules">
+          <i class="fa fa-scroll"></i> Store Rules
+        </button>
+        <button data-target="panel-reports">
+          <i class="fa fa-flag"></i> Reports
+        </button>
+      </aside>
 
-      <div class="tab-content" id="ordersTabContent">
-        <!-- Pending -->
-        <div class="tab-pane fade show active" id="pane-pending" role="tabpanel">
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Order Code</th>
-                  <th>Buyer</th>
-                  <th>Product</th>
-                  <th>Type / Duration</th>
-                  <th>Price</th>
-                  <th>Payment</th>
-                  <th>Ref No.</th>
-                  <th>Created</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="tblPending"></tbody>
-            </table>
+      <!-- Main panels -->
+      <section class="admin-main">
+        <!-- Products List -->
+        <div id="panel-products" class="panel-admin active">
+          <div class="card-clean">
+            <h3 class="mb-3">Products</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Icon</th>
+                    <th>Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="products-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <!-- Delivered -->
-        <div class="tab-pane fade" id="pane-delivered" role="tabpanel">
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Order Code</th>
-                  <th>Buyer</th>
-                  <th>Product</th>
-                  <th>Type / Duration</th>
-                  <th>Price</th>
-                  <th>Payment</th>
-                  <th>Ref No.</th>
-                  <th>Created</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="tblDelivered"></tbody>
-            </table>
+        <!-- Add Stock -->
+        <div id="panel-add-stock" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Add Stock</h3>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Product</label>
+                <select id="stock-product" class="form-select">
+                  <option value="">Select product</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Account Type</label>
+                <input id="stock-account-type" class="form-control" placeholder="solo account, shared account, etc.">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Duration</label>
+                <input id="stock-duration" class="form-control" placeholder="1m, 3m, 7d, etc.">
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Account Email</label>
+                <input id="stock-email" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Password</label>
+                <input id="stock-password" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Profile</label>
+                <input id="stock-profile" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">PIN</label>
+                <input id="stock-pin" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Archive After (days)</label>
+                <input id="stock-archive-after" type="number" min="0" value="30" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Premium Until</label>
+                <input id="stock-premium-until" type="date" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select id="stock-status" class="form-select">
+                  <option value="available">available</option>
+                  <option value="reserved">reserved</option>
+                  <option value="sold">sold</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
+              Save Stock
+            </button>
           </div>
         </div>
 
-        <!-- Cancelled -->
-        <div class="tab-pane fade" id="pane-cancelled" role="tabpanel">
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Order Code</th>
-                  <th>Buyer</th>
-                  <th>Product</th>
-                  <th>Type / Duration</th>
-                  <th>Price</th>
-                  <th>Payment</th>
-                  <th>Ref No.</th>
-                  <th>Created</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="tblCancelled"></tbody>
-            </table>
+        <!-- Stocks List -->
+        <div id="panel-manage-stocks" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Stocks List</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Account Type</th>
+                    <th>Duration</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Premium Until</th>
+                  </tr>
+                </thead>
+                <tbody id="stocks-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- STOCKS SECTION (ADD STOCK + LIST) -->
-    <section class="mb-5">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Stocks</h4>
-      </div>
-
-      <div class="card mb-3">
-        <div class="card-body">
-          <form id="addStockForm" class="row g-2">
-            <div class="col-md-3">
-              <label class="form-label small mb-1">Product</label>
-              <select id="stockProductId" class="form-select form-select-sm" required>
-                <option value="">Select product</option>
-              </select>
+        <!-- Pending Orders -->
+        <div id="panel-pending-orders" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Pending Orders</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Buyer ID</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
             </div>
-            <div class="col-md-3">
-              <label class="form-label small mb-1">Account Type</label>
-              <select id="stockAccountType" class="form-select form-select-sm" required>
-                <option value="">Select account type</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small mb-1">Duration</label>
-              <select id="stockDuration" class="form-select form-select-sm" required>
-                <option value="">Select duration</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small mb-1">Login Email</label>
-              <input type="text" id="stockEmail" class="form-control form-control-sm" required>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small mb-1">Password</label>
-              <input type="text" id="stockPassword" class="form-control form-control-sm" required>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small mb-1">Profile (optional)</label>
-              <input type="text" id="stockProfile" class="form-control form-control-sm" placeholder="Profile 1">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small mb-1">PIN (optional)</label>
-              <input type="text" id="stockPin" class="form-control form-control-sm" placeholder="PIN">
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-              <button class="btn btn-sm btn-primary w-100" type="submit">
-                <i class="fas fa-plus me-1"></i>Add Stock
-              </button>
-            </div>
-            <div class="col-md-6 d-flex align-items-end">
-              <small class="text-muted">
-                Inserts into <strong>stocks</strong> with status <code>available</code>.  
-                Required columns used: product_id, product_name, account_type, duration, email, password, profile, pin, status.
-              </small>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
 
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Product</th>
-              <th>Type / Duration</th>
-              <th>Login</th>
-              <th>Status</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody id="tblStocks"></tbody>
-        </table>
-      </div>
-    </section>
+        <!-- Records -->
+        <div id="panel-records" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Records</h3>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>Record ID</th>
+                    <th>Order ID</th>
+                    <th>Buyer</th>
+                    <th>Source</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Purchase Date</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody id="records-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-    <!-- RECORDS (DELIVERED ACCOUNTS) -->
-    <section>
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Delivered Records</h4>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Order ID</th>
-              <th>Buyer</th>
-              <th>Product</th>
-              <th>Type / Duration</th>
-              <th>Account Email</th>
-              <th>Created</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody id="tblRecords"></tbody>
-        </table>
-      </div>
-    </section>
+        <!-- Store Rules -->
+        <div id="panel-store-rules" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Store Rules</h3>
+            <p class="text-muted mb-2">
+              This panel shows all rules from the <code>rules</code> table.
+            </p>
+            <ul id="rules-list" class="mb-0">
+              <!-- JS will insert <li> -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Reports -->
+        <div id="panel-reports" class="panel-admin">
+          <div class="card-clean">
+            <h3 class="mb-3">Reports</h3>
+            <p class="text-muted mb-2">
+              This panel shows all reports from the <code>reports</code> table.
+            </p>
+            <div class="table-responsive">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Order ID</th>
+                    <th>Buyer ID</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                  <!-- JS will insert rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
-  <!-- Scripts -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Supabase JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    // ==============================
-    // SUPABASE CONFIG (same as index)
-    // ==============================
-    const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
+    // ========= CONFIG =========
+    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
     const SUPABASE_ANON_KEY =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let ALL_ORDERS = [];
-    let ALL_STOCKS = [];
-    let PRODUCTS_MAP = {};
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
 
-    // SAME PRODUCT CATALOG AS BUYER SIDE (minimal: id, name, pricing)
-    const PRODUCTS_DATA = [
-      // Entertainment
-      {
-        id: 'netflix',
-        name: 'Netflix Premium',
-        pricing: {
-          'solo profile': { '1m': 160, '2m': 280, '3m': 435, '4m': 565, '6m': 850, '8m': 1090, '12m': 1500 },
-          'shared profile': { '1m': 80, '2m': 145, '3m': 205, '4m': 270, '6m': 410, '8m': 520, '12m': 800 }
-        }
-      },
-      {
-        id: 'viu',
-        name: 'Viu Premium',
-        pricing: {
-          'solo account': { '1m': 70, '2m': 105, '3m': 145, '4m': 170, '6m': 205, '10m': 280, '12m': 310 },
-          'shared account': { '1m': 30, '2m': 55, '3m': 75, '4m': 90, '6m': 120, '10m': 190, '12m': 220 }
-        }
-      },
-      {
-        id: 'viva-max',
-        name: 'VIVAMAX VIVAONE',
-        pricing: {
-          'solo account': { '1m': 110, '2m': 145, '3m': 170 },
-          'shared account': { '1m': 65, '2m': 90, '3m': 120 }
-        }
-      },
-      {
-        id: 'wetv',
-        name: 'WeTV',
-        pricing: {
-          'solo account': { '1m': 150 },
-          'shared account': { '1m': 55, '2m': 95, '3m': 135 }
-        }
-      },
-      {
-        id: 'iwant-tfc',
-        name: 'IWANT TFC',
-        pricing: {
-          'solo account': { '1m': 145 },
-          'shared account': { '1m': 50, '2m': 90, '3m': 125 }
-        }
-      },
-      {
-        id: 'crunchyroll',
-        name: 'Crunchyroll',
-        pricing: {
-          'solo profile': { '1m': 75, '2m': 115, '3m': 160, '4m': 195 },
-          'shared profile': { '1m': 35, '2m': 60, '3m': 90, '4m': 115 }
-        }
-      },
-      {
-        id: 'disney-plus',
-        name: 'Disney+',
-        pricing: {
-          'solo account': { '1m': 390 },
-          'solo profile': { '1m': 160, '2m': 315, '4m': 630, '10m': 1480, '12m': 1700 },
-          'shared profile': { '1m': 85, '2m': 165, '4m': 330, '10m': 720, '12m': 880 }
-        }
-      },
-      { id: 'bilibili', name: 'Bilibili', pricing: { 'shared account': { '1m': 45, '2m': 75, '3m': 105 } } },
-      {
-        id: 'loklok',
-        name: 'Loklok',
-        pricing: {
-          'solo account': { '1m': 150 },
-          'shared account': { '1m': 65, '2m': 115, '3m': 170 }
-        }
-      },
-      { id: 'iqiyi', name: 'iQiyi', pricing: { 'shared account': { '1m': 50, '2m': 90, '3m': 135 } } },
-      {
-        id: 'hbo-max',
-        name: 'HBO Max',
-        pricing: {
-          'solo account': { '1m': 240, '2m': 360, '3m': 480 },
-          'solo profile': { '1m': 135, '2m': 240, '3m': 350 },
-          'shared profile': { '1m': 70, '2m': 120, '3m': 170 }
-        }
-      },
-      {
-        id: 'amazon-prime',
-        name: 'Amazon Prime',
-        pricing: {
-          'solo account': { '1m': 80, '2m': 110, '3m': 135, '4m': 160, '5m': 185, '6m': 210 },
-          'solo profile': { '1m': 50, '2m': 80, '3m': 110, '4m': 135, '5m': 150, '6m': 170 },
-          'shared profile': { '1m': 30, '2m': 50, '3m': 70, '4m': 80, '5m': 90, '6m': 100 }
-        }
-      },
-      {
-        id: 'youku',
-        name: 'Youku',
-        pricing: {
-          'solo account': { '1m': 125 },
-          'shared account': { '1m': 50, '2m': 90, '3m': 125 }
-        }
-      },
-      {
-        id: 'nba-league-pass',
-        name: 'NBA League Pass Premium',
-        pricing: {
-          'solo account': { '1m': 150 },
-          'shared account': { '1m': 75 }
-        }
-      },
+      const wrapper = document.createElement("div");
+      const bsType =
+        type === "success"
+          ? "success"
+          : type === "danger" || type === "error"
+          ? "danger"
+          : type === "warning"
+          ? "warning"
+          : "secondary";
 
-      // Streaming
-      {
-        id: 'youtube',
-        name: 'YouTube Premium',
-        pricing: {
-          'famhead': { '1m': 70, '2m': 90, '3m': 125, '4m': 150, '5m': 175, '6m': 200 },
-          'solo': { '1m': 45, '2m': 60, '3m': 85, '4m': 105, '5m': 125, '6m': 145 },
-          'invite': { '1m': 20, '2m': 35, '3m': 50, '4m': 60, '5m': 70, '6m': 80 }
-        }
-      },
-      {
-        id: 'spotify',
-        name: 'Spotify Premium',
-        pricing: {
-          'solo fw': { '1m': 60, '2m': 110, '3m': 150, '4m': 200 },
-          'solo nw': { '1m': 45, '2m': 80, '3m': 120, '4m': 150 }
-        }
-      },
-      {
-        id: 'apple-music',
-        name: 'Apple Music',
-        pricing: {
-          'solo account': { '1m': 49, '2m': 89, '3m': 129, '4m': 159 }
-        }
-      },
-
-      // AI
-      {
-        id: 'chatgpt',
-        name: 'ChatGPT Plus',
-        pricing: {
-          'solo account': { '1m': 600, '2m': 1050, '3m': 1500 },
-          'shared account': { '1m': 120, '2m': 200, '3m': 290 }
-        }
-      },
-      {
-        id: 'blackbox-ai',
-        name: 'Blackbox AI',
-        pricing: {
-          'solo account': { '1m': 90, '2m': 170, '3m': 250 }
-        }
-      },
-      {
-        id: 'perplexity',
-        name: 'Perplexity AI',
-        pricing: {
-          'solo account': { '1m': 120, '4m': 200, '6m': 250, '12m': 300, '24m': 450 },
-          'shared account': { '1m': 55, '4m': 140, '6m': 190, '12m': 230, '24m': 350 }
-        }
-      },
-      {
-        id: 'google-one',
-        name: 'Google One + Gemini AI',
-        pricing: {
-          'solo account': { '1m': 50, '2m': 85, '3m': 120, '12m': 280 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 80, '12m': 150 }
-        }
-      },
-
-      // Educational / Editing (only those used as products)
-      {
-        id: 'canva',
-        name: 'Canva Pro',
-        pricing: {
-          'edu lifetime': { 'nw': 19, '3m w': 39, '6m w': 49, '12m w': 69 },
-          'teamhead': { '1m': 45, '2m': 55, '3m': 65, '4m': 75, '5m': 85, '6m': 95 },
-          'solo': { '1m': 25, '2m': 35, '3m': 45, '4m': 55, '5m': 65, '6m': 75 },
-          'invite': { '1m': 10, '2m': 15, '3m': 20, '4m': 25, '5m': 30, '6m': 35 }
-        }
-      },
-      {
-        id: 'picsart',
-        name: 'Picsart Gold',
-        pricing: {
-          'teamhead account': { '1m': 70, '2m': 115, '3m': 150 },
-          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
-          'shared account': { '1m': 25, '2m': 45, '3m': 70 }
-        }
-      },
-      {
-        id: 'capcut',
-        name: 'CapCut Pro',
-        pricing: {
-          'solo account': { '7d': 50, '1m': 130, '2m': 190, '3m': 240 },
-          'shared account': { '1m': 70, '2m': 120, '3m': 155 }
-        }
-      },
-      {
-        id: 'alight-motion',
-        name: 'Alight Motion Pro',
-        pricing: {
-          'solo account': { '1m': 90, '12m': 149 },
-          'shared account': { '1m': 35, '12m': 69 }
-        }
-      },
-      {
-        id: 'remini',
-        name: 'Remini Web',
-        pricing: {
-          'solo account': { '7d': 30, '1m': 50 },
-          'shared account': { '7d': 15, '1m': 25 }
-        }
-      },
-      {
-        id: 'grammarly',
-        name: 'Grammarly Premium',
-        pricing: {
-          'solo account': { '1m': 85 },
-          'shared account': { '1m': 35, '2m': 65, '3m': 95 }
-        }
-      },
-      {
-        id: 'quillbot',
-        name: 'Quillbot Premium',
-        pricing: {
-          'solo account': { '1m': 100 },
-          'shared account': { '1m': 45, '2m': 75, '3m': 110 }
-        }
-      },
-      {
-        id: 'ms-365',
-        name: 'Microsoft 365',
-        pricing: {
-          'solo account': { '1m': 55, '2m': 90, '3m': 120 },
-          'shared account': { '1m': 25, '2m': 45, '3m': 65 }
-        }
-      },
-      {
-        id: 'cams-canner',
-        name: 'CamScanner Pro',
-        pricing: {
-          'solo account': { '1m': 100, '2m': 180, '3m': 250 },
-          'shared account': { '1m': 50, '2m': 90, '3m': 120 }
-        }
-      },
-      {
-        id: 'small-pdf',
-        name: 'Small PDF Pro',
-        pricing: {
-          'solo account': { '1m': 55, '2m': 95, '3m': 130 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 70 }
-        }
-      },
-      {
-        id: 'zoom',
-        name: 'Zoom Pro',
-        pricing: {
-          'solo account': { '14d': 45, '1m': 70, '2m': 120, '3m': 160 }
-        }
-      },
-      {
-        id: 'quizlet',
-        name: 'Quizlet+',
-        pricing: {
-          'solo account': { '1m': 45, '2m': 65, '3m': 100 },
-          'shared account': { '1m': 20, '2m': 35, '3m': 50 }
-        }
-      },
-      {
-        id: 'scribd',
-        name: 'Scribd Premium',
-        pricing: {
-          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 80 }
-        }
-      },
-      {
-        id: 'studocu',
-        name: 'Studocu Premium',
-        pricing: {
-          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 80 }
-        }
-      },
-      {
-        id: 'duolingo',
-        name: 'Duolingo Super',
-        pricing: {
-          'solo account': { '1m': 80, '2m': 130, '3m': 170 }
-        }
-      },
-      {
-        id: 'turnitin-student',
-        name: 'Turnitin Student',
-        pricing: {
-          'solo account': { '7d': 35, '14d': 50, '1m': 80, '2m': 140, '3m': 160, '6m': 330, '12m': 580 }
-        }
-      },
-      {
-        id: 'turnitin-instructor',
-        name: 'Turnitin Instructor',
-        pricing: {
-          'solo account': { '1m': 520 },
-          'shared account': { '7d': 120, '14d': 175, '1m': 280 }
-        }
-      }
-    ];
-
-    // ==============================
-    // UTILITIES
-    // ==============================
-    function showToast(message, type = 'info') {
-      const toast = document.createElement('div');
-      const bsType = type === 'error' ? 'danger' : type;
-      toast.className = `toast align-items-center text-bg-${bsType} border-0`;
-      toast.setAttribute('role', 'alert');
-      toast.innerHTML = `
+      wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
+      wrapper.role = "alert";
+      wrapper.innerHTML = `
         <div class="d-flex">
           <div class="toast-body">${message}</div>
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
       `;
-      document.getElementById('toastContainer').appendChild(toast);
-      const bsToast = new bootstrap.Toast(toast);
-      bsToast.show();
-      toast.addEventListener('hidden.bs.toast', () => toast.remove());
+      container.appendChild(wrapper);
+      const toast = new bootstrap.Toast(wrapper);
+      toast.show();
+      wrapper.addEventListener("hidden.bs.toast", () => wrapper.remove());
     }
 
-    function formatDate(dateString) {
-      if (!dateString) return '-';
-      const d = new Date(dateString);
-      if (isNaN(d.getTime())) return dateString;
-      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    function safeNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
     }
 
-    function statusBadge(status) {
-      const s = (status || '').toLowerCase();
-      let cls = 'badge-status badge-secondary';
-      if (s === 'pending') cls = 'badge-status badge-pending';
-      else if (s === 'confirmed') cls = 'badge-status badge-confirmed';
-      else if (s === 'delivered') cls = 'badge-status badge-delivered';
-      else if (s === 'cancelled') cls = 'badge-status badge-cancelled';
-      return `<span class="${cls} text-capitalize">${s || '-'}</span>`;
-    }
-
-    // ==============================
-    // PRODUCT MAP + STOCK FORM OPTIONS
-    // ==============================
-    function buildProductsMap() {
-      PRODUCTS_MAP = {};
-      PRODUCTS_DATA.forEach(p => {
-        PRODUCTS_MAP[p.id] = p;
-      });
-    }
-
-    function populateStockFormOptions() {
-      const prodSelect = document.getElementById('stockProductId');
-      const typeSelect = document.getElementById('stockAccountType');
-      const durSelect = document.getElementById('stockDuration');
-
-      // product options
-      PRODUCTS_DATA.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.name;
-        prodSelect.appendChild(opt);
-      });
-
-      prodSelect.addEventListener('change', () => {
-        typeSelect.innerHTML = '<option value="">Select account type</option>';
-        durSelect.innerHTML = '<option value="">Select duration</option>';
-        const pid = prodSelect.value;
-        if (!pid || !PRODUCTS_MAP[pid]) return;
-        const pricing = PRODUCTS_MAP[pid].pricing || {};
-        Object.keys(pricing).forEach(typeKey => {
-          const o = document.createElement('option');
-          o.value = typeKey;
-          o.textContent = typeKey;
-          typeSelect.appendChild(o);
-        });
-      });
-
-      typeSelect.addEventListener('change', () => {
-        durSelect.innerHTML = '<option value="">Select duration</option>';
-        const pid = prodSelect.value;
-        const typeKey = typeSelect.value;
-        if (!pid || !PRODUCTS_MAP[pid] || !typeKey) return;
-        const tier = PRODUCTS_MAP[pid].pricing[typeKey] || {};
-        Object.keys(tier).forEach(dKey => {
-          const o = document.createElement('option');
-          o.value = dKey;
-          o.textContent = dKey;
-          durSelect.appendChild(o);
-        });
-      });
-    }
-
-    // ==============================
-    // LOAD ORDERS
-    // ==============================
-    async function loadOrders() {
+    // ========= STATS =========
+    async function refreshStats() {
       try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select('id, order_code, buyer_email, product_id, product_name, account_type, duration, price, payment_method, reference_number, invite_email, status, created_at')
-          .order('created_at', { ascending: false });
+        const [{ data: prodRows }, { data: stockRows }, { data: orderRows }, { data: recRows }] =
+          await Promise.all([
+            supabase.from("products").select("id, stock"),
+            supabase.from("stocks").select("id, status"),
+            supabase.from("orders").select("id, status"),
+            supabase.from("records").select("price"),
+          ]);
 
-        if (error) {
-          console.error('Error loading orders:', error);
-          showToast('Error loading orders from database', 'error');
-          return;
-        }
+        const productsCount = prodRows?.length || 0;
+        const availableStock = (stockRows || []).filter(
+          (s) => (s.status || "").toLowerCase() === "available"
+        ).length;
+        const pendingOrders = (orderRows || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        ).length;
+        const totalRevenue = (recRows || []).reduce(
+          (sum, r) => sum + safeNumber(r.price),
+          0
+        );
 
-        ALL_ORDERS = data || [];
-        updateAnalytics();
-        renderAllOrderTables();
-      } catch (err) {
-        console.error('loadOrders error:', err);
-        showToast('Unexpected error loading orders', 'error');
-      }
-    }
-
-    function updateAnalytics() {
-      const total = ALL_ORDERS.length;
-      const pending = ALL_ORDERS.filter(o => (o.status || '').toLowerCase() === 'pending').length;
-      const delivered = ALL_ORDERS.filter(o => (o.status || '').toLowerCase() === 'delivered').length;
-      const cancelled = ALL_ORDERS.filter(o => (o.status || '').toLowerCase() === 'cancelled').length;
-
-      document.getElementById('totalOrders').textContent = total;
-      document.getElementById('pendingOrders').textContent = pending;
-      document.getElementById('deliveredOrders').textContent = delivered;
-      document.getElementById('cancelledOrders').textContent = cancelled;
-    }
-
-    function renderAllOrderTables() {
-      renderOrdersByStatus('pending', document.getElementById('tblPending'), true);
-      renderOrdersByStatus('delivered', document.getElementById('tblDelivered'), false);
-      renderOrdersByStatus('cancelled', document.getElementById('tblCancelled'), false);
-    }
-
-    function renderOrdersByStatus(statusKey, tbodyEl, withActions) {
-      tbodyEl.innerHTML = '';
-
-      const rows = ALL_ORDERS.filter(
-        o => (o.status || '').toLowerCase() === statusKey.toLowerCase()
-      );
-
-      if (!rows.length) {
-        tbodyEl.innerHTML = `
-          <tr><td colspan="${withActions ? 11 : 10}" class="text-center text-muted py-3">
-          No ${statusKey} orders.
-          </td></tr>
-        `;
-        return;
-      }
-
-      rows.forEach(order => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${order.id}</td>
-          <td>${order.order_code || '-'}</td>
-          <td>${order.buyer_email || '-'}</td>
-          <td>${order.product_name || '-'}</td>
-          <td>
-            <div class="small">${order.account_type || '-'}</div>
-            <div class="small text-muted">${order.duration || '-'}</div>
-          </td>
-          <td>₱${order.price ?? 0}</td>
-          <td class="small text-capitalize">${order.payment_method || '-'}</td>
-          <td class="small">${order.reference_number || '-'}</td>
-          <td class="small">${formatDate(order.created_at)}</td>
-          <td>${statusBadge(order.status)}</td>
-          ${withActions ? `
-          <td>
-            <button class="btn btn-sm btn-success mb-1 w-100 btn-confirm" data-id="${order.id}">
-              Confirm Payment
-            </button>
-            <button class="btn btn-sm btn-outline-danger w-100 btn-cancel" data-id="${order.id}">
-              Cancel
-            </button>
-          </td>` : ''}
-        `;
-        tbodyEl.appendChild(tr);
-      });
-
-      if (withActions) {
-        tbodyEl.querySelectorAll('.btn-confirm').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = parseInt(btn.getAttribute('data-id'), 10);
-            confirmOrder(id);
+        document.getElementById("stat-products").textContent = productsCount;
+        document.getElementById("stat-stock").textContent = availableStock;
+        document.getElementById("stat-pending").textContent = pendingOrders;
+        document.getElementById("stat-revenue").textContent =
+          "₱" +
+          totalRevenue.toLocaleString("en-PH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
           });
-        });
-        tbodyEl.querySelectorAll('.btn-cancel').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = parseInt(btn.getAttribute('data-id'), 10);
-            cancelOrder(id);
-          });
-        });
-      }
-    }
-
-    // ==============================
-    // CONFIRM PAYMENT (AUTO DELIVER)
-    // ==============================
-    async function confirmOrder(orderId) {
-      const order = ALL_ORDERS.find(o => o.id === orderId);
-      if (!order) {
-        showToast('Order not found', 'error');
-        return;
-      }
-
-      try {
-        // Find one available stock for this product + type + duration
-        const { data: stockRows, error: stockError } = await supabase
-          .from('stocks')
-          .select('id, product_id, product_name, account_type, duration, email, password, profile, pin, status, created_at')
-          .eq('product_id', order.product_id)
-          .eq('account_type', order.account_type)
-          .eq('duration', order.duration)
-          .eq('status', 'available')
-          .order('created_at', { ascending: true })
-          .limit(1);
-
-        if (stockError) {
-          console.error('Error fetching stocks for confirm:', stockError);
-          showToast('Error checking stocks for this order', 'error');
-          return;
-        }
-
-        if (!stockRows || !stockRows.length) {
-          showToast('Cannot confirm: no available stock for this product / type / duration.', 'warning');
-          return;
-        }
-
-        const stock = stockRows[0];
-
-        // 1) Mark stock as sold
-        const { error: updStockErr } = await supabase
-          .from('stocks')
-          .update({ status: 'sold' })
-          .eq('id', stock.id);
-
-        if (updStockErr) {
-          console.error('Error updating stock:', updStockErr);
-          showToast('Error updating stock status', 'error');
-          return;
-        }
-
-        // 2) Insert record (delivered account)
-        const recordPayload = {
-          order_id: order.id,
-          buyer_email: order.buyer_email,
-          product_id: order.product_id,
-          product_name: order.product_name,
-          account_type: order.account_type,
-          duration: order.duration,
-          price: order.price,
-          purchase_date: new Date().toISOString(),
-          email: stock.email,
-          password: stock.password,
-          profile: stock.profile,
-          pin: stock.pin
-        };
-
-        const { error: recErr } = await supabase
-          .from('records')
-          .insert(recordPayload);
-
-        if (recErr) {
-          console.error('Error inserting record:', recErr);
-          showToast('Error saving delivered record (but stock already marked sold)', 'error');
-          // we continue to update order to delivered anyway
-        }
-
-        // 3) Update order to delivered
-        const { error: updOrderErr } = await supabase
-          .from('orders')
-          .update({ status: 'delivered' })
-          .eq('id', order.id);
-
-        if (updOrderErr) {
-          console.error('Error updating order status:', updOrderErr);
-          showToast('Error updating order status', 'error');
-          return;
-        }
-
-        showToast(`Order ${order.id} confirmed and delivered.`, 'success');
-        await loadOrders();
-        await loadStocks();
-        await loadRecords();
       } catch (err) {
-        console.error('confirmOrder error:', err);
-        showToast('Unexpected error confirming order', 'error');
+        console.error("[stats] error:", err);
       }
     }
 
-    async function cancelOrder(orderId) {
-      try {
-        const { error } = await supabase
-          .from('orders')
-          .update({ status: 'cancelled' })
-          .eq('id', orderId);
+    // ========= PRODUCTS =========
+    async function loadProducts() {
+      const tbody = document.getElementById("products-table-body");
+      const selectStockProduct = document.getElementById("stock-product");
+      if (!tbody) return;
 
-        if (error) {
-          console.error('cancelOrder error:', error);
-          showToast('Error cancelling order', 'error');
-          return;
-        }
-        showToast(`Order ${orderId} cancelled.`, 'success');
-        await loadOrders();
-      } catch (err) {
-        console.error('cancelOrder error:', err);
-        showToast('Unexpected error cancelling order', 'error');
+      tbody.innerHTML = "";
+      if (selectStockProduct) {
+        selectStockProduct.innerHTML = '<option value="">Select product</option>';
       }
-    }
 
-    // ==============================
-    // STOCKS
-    // ==============================
-    async function loadStocks() {
       try {
         const { data, error } = await supabase
-          .from('stocks')
-          .select('id, product_id, product_name, account_type, duration, email, password, profile, pin, status, created_at')
-          .order('created_at', { ascending: false });
+          .from("products")
+          .select("id, name, category, icon, stock")
+          .order("name", { ascending: true });
 
-        if (error) {
-          console.error('Error loading stocks:', error);
-          showToast('Error loading stocks', 'error');
-          return;
-        }
-
-        ALL_STOCKS = data || [];
-        renderStocks();
-      } catch (err) {
-        console.error('loadStocks error:', err);
-        showToast('Unexpected error loading stocks', 'error');
-      }
-    }
-
-    function renderStocks() {
-      const tbody = document.getElementById('tblStocks');
-      tbody.innerHTML = '';
-
-      if (!ALL_STOCKS.length) {
-        tbody.innerHTML = `
-          <tr><td colspan="6" class="text-center text-muted py-3">
-            No stocks yet.
-          </td></tr>
-        `;
-        return;
-      }
-
-      ALL_STOCKS.forEach(s => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${s.id}</td>
-          <td>
-            <div class="small fw-semibold">${s.product_name || s.product_id}</div>
-            <div class="small text-muted">${s.product_id}</div>
-          </td>
-          <td>
-            <div class="small">${s.account_type || '-'}</div>
-            <div class="small text-muted">${s.duration || '-'}</div>
-          </td>
-          <td class="small">
-            ${s.email || '-'}<br>
-            <span class="text-muted">pass:</span> ${s.password || '-'}
-          </td>
-          <td>${statusBadge(s.status)}</td>
-          <td class="small">${formatDate(s.created_at)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function handleAddStock(e) {
-      e.preventDefault();
-
-      const prodId = document.getElementById('stockProductId').value;
-      const accType = document.getElementById('stockAccountType').value;
-      const duration = document.getElementById('stockDuration').value;
-      const email = document.getElementById('stockEmail').value.trim();
-      const password = document.getElementById('stockPassword').value.trim();
-      const profile = document.getElementById('stockProfile').value.trim();
-      const pin = document.getElementById('stockPin').value.trim();
-
-      if (!prodId || !accType || !duration || !email || !password) {
-        showToast('Please fill in all required fields for stock.', 'warning');
-        return;
-      }
-
-      const product = PRODUCTS_MAP[prodId];
-      const payload = {
-        product_id: prodId,
-        product_name: product ? product.name : prodId,
-        account_type: accType,
-        duration: duration,
-        email: email,
-        password: password,
-        profile: profile || null,
-        pin: pin || null,
-        status: 'available'
-      };
-
-      try {
-        const { error } = await supabase
-          .from('stocks')
-          .insert(payload);
-
-        if (error) {
-          console.error('Error adding stock:', error);
-          showToast('Error adding stock (check columns in stocks table)', 'error');
-          return;
-        }
-
-        showToast('Stock added successfully', 'success');
-        (document.getElementById('addStockForm')).reset();
-        await loadStocks();
-      } catch (err) {
-        console.error('handleAddStock error:', err);
-        showToast('Unexpected error adding stock', 'error');
-      }
-    }
-
-    // ==============================
-    // RECORDS
-    // ==============================
-    async function loadRecords() {
-      try {
-        const { data, error } = await supabase
-          .from('records')
-          .select('id, order_id, buyer_email, product_name, account_type, duration, email, price, purchase_date')
-          .order('purchase_date', { ascending: false });
-
-        if (error) {
-          console.error('Error loading records:', error);
-          showToast('Error loading records', 'error');
-          return;
-        }
-
-        const tbody = document.getElementById('tblRecords');
-        tbody.innerHTML = '';
+        if (error) throw error;
 
         if (!data || !data.length) {
-          tbody.innerHTML = `
-            <tr><td colspan="8" class="text-center text-muted py-3">
-              No delivered records yet.
-            </td></tr>
-          `;
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.textContent = "No products found.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
           return;
         }
 
-        data.forEach(r => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${r.id}</td>
-            <td>${r.order_id || '-'}</td>
-            <td>${r.buyer_email || '-'}</td>
-            <td>${r.product_name || '-'}</td>
-            <td>
-              <div class="small">${r.account_type || '-'}</div>
-              <div class="small text-muted">${r.duration || '-'}</div>
-            </td>
-            <td>${r.email || '-'}</td>
-            <td class="small">${formatDate(r.purchase_date)}</td>
-            <td>₱${r.price ?? 0}</td>
-          `;
+        data.forEach((p) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = p.id;
+          tr.appendChild(tdId);
+
+          const tdName = document.createElement("td");
+          tdName.textContent = p.name;
+          tr.appendChild(tdName);
+
+          const tdCat = document.createElement("td");
+          tdCat.textContent = p.category;
+          tr.appendChild(tdCat);
+
+          const tdIcon = document.createElement("td");
+          tdIcon.textContent = p.icon || "";
+          tr.appendChild(tdIcon);
+
+          const tdStock = document.createElement("td");
+          tdStock.textContent = p.stock ?? 0;
+          tr.appendChild(tdStock);
+
+          tbody.appendChild(tr);
+
+          if (selectStockProduct) {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = `${p.name} (${p.category})`;
+            selectStockProduct.appendChild(opt);
+          }
+        });
+      } catch (err) {
+        console.error("[products] error:", err);
+        showToast("Failed to load products.", "danger");
+      }
+    }
+
+    // ========= STOCKS =========
+    async function loadStocks() {
+      const tbody = document.getElementById("stocks-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const [{ data: stocks, error: errStocks }, { data: products, error: errProd }] =
+          await Promise.all([
+            supabase
+              .from("stocks")
+              .select("id, product_id, account_type, duration, email, status, premium_until"),
+            supabase.from("products").select("id, name"),
+          ]);
+
+        if (errStocks) throw errStocks;
+        if (errProd) throw errProd;
+
+        const prodMap = {};
+        (products || []).forEach((p) => (prodMap[p.id] = p.name));
+
+        if (!stocks || !stocks.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 7;
+          td.textContent = "No stocks yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        stocks.forEach((s) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = s.id;
+          tr.appendChild(tdId);
+
+          const tdProduct = document.createElement("td");
+          tdProduct.textContent = prodMap[s.product_id] || s.product_id || "-";
+          tr.appendChild(tdProduct);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = s.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDuration = document.createElement("td");
+          tdDuration.textContent = s.duration || "-";
+          tr.appendChild(tdDuration);
+
+          const tdEmail = document.createElement("td");
+          tdEmail.textContent = s.email || "-";
+          tr.appendChild(tdEmail);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = s.status || "-";
+          tr.appendChild(tdStatus);
+
+          const tdPrem = document.createElement("td");
+          tdPrem.textContent = s.premium_until || "-";
+          tr.appendChild(tdPrem);
+
           tbody.appendChild(tr);
         });
       } catch (err) {
-        console.error('loadRecords error:', err);
-        showToast('Unexpected error loading records', 'error');
+        console.error("[stocks] error:", err);
+        showToast("Failed to load stocks.", "danger");
       }
     }
 
-    // ==============================
-    // INIT
-    // ==============================
-    document.addEventListener('DOMContentLoaded', () => {
-      buildProductsMap();
-      populateStockFormOptions();
+    async function saveStock() {
+      const product_id = document.getElementById("stock-product")?.value || "";
+      const account_type =
+        document.getElementById("stock-account-type")?.value.trim() || "";
+      const duration =
+        document.getElementById("stock-duration")?.value.trim() || "";
+      const email = document.getElementById("stock-email")?.value.trim() || "";
+      const password =
+        document.getElementById("stock-password")?.value.trim() || "";
+      const profile =
+        document.getElementById("stock-profile")?.value.trim() || "";
+      const pin = document.getElementById("stock-pin")?.value.trim() || "";
+      const archive_after = Number(
+        document.getElementById("stock-archive-after")?.value || 0
+      );
+      const premium_until =
+        document.getElementById("stock-premium-until")?.value || null;
+      const status = document.getElementById("stock-status")?.value || "available";
 
-      document.getElementById('addStockForm').addEventListener('submit', handleAddStock);
+      if (!product_id) {
+        showToast("Please select a product first.", "warning");
+        return;
+      }
 
-      loadOrders();
+      try {
+        const { error } = await supabase.from("stocks").insert([
+          {
+            product_id,
+            account_type,
+            duration,
+            email,
+            password,
+            profile,
+            pin,
+            archive_after: Number.isFinite(archive_after) ? archive_after : 0,
+            premium_until: premium_until || null,
+            status,
+          },
+        ]);
+
+        if (error) throw error;
+
+        showToast("Stock saved!", "success");
+
+        ["stock-email", "stock-password", "stock-profile", "stock-pin"].forEach(
+          (id) => {
+            const input = document.getElementById(id);
+            if (input) input.value = "";
+          }
+        );
+
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveStock] error:", err);
+        showToast("Failed to save stock.", "danger");
+      }
+    }
+
+    // ========= ORDERS =========
+    async function loadPendingOrders() {
+      const tbody = document.getElementById("orders-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        // IMPORTANT: use * so it works with both old + new schema
+        const { data, error } = await supabase
+          .from("orders")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const pending = (data || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        );
+
+        if (!pending.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 8;
+          td.textContent = "No pending orders.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        pending.forEach((o) => {
+          const tr = document.createElement("tr");
+
+          // Order ID
+          const tdId = document.createElement("td");
+          tdId.textContent = o.id ?? "-";
+          tr.appendChild(tdId);
+
+          // Buyer (id or email)
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = o.buyer_id ?? o.buyer_email ?? "-";
+          tr.appendChild(tdBuyer);
+
+          // Product (name if available, else product_id)
+          const tdProd = document.createElement("td");
+          tdProd.textContent = o.product_name ?? o.product_id ?? "-";
+          tr.appendChild(tdProd);
+
+          // Account type
+          const tdType = document.createElement("td");
+          tdType.textContent = o.account_type || "-";
+          tr.appendChild(tdType);
+
+          // Duration
+          const tdDur = document.createElement("td");
+          tdDur.textContent = o.duration || "-";
+          tr.appendChild(tdDur);
+
+          // Price
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          // Status
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = o.status || "-";
+          tr.appendChild(tdStatus);
+
+          // Action
+          const tdAction = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.className = "btn btn-sm btn-success";
+          btn.textContent = "Mark as Paid";
+          btn.addEventListener("click", () => markOrderPaid(o.id));
+          tdAction.appendChild(btn);
+          tr.appendChild(tdAction);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[orders] error:", err);
+        showToast("Failed to load orders.", "danger");
+      }
+    }
+
+    async function markOrderPaid(orderId) {
+      if (!confirm(`Mark order ${orderId} as PAID?`)) return;
+
+      try {
+        const { error } = await supabase
+          .from("orders")
+          .update({ status: "paid" })
+          .eq("id", orderId);
+
+        if (error) throw error;
+
+        showToast("Order marked as paid. Trigger will assign stock.", "success");
+
+        await loadPendingOrders();
+        await loadRecords();
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[markOrderPaid] error:", err);
+        showToast("Failed to update order.", "danger");
+      }
+    }
+
+    // ========= RECORDS =========
+    async function loadRecords() {
+      const tbody = document.getElementById("records-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("records")
+          .select(
+            "id, order_id, buyer, source, product_id, account_type, duration, purchase_date, price"
+          )
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 9;
+          td.textContent = "No records yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((r) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = r.id;
+          tr.appendChild(tdId);
+
+          const tdOrder = document.createElement("td");
+          tdOrder.textContent = r.order_id || "-";
+          tr.appendChild(tdOrder);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = r.buyer || "-";
+          tr.appendChild(tdBuyer);
+
+          const tdSource = document.createElement("td");
+          tdSource.textContent = r.source || "-";
+          tr.appendChild(tdSource);
+
+          const tdProd = document.createElement("td");
+          tdProd.textContent = r.product_id || "-";
+          tr.appendChild(tdProd);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = r.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDur = document.createElement("td");
+          tdDur.textContent = r.duration || "-";
+          tr.appendChild(tdDur);
+
+          const tdDate = document.createElement("td");
+          tdDate.textContent = r.purchase_date || "-";
+          tr.appendChild(tdDate);
+
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(r.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[records] error:", err);
+        showToast("Failed to load records.", "danger");
+      }
+    }
+
+    // ========= RULES =========
+    async function loadRules() {
+      const ul = document.getElementById("rules-list");
+      if (!ul) return;
+      ul.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("rules")
+          .select("id, rule_text, product_id")
+          .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const li = document.createElement("li");
+          li.textContent = "No rules found.";
+          ul.appendChild(li);
+          return;
+        }
+
+        data.forEach((r) => {
+          const li = document.createElement("li");
+          li.textContent = r.product_id
+            ? `[${r.product_id}] ${r.rule_text}`
+            : r.rule_text;
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        console.error("[rules] error:", err);
+        showToast("Failed to load rules.", "danger");
+      }
+    }
+
+    // ========= REPORTS =========
+    async function loadReports() {
+      const tbody = document.getElementById("reports-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("reports")
+          .select("id, order_id, buyer_id, issue_description, status, created_at")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent = "No reports yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((rep) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = rep.id;
+          tr.appendChild(tdId);
+
+          const tdOrder = document.createElement("td");
+          tdOrder.textContent = rep.order_id || "-";
+          tr.appendChild(tdOrder);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = rep.buyer_id ?? "-";
+          tr.appendChild(tdBuyer);
+
+          const tdIssue = document.createElement("td");
+          tdIssue.textContent = rep.issue_description || "-";
+          tr.appendChild(tdIssue);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = rep.status || "-";
+          tr.appendChild(tdStatus);
+
+          const tdCreated = document.createElement("td");
+          tdCreated.textContent = rep.created_at || "-";
+          tr.appendChild(tdCreated);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[reports] error:", err);
+        showToast("Failed to load reports.", "danger");
+      }
+    }
+
+    // ========= TABS =========
+    function initTabs() {
+      const buttons = document.querySelectorAll(".sidebar button");
+      const panels = document.querySelectorAll(".panel-admin");
+      if (!buttons.length || !panels.length) return;
+
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-target");
+          if (!targetId) return;
+
+          buttons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          panels.forEach((p) => {
+            if (p.id === targetId) p.classList.add("active");
+            else p.classList.remove("active");
+          });
+        });
+      });
+    }
+
+    // ========= INIT =========
+    document.addEventListener("DOMContentLoaded", () => {
+      initTabs();
+
+      const btnSaveStock = document.getElementById("btn-save-stock");
+      if (btnSaveStock) {
+        btnSaveStock.addEventListener("click", saveStock);
+      }
+
+      // Initial loads
+      refreshStats();
+      loadProducts();
       loadStocks();
+      loadPendingOrders();
       loadRecords();
+      loadRules();
+      loadReports();
     });
   </script>
 </body>
