@@ -1123,35 +1123,286 @@
       try {
         showToast("🔄 Loading products...", "info");
         
-        const [prodRes, stocksRes] = await Promise.all([
-          supabase.from("products").select("id,name,category,icon").order("name"),
-          supabase
-            .from("stocks")
-            .select("product_id,account_type,duration,status,quantity,price")
-            .eq("status", "available"),
-        ]);
+        // Define all products with their pricing structures
+        const hardcodedProducts = [
+          {
+            id: 'netflix',
+            name: 'Netflix Premium',
+            category: 'streaming',
+            icon: '🎬',
+            pricing: {
+              'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+              'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+            }
+          },
+          {
+            id: 'spotify',
+            name: 'Spotify Premium',
+            category: 'streaming',
+            icon: '🎵',
+            pricing: {
+              'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+              'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+            }
+          },
+          {
+            id: 'youtube-premium',
+            name: 'YouTube Premium',
+            category: 'streaming',
+            icon: '📺',
+            pricing: {
+              'solo account': { '1m': 80, '2m': 130, '3m': 170 },
+              'shared account': { '1m': 50, '2m': 85, '3m': 120 }
+            }
+          },
+          {
+            id: 'disney-plus',
+            name: 'Disney+',
+            category: 'streaming',
+            icon: '🐭',
+            pricing: {
+              'solo account': { '1m': 70, '2m': 110, '3m': 150 },
+              'shared account': { '1m': 40, '2m': 70, '3m': 100 }
+            }
+          },
+          {
+            id: 'hbo-max',
+            name: 'HBO Max',
+            category: 'streaming',
+            icon: '📽️',
+            pricing: {
+              'solo account': { '1m': 90, '2m': 150, '3m': 200 },
+              'shared account': { '1m': 55, '2m': 95, '3m': 130 }
+            }
+          },
+          {
+            id: 'prime-video',
+            name: 'Prime Video',
+            category: 'streaming',
+            icon: '📦',
+            pricing: {
+              'solo account': { '1m': 60, '2m': 100, '3m': 140 },
+              'shared account': { '1m': 35, '2m': 60, '3m': 85 }
+            }
+          },
+          {
+            id: 'hulu',
+            name: 'Hulu',
+            category: 'streaming',
+            icon: '🍿',
+            pricing: {
+              'solo account': { '1m': 85, '2m': 140, '3m': 190 },
+              'shared account': { '1m': 50, '2m': 85, '3m': 120 }
+            }
+          },
+          {
+            id: 'tidal',
+            name: 'Tidal HiFi',
+            category: 'streaming',
+            icon: '🎶',
+            pricing: {
+              'solo account': { '1m': 70, '2m': 120, '3m': 165 },
+              'shared account': { '1m': 40, '2m': 70, '3m': 100 }
+            }
+          },
+          {
+            id: 'deezer',
+            name: 'Deezer Premium',
+            category: 'streaming',
+            icon: '🎧',
+            pricing: {
+              'solo account': { '1m': 45, '2m': 75, '3m': 105 },
+              'shared account': { '1m': 25, '2m': 45, '3m': 65 }
+            }
+          },
+          {
+            id: 'apple-music',
+            name: 'Apple Music',
+            category: 'streaming',
+            icon: '🍎',
+            pricing: {
+              'solo account': { '1m': 55, '2m': 90, '3m': 125 },
+              'shared account': { '1m': 30, '2m': 55, '3m': 80 }
+            }
+          },
+          {
+            id: 'crunchyroll',
+            name: 'Crunchyroll Premium',
+            category: 'streaming',
+            icon: '🇯🇵',
+            pricing: {
+              'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+              'shared account': { '1m': 30, '2m': 50, '3m': 80 }
+            }
+          },
+          {
+            id: 'duolingo',
+            name: 'Duolingo Super',
+            category: 'educational',
+            icon: '🧑‍🎓',
+            pricing: {
+              'solo account': { '1m': 80, '2m': 130, '3m': 170 }
+            }
+          },
+          {
+            id: 'turnitin-student',
+            name: 'Turnitin Student',
+            category: 'educational',
+            icon: '📝',
+            pricing: {
+              'solo account': { '7d': 35, '14d': 50, '1m': 80, '2m': 140, '3m': 160, '6m': 330, '12m': 580 }
+            }
+          },
+          {
+            id: 'turnitin-instructor',
+            name: 'Turnitin Instructor',
+            category: 'educational',
+            icon: '👨‍🏫',
+            pricing: {
+              'solo account': { '1m': 520 },
+              'shared account': { '7d': 120, '14d': 175, '1m': 280 }
+            }
+          },
+          {
+            id: 'canva',
+            name: 'Canva Pro',
+            category: 'editing',
+            icon: '🎨',
+            pricing: {
+              'edu lifetime': { 'nw': 19, '3m w': 39, '6m w': 49, '12m w': 69 },
+              'teamhead': { '1m': 45, '2m': 55, '3m': 65, '4m': 75, '5m': 85, '6m': 95 },
+              'solo': { '1m': 25, '2m': 35, '3m': 45, '4m': 55, '5m': 65, '6m': 75 },
+              'invite': { '1m': 10, '2m': 15, '3m': 20, '4m': 25, '5m': 30, '6m': 35 }
+            }
+          },
+          {
+            id: 'picsart',
+            name: 'Picsart Gold',
+            category: 'editing',
+            icon: '👏',
+            pricing: {
+              'teamhead account': { '1m': 70, '2m': 115, '3m': 150 },
+              'solo account': { '1m': 50, '2m': 85, '3m': 120 },
+              'shared account': { '1m': 25, '2m': 45, '3m': 70 }
+            }
+          },
+          {
+            id: 'capcut',
+            name: 'CapCut Pro',
+            category: 'editing',
+            icon: '📝',
+            pricing: {
+              'solo account': { '7d': 50, '1m': 130, '2m': 190, '3m': 240 },
+              'shared account': { '1m': 70, '2m': 120, '3m': 155 }
+            }
+          },
+          {
+            id: 'alight-motion',
+            name: 'Alight Motion Pro',
+            category: 'editing',
+            icon: '📱',
+            pricing: {
+              'solo account': { '1m': 90, '12m': 149 },
+              'shared account': { '1m': 35, '12m': 69 }
+            }
+          },
+          {
+            id: 'remini',
+            name: 'Remini Web',
+            category: 'editing',
+            icon: '✨',
+            pricing: {
+              'solo account': { '7d': 30, '1m': 50 },
+              'shared account': { '7d': 15, '1m': 25 }
+            }
+          },
+          {
+            id: 'grammarly',
+            name: 'Grammarly Premium',
+            category: 'educational',
+            icon: '✍️',
+            pricing: {
+              'solo account': { '1m': 85 },
+              'shared account': { '1m': 35, '2m': 65, '3m': 95 }
+            }
+          },
+          {
+            id: 'quillbot',
+            name: 'Quillbot Premium',
+            category: 'educational',
+            icon: '📝',
+            pricing: {
+              'solo account': { '1m': 100 },
+              'shared account': { '1m': 45, '2m': 75, '3m': 110 }
+            }
+          },
+          {
+            id: 'ms-365',
+            name: 'Microsoft 365',
+            category: 'educational',
+            icon: '💻',
+            pricing: {
+              'solo account': { '1m': 55, '2m': 90, '3m': 120 },
+              'shared account': { '1m': 25, '2m': 45, '3m': 65 }
+            }
+          },
+          {
+            id: 'cams-canner',
+            name: 'CamScanner Pro',
+            category: 'editing',
+            icon: '📁',
+            pricing: {
+              'solo account': { '1m': 100, '2m': 180, '3m': 250 },
+              'shared account': { '1m': 50, '2m': 90, '3m': 120 }
+            }
+          },
+          {
+            id: 'small-pdf',
+            name: 'Small PDF Pro',
+            category: 'editing',
+            icon: '📁',
+            pricing: {
+              'solo account': { '1m': 55, '2m': 95, '3m': 130 }
+            }
+          }
+        ];
 
-        if (prodRes.error) throw prodRes.error;
+        allProducts = hardcodedProducts;
+
+        // Load actual stocks from Supabase
+        const stocksRes = await supabase
+          .from("stocks")
+          .select("product_id,account_type,duration,status,quantity,price")
+          .eq("status", "available");
+
         if (stocksRes.error) throw stocksRes.error;
 
-        allProducts = prodRes.data || [];
         console.log("Loaded products:", allProducts);
         console.log("Loaded stocks:", stocksRes.data);
 
-        // Rebuild productCombos from stocks data
+        // Build productCombos from hardcoded pricing
         productCombos = {};
         productStocksSummary = {};
 
+        allProducts.forEach(product => {
+          productCombos[product.id] = product.pricing;
+          
+          // Initialize all combos with 0 stock
+          Object.keys(product.pricing).forEach(accountType => {
+            Object.keys(product.pricing[accountType]).forEach(duration => {
+              const key = product.id + "||" + accountType + "||" + duration;
+              productStocksSummary[key] = 0;
+            });
+          });
+        });
+
+        // Update with actual stock quantities
         (stocksRes.data || []).forEach((row) => {
-          if (!productCombos[row.product_id]) productCombos[row.product_id] = {};
-          if (!productCombos[row.product_id][row.account_type])
-            productCombos[row.product_id][row.account_type] = {};
-          
-          productCombos[row.product_id][row.account_type][row.duration] = row.price || 100;
-          
           const key = row.product_id + "||" + row.account_type + "||" + row.duration;
           const qty = safeNumber(row.quantity);
-          productStocksSummary[key] = (productStocksSummary[key] || 0) + (qty > 0 ? qty : 0);
+          if (productStocksSummary.hasOwnProperty(key)) {
+            productStocksSummary[key] += (qty > 0 ? qty : 0);
+          }
         });
 
         console.log("Product combos:", productCombos);
@@ -1216,6 +1467,17 @@
           });
         });
 
+        // Count available combos (those with stock)
+        let availableCombos = 0;
+        Object.keys(combos).forEach((acct) => {
+          Object.keys(combos[acct]).forEach((dur) => {
+            const key = p.id + "||" + acct + "||" + dur;
+            if (productStocksSummary[key] > 0) {
+              availableCombos++;
+            }
+          });
+        });
+
         return `
           <div class="product-card">
             <div class="product-top">
@@ -1225,14 +1487,20 @@
                 <div class="product-cat">${p.category || "Uncategorized"}</div>
               </div>
             </div>
-            <div class="mt-2 d-flex justify-content-between align-items-center">
-              <span class="product-slots">
-                ${totalSlots > 0 ? totalSlots + " slot(s) available" : "Out of stock"}
-              </span>
+            <div class="mt-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="product-slots">
+                  ${totalSlots > 0 ? totalSlots + " slot(s) available" : "Out of stock"}
+                </span>
+              </div>
+              <div class="small-muted">
+                <i class="fa fa-list me-1"></i>
+                ${Object.keys(combos).length} account types, ${availableCombos} available combos
+              </div>
             </div>
             <div class="product-footer">
               <button class="btn btn-primary btn-sm" onclick="openProductModal('${p.id}')">
-                <i class="fa fa-shopping-cart me-1"></i> View Combos
+                <i class="fa fa-shopping-cart me-1"></i> View All Combos
               </button>
             </div>
           </div>`;
