@@ -1070,42 +1070,35 @@
       return false;
     }
 
-    async function handleAdminLogin() {
-      const input = document.getElementById("adminUidInput");
-      const uid = (input.value || "").trim();
-      if (!uid) {
-        showToast("❌ Please paste your admin UID", "warning");
-        return;
-      }
+    // In admin.html, replace the handleAdminLogin function with this:
+async function handleAdminLogin() {
+  const input = document.getElementById("adminUidInput");
+  const uid = (input.value || "").trim();
+  
+  if (!uid) {
+    showToast("❌ Please enter admin UID", "warning");
+    return;
+  }
 
-      try {
-        if (!ADMIN_ALLOW_UIDS.includes(uid)) {
-          showToast("❌ UID not allowed", "danger");
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("admin_uids")
-          .select("uid")
-          .eq("uid", uid)
-          .maybeSingle();
-
-        if (error || !data) {
-          showToast("❌ UID not registered in admin_uids table", "danger");
-          return;
-        }
-
-        localStorage.setItem("aiax_admin_uid", uid);
-        document.getElementById("adminGate").classList.add("hidden");
-        document.getElementById("adminContent").classList.remove("hidden");
-        showToast("✅ Admin console unlocked", "success");
-
-        await initialLoads();
-      } catch (err) {
-        console.error("[adminLogin] error:", err);
-        showToast("❌ Failed to verify admin UID", "danger");
-      }
+  try {
+    // Simple UID check - you can add more complex validation if needed
+    if (uid.length < 10) {
+      showToast("❌ Invalid UID format", "danger");
+      return;
     }
+
+    // Store the UID and unlock
+    localStorage.setItem("aiax_admin_uid", uid);
+    document.getElementById("adminGate").classList.add("hidden");
+    document.getElementById("adminContent").classList.remove("hidden");
+    showToast("✅ Admin console unlocked", "success");
+
+    await initialLoads();
+  } catch (err) {
+    console.error("[adminLogin] error:", err);
+    showToast("❌ Failed to unlock admin", "danger");
+  }
+}
 
     async function initialLoads() {
       showToast("🔄 Loading admin data...", "info");
