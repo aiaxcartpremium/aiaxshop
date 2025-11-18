@@ -196,6 +196,10 @@
       z-index: 9999;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     @media (max-width: 900px) {
       .admin-layout {
         grid-template-columns: minmax(0, 1fr);
@@ -238,328 +242,422 @@
 
   <!-- Main Admin Wrapper -->
   <main class="admin-wrapper">
-    <h1 class="h4 mb-3">Admin Console</h1>
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3 id="stat-products">0</h3>
-        <span>Products</span>
-      </div>
-      <div class="stat-card">
-        <h3 id="stat-stock">0</h3>
-        <span>Available Stocks</span>
-      </div>
-      <div class="stat-card">
-        <h3 id="stat-pending">0</h3>
-        <span>Pending Orders</span>
-      </div>
-      <div class="stat-card">
-        <h3 id="stat-revenue">₱0.00</h3>
-        <span>Total Revenue</span>
+    <!-- ADMIN GATE -->
+    <div id="adminGate" class="card-clean mb-3">
+      <h2 class="h5 mb-2">Admin Security</h2>
+      <p class="text-muted small mb-3">
+        Enter your admin UID to access the console. Only registered UIDs in the
+        <code>admin_uids</code> table are allowed.
+      </p>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Admin UID</label>
+          <input id="adminUidInput" class="form-control" placeholder="Paste your UID">
+        </div>
+        <div class="col-md-3 d-grid">
+          <button id="btnAdminLogin" class="btn btn-primary" type="button">
+            Unlock Console
+          </button>
+        </div>
+        <div class="col-md-3 small text-muted">
+          This page is protected. If you are not the owner, please go back to Home.
+        </div>
       </div>
     </div>
 
-    <div class="admin-layout">
-      <!-- Sidebar Tabs -->
-      <aside class="sidebar">
-        <button class="active" data-target="panel-products">
-          <i class="fa fa-list"></i> Products
-        </button>
-        <button data-target="panel-add-stock">
-          <i class="fa fa-plus-square"></i> Add Stock
-        </button>
-        <button data-target="panel-manage-stocks">
-          <i class="fa fa-layer-group"></i> Stocks List
-        </button>
-        <button data-target="panel-pending-orders">
-          <i class="fa fa-clock"></i> Pending Orders
-        </button>
-        <button data-target="panel-records">
-          <i class="fa fa-book"></i> Records
-        </button>
-        <button data-target="panel-store-rules">
-          <i class="fa fa-scroll"></i> Store Rules
-        </button>
-        <button data-target="panel-reports">
-          <i class="fa fa-flag"></i> Reports
-        </button>
-      </aside>
+    <div id="adminContent" class="hidden">
+      <h1 class="h4 mb-3">Admin Console</h1>
 
-      <!-- Main panels -->
-      <section class="admin-main">
-        <!-- Products List -->
-        <div id="panel-products" class="panel-admin active">
-          <div class="card-clean">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="mb-0">Products</h3>
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="stat-products">0</h3>
+          <span>Products</span>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-stock">0</h3>
+          <span>Available Stocks</span>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-pending">0</h3>
+          <span>Pending Orders</span>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-revenue">₱0.00</h3>
+          <span>Total Revenue</span>
+        </div>
+      </div>
+
+      <div class="admin-layout">
+        <!-- Sidebar Tabs -->
+        <aside class="sidebar">
+          <button class="active" data-target="panel-products">
+            <i class="fa fa-list"></i> Products
+          </button>
+          <button data-target="panel-add-stock">
+            <i class="fa fa-plus-square"></i> Add Stock
+          </button>
+          <button data-target="panel-manage-stocks">
+            <i class="fa fa-layer-group"></i> Stocks List
+          </button>
+          <button data-target="panel-pending-orders">
+            <i class="fa fa-clock"></i> Pending Orders
+          </button>
+          <button data-target="panel-records">
+            <i class="fa fa-book"></i> Records
+          </button>
+          <button data-target="panel-store-rules">
+            <i class="fa fa-scroll"></i> Store Rules
+          </button>
+          <button data-target="panel-reports">
+            <i class="fa fa-flag"></i> Reports
+          </button>
+        </aside>
+
+        <!-- Main panels -->
+        <section class="admin-main">
+          <!-- Products List -->
+          <div id="panel-products" class="panel-admin active">
+            <div class="card-clean">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Products</h3>
+              </div>
+
+              <!-- Add Product Form -->
+              <div class="mb-3">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-3">
+                    <label class="form-label">Product ID</label>
+                    <input id="new-prod-id" class="form-control" placeholder="e.g. netflix">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Name</label>
+                    <input id="new-prod-name" class="form-control" placeholder="Netflix Premium">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <input id="new-prod-cat" class="form-control" placeholder="entertainment">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Icon</label>
+                    <input id="new-prod-icon" class="form-control" placeholder="📺">
+                  </div>
+                  <div class="col-md-1 d-grid">
+                    <button id="btn-add-product" class="btn btn-primary" type="button">Add</button>
+                  </div>
+                </div>
+                <small class="text-muted">
+                  Product IDs must match those used on the buyer site (e.g., <code>netflix</code>, <code>viu</code>, etc.).
+                </small>
+              </div>
+
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Icon</th>
+                      <th>Stock (display only)</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="products-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
+              </div>
             </div>
+          </div>
 
-            <!-- Add Product Form -->
-            <div class="mb-3">
-              <div class="row g-2 align-items-end">
+          <!-- Add Stock -->
+          <div id="panel-add-stock" class="panel-admin">
+            <div class="card-clean">
+              <h3 class="mb-3">Add Stock</h3>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Product</label>
+                  <select id="stock-product" class="form-select">
+                    <option value="">Select product</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Account Type</label>
+                  <select id="stock-account-type" class="form-select" disabled>
+                    <option value="">Select account type</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Duration</label>
+                  <select id="stock-duration" class="form-select" disabled>
+                    <option value="">Select duration</option>
+                  </select>
+                </div>
+
                 <div class="col-md-3">
-                  <label class="form-label">Product ID</label>
-                  <input id="new-prod-id" class="form-control" placeholder="e.g. netflix">
+                  <label class="form-label">Account Email</label>
+                  <input id="stock-email" class="form-control">
                 </div>
                 <div class="col-md-3">
-                  <label class="form-label">Name</label>
-                  <input id="new-prod-name" class="form-control" placeholder="Netflix Premium">
+                  <label class="form-label">Password</label>
+                  <input id="stock-password" class="form-control">
                 </div>
                 <div class="col-md-3">
-                  <label class="form-label">Category</label>
-                  <input id="new-prod-cat" class="form-control" placeholder="entertainment">
+                  <label class="form-label">Profile</label>
+                  <input id="stock-profile" class="form-control">
                 </div>
-                <div class="col-md-2">
-                  <label class="form-label">Icon</label>
-                  <input id="new-prod-icon" class="form-control" placeholder="📺">
+                <div class="col-md-3">
+                  <label class="form-label">PIN</label>
+                  <input id="stock-pin" class="form-control">
                 </div>
-                <div class="col-md-1 d-grid">
-                  <button id="btn-add-product" class="btn btn-primary" type="button">Add</button>
+
+                <div class="col-md-4">
+                  <label class="form-label">Archive After (days)</label>
+                  <input id="stock-archive-after" type="number" min="0" value="30" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Premium Until</label>
+                  <input id="stock-premium-until" type="date" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Quantity (slots)</label>
+                  <input id="stock-quantity" type="number" min="1" value="1" class="form-control">
                 </div>
               </div>
-              <small class="text-muted">
-                Product IDs must match those used on the buyer site (e.g., <code>netflix</code>, <code>viu</code>, etc.).
+
+              <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
+                Save Stock
+              </button>
+              <small class="text-muted d-block mt-2">
+                Every row represents one account; <strong>Quantity</strong> is number of slots. When buyers purchase, remaining slots
+                will auto decrement.
               </small>
             </div>
+          </div>
 
-            <div class="table-responsive">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Icon</th>
-                    <th>Stock (display only)</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="products-table-body">
-                  <!-- JS will insert rows -->
-                </tbody>
-              </table>
+          <!-- Stocks List -->
+          <div id="panel-manage-stocks" class="panel-admin">
+            <div class="card-clean">
+              <h3 class="mb-3">Stocks List</h3>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Product</th>
+                      <th>Account Type</th>
+                      <th>Duration</th>
+                      <th>Email</th>
+                      <th>Status</th>
+                      <th>Premium Until</th>
+                      <th>Qty</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stocks-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Add Stock -->
-        <div id="panel-add-stock" class="panel-admin">
-          <div class="card-clean">
-            <h3 class="mb-3">Add Stock</h3>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label class="form-label">Product</label>
-                <select id="stock-product" class="form-select">
-                  <option value="">Select product</option>
-                </select>
+          <!-- Pending Orders -->
+          <div id="panel-pending-orders" class="panel-admin">
+            <div class="card-clean">
+              <h3 class="mb-3">Pending Orders</h3>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Buyer</th>
+                      <th>Product</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Price</th>
+                      <th>Payment</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orders-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
               </div>
-              <div class="col-md-4">
-                <label class="form-label">Account Type</label>
-                <select id="stock-account-type" class="form-select" disabled>
-                  <option value="">Select account type</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Duration</label>
-                <select id="stock-duration" class="form-select" disabled>
-                  <option value="">Select duration</option>
-                </select>
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">Account Email</label>
-                <input id="stock-email" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Password</label>
-                <input id="stock-password" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Profile</label>
-                <input id="stock-profile" class="form-control">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">PIN</label>
-                <input id="stock-pin" class="form-control">
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Archive After (days)</label>
-                <input id="stock-archive-after" type="number" min="0" value="30" class="form-control">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Premium Until</label>
-                <input id="stock-premium-until" type="date" class="form-control">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Quantity (slots)</label>
-                <input id="stock-quantity" type="number" min="1" value="1" class="form-control">
-              </div>
-            </div>
-
-            <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
-              Save Stock
-            </button>
-            <small class="text-muted d-block mt-2">
-              Every row represents one account; <strong>Quantity</strong> is number of slots. When buyers purchase, remaining slots
-              will auto decrement.
-            </small>
-          </div>
-        </div>
-
-        <!-- Stocks List -->
-        <div id="panel-manage-stocks" class="panel-admin">
-          <div class="card-clean">
-            <h3 class="mb-3">Stocks List</h3>
-            <div class="table-responsive">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Product</th>
-                    <th>Account Type</th>
-                    <th>Duration</th>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th>Premium Until</th>
-                    <th>Qty</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="stocks-table-body">
-                  <!-- JS will insert rows -->
-                </tbody>
-              </table>
             </div>
           </div>
-        </div>
 
-        <!-- Pending Orders -->
-        <div id="panel-pending-orders" class="panel-admin">
-          <div class="card-clean">
-            <h3 class="mb-3">Pending Orders</h3>
-            <div class="table-responsive">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Buyer ID</th>
-                    <th>Product</th>
-                    <th>Type</th>
-                    <th>Duration</th>
-                    <th>Price</th>
-                    <th>Payment</th>
-                    <th>Ref</th>
-                    <th>Proof</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="orders-table-body">
-                  <!-- JS will insert rows -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Records -->
-        <div id="panel-records" class="panel-admin">
-          <div class="card-clean">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="mb-0">Records</h3>
-              <div>
-                <button id="btn-add-record" class="btn btn-sm btn-outline-primary me-2" type="button">
-                  Add Manual Record
-                </button>
-                <button id="btn-export-records" class="btn btn-sm btn-outline-secondary" type="button">
-                  Export CSV
-                </button>
+          <!-- Records -->
+          <div id="panel-records" class="panel-admin">
+            <div class="card-clean">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Records</h3>
+                <div>
+                  <button id="btn-add-record" class="btn btn-sm btn-outline-primary me-2" type="button">
+                    Add Manual Record
+                  </button>
+                  <button id="btn-export-records" class="btn btn-sm btn-outline-secondary" type="button">
+                    Export CSV
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>Record ID</th>
+                      <th>Order ID</th>
+                      <th>Buyer</th>
+                      <th>Source</th>
+                      <th>Product</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Purchase Date</th>
+                      <th>Price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="records-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
               </div>
             </div>
-            <div class="table-responsive">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>Record ID</th>
-                    <th>Order ID</th>
-                    <th>Buyer</th>
-                    <th>Source</th>
-                    <th>Product</th>
-                    <th>Type</th>
-                    <th>Duration</th>
-                    <th>Purchase Date</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody id="records-table-body">
-                  <!-- JS will insert rows -->
-                </tbody>
-              </table>
+          </div>
+
+          <!-- Store Rules -->
+          <div id="panel-store-rules" class="panel-admin">
+            <div class="card-clean">
+              <h3 class="mb-3">Store Rules</h3>
+              <p class="text-muted mb-2">
+                Manage rules in the <code>rules</code> table. Rules can be general or linked to a specific product.
+              </p>
+
+              <div class="row g-2 mb-3">
+                <div class="col-md-3">
+                  <label class="form-label">Product ID (optional)</label>
+                  <input id="rule-product-id" class="form-control" placeholder="e.g. netflix">
+                </div>
+                <div class="col-md-7">
+                  <label class="form-label">Rule Text</label>
+                  <input id="rule-text" class="form-control" placeholder="Do not change password...">
+                </div>
+                <div class="col-md-2 d-grid">
+                  <button id="btn-add-rule" class="btn btn-primary" type="button">Add Rule</button>
+                </div>
+              </div>
+
+              <ul id="rules-list" class="list-unstyled mb-0">
+                <!-- JS will insert <li> -->
+              </ul>
             </div>
           </div>
-        </div>
 
-        <!-- Store Rules -->
-        <div id="panel-store-rules" class="panel-admin">
-          <div class="card-clean">
-            <h3 class="mb-3">Store Rules</h3>
-            <p class="text-muted mb-2">
-              Manage rules in the <code>rules</code> table, with optional <code>product_id</code>.
-            </p>
-
-            <div class="row g-2 mb-3">
-              <div class="col-md-3">
-                <label class="form-label">Product ID (optional)</label>
-                <input id="rule-product-id" class="form-control" placeholder="e.g. netflix">
-              </div>
-              <div class="col-md-7">
-                <label class="form-label">Rule Text</label>
-                <input id="rule-text" class="form-control" placeholder="Do not change password...">
-              </div>
-              <div class="col-md-2 d-grid">
-                <button id="btn-add-rule" class="btn btn-primary" type="button">Add Rule</button>
+          <!-- Reports -->
+          <div id="panel-reports" class="panel-admin">
+            <div class="card-clean">
+              <h3 class="mb-3">Reports</h3>
+              <p class="text-muted mb-2">
+                This panel shows all reports from the <code>reports</code> table.
+              </p>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Order ID</th>
+                      <th>Buyer ID</th>
+                      <th>Issue</th>
+                      <th>Status</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reports-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
               </div>
             </div>
-
-            <ul id="rules-list" class="list-unstyled mb-0">
-              <!-- JS will insert <li> -->
-            </ul>
           </div>
-        </div>
-
-        <!-- Reports -->
-        <div id="panel-reports" class="panel-admin">
-          <div class="card-clean">
-            <h3 class="mb-3">Reports</h3>
-            <p class="text-muted mb-2">
-              This panel shows all reports from the <code>reports</code> table.
-            </p>
-            <div class="table-responsive">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Order ID</th>
-                    <th>Buyer ID</th>
-                    <th>Issue</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                  </tr>
-                </thead>
-                <tbody id="reports-table-body">
-                  <!-- JS will insert rows -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   </main>
 
-<!-- Bootstrap JS -->
+  <!-- MANUAL RECORD MODAL -->
+  <div class="modal fade" id="recordModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Manual Record</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="recordForm">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Order ID (optional)</label>
+                <input id="rec-order-id" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Buyer (email)</label>
+                <input id="rec-buyer" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Source</label>
+                <input id="rec-source" class="form-control" value="manual" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Product ID</label>
+                <input id="rec-product-id" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Account Type</label>
+                <input id="rec-account-type" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Duration</label>
+                <input id="rec-duration" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Purchase Date</label>
+                <input id="rec-purchase-date" type="date" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Price</label>
+                <input id="rec-price" type="number" step="0.01" min="0" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Account Email (optional)</label>
+                <input id="rec-account-email" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Password (optional)</label>
+                <input id="rec-account-password" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Profile (optional)</label>
+                <input id="rec-profile" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">PIN (optional)</label>
+                <input id="rec-pin" class="form-control">
+              </div>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Save Record</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Supabase JS (CDN) -->
@@ -572,6 +670,11 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // (optional) allow-list in FE, pero main protection via admin_uids table
+    const ADMIN_ALLOW_UIDS = [
+      "5196f372-803a-4aec-9c46-72242e73a9b8"  // uid mo
+    ];
 
     function showToast(message, type = "info") {
       const container = document.getElementById("toastContainer");
@@ -604,6 +707,61 @@
     function safeNumber(v) {
       const n = Number(v);
       return Number.isFinite(n) ? n : 0;
+    }
+
+    // ========= ADMIN GATE =========
+    async function guardAdmin() {
+      const stored = localStorage.getItem("aiax_admin_uid");
+      if (stored) {
+        document.getElementById("adminGate").classList.add("hidden");
+        document.getElementById("adminContent").classList.remove("hidden");
+        return true;
+      }
+      return false;
+    }
+
+    async function handleAdminLogin() {
+      const input = document.getElementById("adminUidInput");
+      const uid = (input.value || "").trim();
+      if (!uid) {
+        showToast("Please paste your admin UID.", "warning");
+        return;
+      }
+
+      try {
+        if (!ADMIN_ALLOW_UIDS.includes(uid)) {
+          showToast("UID not allowed.", "danger");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("admin_uids")
+          .select("uid")
+          .eq("uid", uid)
+          .maybeSingle();
+
+        if (error || !data) {
+          showToast("UID not registered in admin_uids table.", "danger");
+          return;
+        }
+
+        localStorage.setItem("aiax_admin_uid", uid);
+        document.getElementById("adminGate").classList.add("hidden");
+        document.getElementById("adminContent").classList.remove("hidden");
+        showToast("Admin console unlocked.", "success");
+
+        // initial loads
+        refreshStats();
+        loadProducts();
+        loadStocks();
+        loadPendingOrders();
+        loadRecords();
+        loadRules();
+        loadReports();
+      } catch (err) {
+        console.error("[adminLogin] error:", err);
+        showToast("Failed to verify admin UID.", "danger");
+      }
     }
 
     // ========= STATS =========
@@ -668,7 +826,7 @@
         if (!data || !data.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 5;
+          td.colSpan = 6;
           td.textContent = "No products found.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -698,6 +856,21 @@
           tdStock.textContent = p.stock ?? 0;
           tr.appendChild(tdStock);
 
+          const tdAct = document.createElement("td");
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-sm btn-outline-primary me-1";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => editProduct(p));
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-sm btn-outline-danger";
+          delBtn.textContent = "Delete";
+          delBtn.addEventListener("click", () => deleteProduct(p.id));
+
+          tdAct.appendChild(editBtn);
+          tdAct.appendChild(delBtn);
+          tr.appendChild(tdAct);
+
           tbody.appendChild(tr);
 
           if (selectStockProduct) {
@@ -710,6 +883,76 @@
       } catch (err) {
         console.error("[products] error:", err);
         showToast("Failed to load products.", "danger");
+      }
+    }
+
+    async function addProduct() {
+      const id = document.getElementById("new-prod-id").value.trim();
+      const name = document.getElementById("new-prod-name").value.trim();
+      const category = document.getElementById("new-prod-cat").value.trim();
+      const icon = document.getElementById("new-prod-icon").value.trim() || null;
+
+      if (!id || !name || !category) {
+        showToast("Please fill product id, name, and category.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("products").insert({
+          id,
+          name,
+          category,
+          icon,
+          stock: 0,
+        });
+        if (error) throw error;
+
+        showToast("Product added.", "success");
+        ["new-prod-id", "new-prod-name", "new-prod-cat", "new-prod-icon"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+        await loadProducts();
+        await refreshStats();
+      } catch (err) {
+        console.error("[addProduct] error:", err);
+        showToast("Failed to add product.", "danger");
+      }
+    }
+
+    async function editProduct(p) {
+      const newName = prompt("New name:", p.name || "");
+      if (newName === null) return;
+      const newCat = prompt("New category:", p.category || "");
+      if (newCat === null) return;
+      const newIcon = prompt("New icon:", p.icon || "");
+      if (newIcon === null) return;
+
+      try {
+        const { error } = await supabase
+          .from("products")
+          .update({ name: newName.trim(), category: newCat.trim(), icon: newIcon.trim() })
+          .eq("id", p.id);
+        if (error) throw error;
+        showToast("Product updated.", "success");
+        await loadProducts();
+      } catch (err) {
+        console.error("[editProduct] error:", err);
+        showToast("Failed to update product.", "danger");
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm(`Delete product ${id}?`)) return;
+      try {
+        const { error } = await supabase.from("products").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Product deleted.", "success");
+        await loadProducts();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteProduct] error:", err);
+        showToast("Failed to delete product.", "danger");
       }
     }
 
@@ -737,7 +980,7 @@
         if (!stocks || !stocks.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 7;
+          td.colSpan = 9;
           td.textContent = "No stocks yet.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -768,20 +1011,44 @@
           tr.appendChild(tdEmail);
 
           const tdStatus = document.createElement("td");
-          const q = safeNumber(s.quantity);
-          tdStatus.textContent =
-            (s.status || "-") + (q ? ` (qty: ${q})` : "");
+          tdStatus.textContent = s.status || "-";
           tr.appendChild(tdStatus);
 
           const tdPrem = document.createElement("td");
           tdPrem.textContent = s.premium_until || "-";
           tr.appendChild(tdPrem);
 
+          const tdQty = document.createElement("td");
+          tdQty.textContent = safeNumber(s.quantity);
+          tr.appendChild(tdQty);
+
+          const tdAct = document.createElement("td");
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-sm btn-outline-danger";
+          delBtn.textContent = "Delete";
+          delBtn.addEventListener("click", () => deleteStock(s.id));
+          tdAct.appendChild(delBtn);
+          tr.appendChild(tdAct);
+
           tbody.appendChild(tr);
         });
       } catch (err) {
         console.error("[stocks] error:", err);
         showToast("Failed to load stocks.", "danger");
+      }
+    }
+
+    async function deleteStock(id) {
+      if (!confirm(`Delete stock #${id}?`)) return;
+      try {
+        const { error } = await supabase.from("stocks").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Stock deleted.", "success");
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteStock] error:", err);
+        showToast("Failed to delete stock.", "danger");
       }
     }
 
@@ -802,7 +1069,6 @@
       );
       const premium_until =
         document.getElementById("stock-premium-until")?.value || null;
-      // quantity-based, status auto: available
       const quantity = Number(
         document.getElementById("stock-quantity")?.value || 1
       );
@@ -862,7 +1128,7 @@
         const { data, error } = await supabase
           .from("orders")
           .select(
-            "id, buyer_id, product_id, account_type, duration, price, status, payment_method, reference_number, proof_url, created_at"
+            "id, buyer_id, buyer_email, product_id, account_type, duration, price, status, payment_method, reference_number, proof_image_url, created_at"
           )
           .order("created_at", { ascending: false });
 
@@ -890,7 +1156,10 @@
           tr.appendChild(tdId);
 
           const tdBuyer = document.createElement("td");
-          tdBuyer.textContent = o.buyer_id ?? "-";
+          tdBuyer.innerHTML = `
+            <div>${o.buyer_email || "-"}</div>
+            <div class="small text-muted">${o.buyer_id || ""}</div>
+          `;
           tr.appendChild(tdBuyer);
 
           const tdProd = document.createElement("td");
@@ -910,31 +1179,26 @@
           tr.appendChild(tdPrice);
 
           const tdPay = document.createElement("td");
-          tdPay.textContent = o.payment_method || "-";
+          tdPay.innerHTML = `
+            <div class="small">${o.payment_method || "-"}</div>
+            <div class="small text-muted">Ref: ${o.reference_number || "-"}</div>
+            ${
+              o.proof_image_url
+                ? `<a href="${o.proof_image_url}" target="_blank" class="small">View proof</a>`
+                : ""
+            }
+          `;
           tr.appendChild(tdPay);
 
-          const tdRef = document.createElement("td");
-          tdRef.textContent = o.reference_number || "-";
-          tr.appendChild(tdRef);
-
-          const tdProof = document.createElement("td");
-          if (o.proof_url) {
-            const a = document.createElement("a");
-            a.href = o.proof_url;
-            a.target = "_blank";
-            a.textContent = "View";
-            tr.appendChild(tdProof);
-            tdProof.appendChild(a);
-          } else {
-            tdProof.textContent = "-";
-            tr.appendChild(tdProof);
-          }
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = o.status;
+          tr.appendChild(tdStatus);
 
           const tdAction = document.createElement("td");
           const btn = document.createElement("button");
           btn.className = "btn btn-sm btn-success";
-          btn.textContent = "Confirm Payment";
-          btn.addEventListener("click", () => confirmPayment(o.id));
+          btn.textContent = "Confirm payment";
+          btn.addEventListener("click", () => markOrderPaid(o.id));
           tdAction.appendChild(btn);
           tr.appendChild(tdAction);
 
@@ -946,20 +1210,18 @@
       }
     }
 
-    async function confirmPayment(orderId) {
+    async function markOrderPaid(orderId) {
       if (!confirm(`Confirm payment for order ${orderId}?`)) return;
 
       try {
-        // 1) kunin ang order
-        const { data: order, error: orderErr } = await supabase
+        // 1) get order
+        const { data: order, error: errOrder } = await supabase
           .from("orders")
-          .select(
-            "id, buyer_id, product_id, account_type, duration, price, status"
-          )
+          .select("*")
           .eq("id", orderId)
           .maybeSingle();
 
-        if (orderErr) throw orderErr;
+        if (errOrder) throw errOrder;
         if (!order) {
           showToast("Order not found.", "danger");
           return;
@@ -971,65 +1233,68 @@
           return;
         }
 
-        // 2) hanap matching stock (product_id + account_type + duration + available + quantity>0)
-        const { data: stocks, error: stockErr } = await supabase
+        // 2) find matching stock (product_id + account_type + duration + available + quantity>0)
+        const { data: stockRow, error: errStock } = await supabase
           .from("stocks")
-          .select("id, quantity, status, product_id, account_type, duration")
+          .select("*")
           .eq("product_id", order.product_id)
           .eq("account_type", order.account_type)
           .eq("duration", order.duration)
           .eq("status", "available")
           .gt("quantity", 0)
-          .order("id", { ascending: true })
-          .limit(1);
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
 
-        if (stockErr) throw stockErr;
+        if (errStock) throw errStock;
 
-        if (!stocks || !stocks.length) {
+        if (!stockRow) {
           showToast("No available stock matching this order.", "warning");
           return;
         }
 
-        const stock = stocks[0];
-        const currentQty = safeNumber(stock.quantity);
+        const currentQty = safeNumber(stockRow.quantity);
         const newQty = currentQty > 0 ? currentQty - 1 : 0;
         const newStatus = newQty <= 0 ? "sold" : "available";
 
-        // 3) update order -> delivered (paid + account assigned)
-        const { error: updOrderErr } = await supabase
-          .from("orders")
-          .update({ status: "delivered" })
-          .eq("id", order.id);
-
-        if (updOrderErr) throw updOrderErr;
-
-        // 4) insert sa records (sold account / delivered)
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-        const { error: recErr } = await supabase.from("records").insert([
-          {
-            order_id: order.id,
-            buyer: order.buyer_id,
-            source: "Aiaxcart Premium Shop",
-            product_id: order.product_id,
-            account_type: order.account_type,
-            duration: order.duration,
-            purchase_date: today,
-            price: order.price,
-          },
-        ]);
-
-        if (recErr) throw recErr;
-
-        // 5) update stock quantity + status
+        // 3) update stock quantity + status
         const { error: updStockErr } = await supabase
           .from("stocks")
           .update({
             quantity: newQty,
             status: newStatus,
           })
-          .eq("id", stock.id);
+          .eq("id", stockRow.id);
 
         if (updStockErr) throw updStockErr;
+
+        // 4) insert into records (delivered account)
+        const buyerEmail = order.buyer_email || order.gmail || order.buyer_id || null;
+
+        const { error: recErr } = await supabase.from("records").insert({
+          order_id: order.id,
+          buyer: buyerEmail,
+          source: "premium-shop",
+          product_id: order.product_id,
+          account_type: order.account_type,
+          duration: order.duration,
+          purchase_date: new Date().toISOString(),
+          price: order.price,
+          account_email: stockRow.email,
+          account_password: stockRow.password,
+          profile: stockRow.profile,
+          pin: stockRow.pin,
+        });
+
+        if (recErr) throw recErr;
+
+        // 5) update order status to delivered
+        const { error: updOrderErr } = await supabase
+          .from("orders")
+          .update({ status: "delivered" })
+          .eq("id", order.id);
+
+        if (updOrderErr) throw updOrderErr;
 
         showToast("Payment confirmed and account delivered.", "success");
 
@@ -1038,8 +1303,8 @@
         await loadRecords();
         await refreshStats();
       } catch (err) {
-        console.error("[confirmPayment] error:", err);
-        showToast("Failed to confirm payment.", "danger");
+        console.error("[markOrderPaid] error:", err);
+        showToast("Failed to confirm payment: " + (err.message || String(err)), "danger");
       }
     }
 
@@ -1116,6 +1381,100 @@
       }
     }
 
+    async function saveManualRecord(e) {
+      e.preventDefault();
+
+      const order_id = document.getElementById("rec-order-id").value.trim() || null;
+      const buyer = document.getElementById("rec-buyer").value.trim();
+      const source = document.getElementById("rec-source").value.trim() || "manual";
+      const product_id = document.getElementById("rec-product-id").value.trim();
+      const account_type = document.getElementById("rec-account-type").value.trim() || null;
+      const duration = document.getElementById("rec-duration").value.trim() || null;
+      const purchase_date_raw = document.getElementById("rec-purchase-date").value;
+      const priceVal = document.getElementById("rec-price").value;
+      const account_email = document.getElementById("rec-account-email").value.trim() || null;
+      const account_password = document.getElementById("rec-account-password").value.trim() || null;
+      const profile = document.getElementById("rec-profile").value.trim() || null;
+      const pin = document.getElementById("rec-pin").value.trim() || null;
+
+      if (!buyer || !product_id) {
+        showToast("Buyer and product_id are required.", "warning");
+        return;
+      }
+
+      const payload = {
+        order_id,
+        buyer,
+        source,
+        product_id,
+        account_type,
+        duration,
+        purchase_date: purchase_date_raw ? new Date(purchase_date_raw).toISOString() : new Date().toISOString(),
+        price: priceVal ? Number(priceVal) : null,
+        account_email,
+        account_password,
+        profile,
+        pin,
+      };
+
+      try {
+        const { error } = await supabase.from("records").insert(payload);
+        if (error) throw error;
+        showToast("Record added.", "success");
+        document.getElementById("recordForm").reset();
+        bootstrap.Modal.getInstance(document.getElementById("recordModal")).hide();
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveManualRecord] error:", err);
+        showToast("Failed to add record.", "danger");
+      }
+    }
+
+    async function exportRecordsCSV() {
+      try {
+        const { data, error } = await supabase
+          .from("records")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          showToast("No records to export.", "warning");
+          return;
+        }
+
+        const headers = Object.keys(data[0]);
+        const rows = [
+          headers.join(","),
+          ...data.map((row) =>
+            headers
+              .map((h) => {
+                const val = row[h];
+                if (val == null) return "";
+                const s = String(val).replace(/"/g, '""');
+                return `"${s}"`;
+              })
+              .join(",")
+          ),
+        ];
+        const csv = rows.join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "records_export.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("[exportRecordsCSV] error:", err);
+        showToast("Failed to export records.", "danger");
+      }
+    }
+
     // ========= RULES =========
     async function loadRules() {
       const ul = document.getElementById("rules-list");
@@ -1139,14 +1498,98 @@
 
         data.forEach((r) => {
           const li = document.createElement("li");
-          li.textContent = r.product_id
-            ? `[${r.product_id}] ${r.rule_text}`
-            : r.rule_text;
+          li.className = "mb-1";
+          li.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                ${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${r.rule_text}
+              </div>
+              <div>
+                <button class="btn btn-sm btn-outline-primary me-1 btn-edit-rule">Edit</button>
+                <button class="btn btn-sm btn-outline-danger btn-del-rule">Delete</button>
+              </div>
+            </div>
+          `;
+          li.dataset.id = r.id;
+          li.dataset.productId = r.product_id || "";
+          li.dataset.ruleText = r.rule_text;
+
           ul.appendChild(li);
+        });
+
+        ul.querySelectorAll(".btn-edit-rule").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const li = e.target.closest("li");
+            const id = Number(li.dataset.id);
+            const currentText = li.dataset.ruleText || "";
+            const currentProd = li.dataset.productId || "";
+            const newProd = prompt("Product ID (blank for general rule):", currentProd);
+            if (newProd === null) return;
+            const newText = prompt("Rule text:", currentText);
+            if (newText === null) return;
+
+            try {
+              const { error } = await supabase
+                .from("rules")
+                .update({
+                  product_id: newProd.trim() || null,
+                  rule_text: newText.trim(),
+                })
+                .eq("id", id);
+              if (error) throw error;
+              showToast("Rule updated.", "success");
+              await loadRules();
+            } catch (err) {
+              console.error("[editRule] error:", err);
+              showToast("Failed to update rule.", "danger");
+            }
+          });
+        });
+
+        ul.querySelectorAll(".btn-del-rule").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const li = e.target.closest("li");
+            const id = Number(li.dataset.id);
+            if (!confirm(`Delete rule #${id}?`)) return;
+            try {
+              const { error } = await supabase.from("rules").delete().eq("id", id);
+              if (error) throw error;
+              showToast("Rule deleted.", "success");
+              await loadRules();
+            } catch (err) {
+              console.error("[deleteRule] error:", err);
+              showToast("Failed to delete rule.", "danger");
+            }
+          });
         });
       } catch (err) {
         console.error("[rules] error:", err);
         showToast("Failed to load rules.", "danger");
+      }
+    }
+
+    async function addRule() {
+      const product_id = document.getElementById("rule-product-id").value.trim() || null;
+      const rule_text = document.getElementById("rule-text").value.trim();
+
+      if (!rule_text) {
+        showToast("Rule text is required.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("rules").insert({
+          product_id,
+          rule_text,
+        });
+        if (error) throw error;
+        showToast("Rule added.", "success");
+        document.getElementById("rule-product-id").value = "";
+        document.getElementById("rule-text").value = "";
+        await loadRules();
+      } catch (err) {
+        console.error("[addRule] error:", err);
+        showToast("Failed to add rule.", "danger");
       }
     }
 
@@ -1232,22 +1675,53 @@
     }
 
     // ========= INIT =========
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       initTabs();
+
+      document.getElementById("btnAdminLogin").addEventListener("click", handleAdminLogin);
+
+      const ok = await guardAdmin();
+      if (ok) {
+        // already unlocked
+        refreshStats();
+        loadProducts();
+        loadStocks();
+        loadPendingOrders();
+        loadRecords();
+        loadRules();
+        loadReports();
+      }
 
       const btnSaveStock = document.getElementById("btn-save-stock");
       if (btnSaveStock) {
         btnSaveStock.addEventListener("click", saveStock);
       }
 
-      // Initial loads
-      refreshStats();
-      loadProducts();
-      loadStocks();
-      loadPendingOrders();
-      loadRecords();
-      loadRules();
-      loadReports();
+      const btnAddProduct = document.getElementById("btn-add-product");
+      if (btnAddProduct) {
+        btnAddProduct.addEventListener("click", addProduct);
+      }
+
+      const btnAddRule = document.getElementById("btn-add-rule");
+      if (btnAddRule) {
+        btnAddRule.addEventListener("click", addRule);
+      }
+
+      const btnAddRecord = document.getElementById("btn-add-record");
+      if (btnAddRecord) {
+        btnAddRecord.addEventListener("click", () => {
+          document.getElementById("recordForm").reset();
+          const m = new bootstrap.Modal(document.getElementById("recordModal"));
+          m.show();
+        });
+      }
+
+      const btnExportRecords = document.getElementById("btn-export-records");
+      if (btnExportRecords) {
+        btnExportRecords.addEventListener("click", exportRecordsCSV);
+      }
+
+      document.getElementById("recordForm").addEventListener("submit", saveManualRecord);
     });
   </script>
 </body>
