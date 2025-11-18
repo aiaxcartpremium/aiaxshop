@@ -4,158 +4,648 @@
   <meta charset="UTF-8" />
   <title>Aiaxcart Premium | Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Bootstrap + Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
   <style>
-    :root { --primary: #ffb0b5; --secondary: #ffd3d6; --dark: #382f2c; --light: #fefaf7; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--light); color: var(--dark); font-family: "Segoe UI", sans-serif; }
-    header { background: var(--secondary); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); position: sticky; top: 0; z-index: 50; }
-    .header-inner { max-width: 1100px; margin: 0 auto; padding: 0.9rem 1.25rem; display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
-    .top-nav a { text-decoration: none; color: var(--dark); margin-left: 1rem; padding: 0.3rem 0.9rem; border-radius: 999px; font-weight: 500; }
-    .top-nav a.active, .top-nav a:hover { background: var(--primary); color: #fff; }
-    .admin-wrapper { max-width: 1100px; margin: 1.5rem auto 2.5rem; padding: 0 1.25rem; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-card { background: #fff; border-radius: 14px; padding: 1rem 1.2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-    .stat-card h3 { margin: 0; font-size: 1.8rem; color: var(--primary); }
-    .stat-card span { font-size: 0.9rem; color: #6a5c58; }
-    .admin-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 1.25rem; margin-top: 1.5rem; align-items: flex-start; }
-    .sidebar { background: #fff; border-radius: 16px; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); position: sticky; top: 5rem; }
-    .sidebar button { width: 100%; text-align: left; border: none; background: transparent; padding: 0.45rem 0.8rem; border-radius: 999px; font-size: 0.92rem; margin-bottom: 0.3rem; cursor: pointer; color: #5a4b47; }
-    .sidebar button.active { background: var(--primary); color: #fff; }
-    .sidebar button i { width: 1rem; text-align: center; margin-right: 0.5rem; }
-    .panel-admin { display: none; }
-    .panel-admin.active { display: block; }
-    .card-clean { background: #fff; border-radius: 16px; padding: 1.25rem 1.25rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-    .records-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    .records-table th, .records-table td { border-bottom: 1px solid #eee; padding: 0.45rem 0.55rem; vertical-align: top; }
-    .records-table th { background: #ffeef0; font-weight: 600; }
-    .records-table tr:hover td { background: #fff7f8; }
-    .toast-container { z-index: 9999; }
-    .hidden { display: none !important; }
-    @media (max-width: 900px) { .admin-layout { grid-template-columns: minmax(0, 1fr); } .sidebar { position: static; } .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    :root {
+      --primary: #ffb0b5;
+      --secondary: #ffd3d6;
+      --dark: #382f2c;
+      --light: #fefaf7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--light);
+      color: var(--dark);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    header {
+      background: var(--secondary);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .top-nav a {
+      text-decoration: none;
+      color: var(--dark);
+      margin-left: 1rem;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+
+    .top-nav a.active,
+    .top-nav a:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .admin-wrapper {
+      max-width: 1100px;
+      margin: 1.5rem auto 2.5rem;
+      padding: 0 1.25rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .stat-card h3 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    .stat-card span {
+      font-size: 0.9rem;
+      color: #6a5c58;
+    }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .sidebar {
+      background: #fff;
+      border-radius: 16px;
+      padding: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 5rem;
+    }
+
+    .sidebar button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      margin-bottom: 0.3rem;
+      cursor: pointer;
+      color: #5a4b47;
+    }
+
+    .sidebar button.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .sidebar button i {
+      width: 1rem;
+      text-align: center;
+      margin-right: 0.5rem;
+    }
+
+    .admin-main {
+      min-height: 400px;
+    }
+
+    .panel-admin {
+      display: none;
+    }
+
+    .panel-admin.active {
+      display: block;
+    }
+
+    .card-clean {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.25rem 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .records-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .records-table th,
+    .records-table td {
+      border-bottom: 1px solid #eee;
+      padding: 0.45rem 0.55rem;
+      vertical-align: top;
+    }
+
+    .records-table th {
+      background: #ffeef0;
+      font-weight: 600;
+    }
+
+    .records-table tr:hover td {
+      background: #fff7f8;
+    }
+
+    .form-label {
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .toast-container {
+      z-index: 9999;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .admin-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
   </style>
 </head>
 
 <body>
+  <!-- Toasts -->
   <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
 
+  <!-- Header -->
   <header>
     <div class="header-inner">
-      <div class="logo"><span>🛒</span><span>Aiaxcart Premium – Admin</span></div>
-      <nav class="top-nav"><a href="./index.html">Home</a><a href="./admin.html" class="active">Admin</a></nav>
+      <div class="logo">
+        <span>🛒</span>
+        <span>Aiaxcart Premium – Admin</span>
+      </div>
+      <nav class="top-nav">
+        <a href="./index.html">Home</a>
+        <a href="./admin.html" class="active">Admin</a>
+      </nav>
     </div>
   </header>
 
+  <!-- Main Admin Wrapper -->
   <main class="admin-wrapper">
+    <!-- ADMIN GATE -->
     <div id="adminGate" class="card-clean mb-3">
       <h2 class="h5 mb-2">Admin Security</h2>
+      <p class="text-muted small mb-3">
+        Enter your admin UID to access the console. Only registered UIDs in the
+        <code>admin_uids</code> table are allowed.
+      </p>
       <div class="row g-2 align-items-end">
-        <div class="col-md-6"><input id="adminUidInput" class="form-control" placeholder="Paste your UID"></div>
-        <div class="col-md-3 d-grid"><button id="btnAdminLogin" class="btn btn-primary" type="button">Unlock Console</button></div>
+        <div class="col-md-6">
+          <label class="form-label">Admin UID</label>
+          <input id="adminUidInput" class="form-control" placeholder="Paste your UID">
+        </div>
+        <div class="col-md-3 d-grid">
+          <button id="btnAdminLogin" class="btn btn-primary" type="button">
+            Unlock Console
+          </button>
+        </div>
+        <div class="col-md-3 small text-muted">
+          This page is protected. If you are not the owner, please go back to Home.
+        </div>
       </div>
     </div>
 
     <div id="adminContent" class="hidden">
+      <h1 class="h4 mb-3">Admin Console</h1>
+
+      <!-- Stats -->
       <div class="stats-grid">
-        <div class="stat-card"><h3 id="stat-products">0</h3><span>Products</span></div>
-        <div class="stat-card"><h3 id="stat-stock">0</h3><span>Available Stocks</span></div>
-        <div class="stat-card"><h3 id="stat-pending">0</h3><span>Pending Orders</span></div>
-        <div class="stat-card"><h3 id="stat-revenue">₱0.00</h3><span>Total Revenue</span></div>
+        <div class="stat-card">
+          <h3 id="stat-products">0</h3>
+          <span>Products</span>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-stock">0</h3>
+          <span>Available Stocks</span>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-pending">0</h3>
+          <span>Pending Orders</span>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-revenue">₱0.00</h3>
+          <span>Total Revenue</span>
+        </div>
       </div>
 
       <div class="admin-layout">
+        <!-- Sidebar Tabs -->
         <aside class="sidebar">
-          <button class="active" data-target="panel-products"><i class="fa fa-list"></i> Products</button>
-          <button data-target="panel-add-stock"><i class="fa fa-plus-square"></i> Add Stock</button>
-          <button data-target="panel-manage-stocks"><i class="fa fa-layer-group"></i> Stocks List</button>
-          <button data-target="panel-pending-orders"><i class="fa fa-clock"></i> Pending Orders</button>
-          <button data-target="panel-sold-orders"><i class="fa fa-check-circle"></i> Sold / Delivered</button>
-          <button data-target="panel-records"><i class="fa fa-book"></i> All Records</button>
-          <button data-target="panel-store-rules"><i class="fa fa-scroll"></i> Store Rules</button>
-          <button data-target="panel-reports"><i class="fa fa-flag"></i> Reports</button>
+          <button class="active" data-target="panel-products">
+            <i class="fa fa-list"></i> Products
+          </button>
+          <button data-target="panel-product-prices">
+            <i class="fa fa-tag"></i> Product Prices
+          </button>
+          <button data-target="panel-add-stock">
+            <i class="fa fa-plus-square"></i> Add Stock
+          </button>
+          <button data-target="panel-manage-stocks">
+            <i class="fa fa-layer-group"></i> Stocks List
+          </button>
+          <button data-target="panel-pending-orders">
+            <i class="fa fa-clock"></i> Pending Orders
+          </button>
+          <button data-target="panel-records">
+            <i class="fa fa-book"></i> Sold Accounts
+          </button>
+          <button data-target="panel-store-rules">
+            <i class="fa fa-scroll"></i> Store Rules
+          </button>
+          <button data-target="panel-reports">
+            <i class="fa fa-flag"></i> Reports
+          </button>
         </aside>
 
+        <!-- Main panels -->
         <section class="admin-main">
 
+          <!-- Products List -->
           <div id="panel-products" class="panel-admin active">
             <div class="card-clean">
-              <h3 class="mb-3">Products</h3>
-              <div class="mb-3 row g-2">
-                <div class="col-md-3"><input id="new-prod-id" class="form-control" placeholder="ID (e.g. netflix)"></div>
-                <div class="col-md-4"><input id="new-prod-name" class="form-control" placeholder="Name"></div>
-                <div class="col-md-3"><input id="new-prod-cat" class="form-control" placeholder="Category"></div>
-                <div class="col-md-2 d-grid"><button onclick="saveProduct()" class="btn btn-primary">Add</button></div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Products</h3>
               </div>
+
+              <!-- Add / Edit Product Form -->
+              <div class="mb-3">
+                <input type="hidden" id="prod-edit-id">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-3">
+                    <label class="form-label">Product ID</label>
+                    <input id="new-prod-id" class="form-control" placeholder="e.g. netflix">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Name</label>
+                    <input id="new-prod-name" class="form-control" placeholder="Netflix Premium">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <input id="new-prod-cat" class="form-control" placeholder="entertainment">
+                  </div>
+                  <div class="col-md-2 d-grid">
+                    <button id="btn-save-product" class="btn btn-primary" type="button">
+                      Add
+                    </button>
+                  </div>
+                </div>
+                <div class="mt-1">
+                  <button id="btn-cancel-prod-edit" type="button" class="btn btn-link p-0 small d-none">
+                    Cancel edit
+                  </button>
+                </div>
+                <small class="text-muted">
+                  Product IDs must match those used on the buyer site (e.g., <code>netflix</code>, <code>viu</code>, etc.).
+                </small>
+              </div>
+
               <div class="table-responsive">
                 <table class="records-table">
-                  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Actions</th></tr></thead>
-                  <tbody id="products-table-body"></tbody>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="products-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
                 </table>
               </div>
             </div>
           </div>
 
-          <div id="panel-add-stock" class="panel-admin">
+          <!-- Product Prices -->
+          <div id="panel-product-prices" class="panel-admin">
             <div class="card-clean">
-              <h3 class="mb-3">Add Stock</h3>
-              <div class="row g-3">
-                <div class="col-md-4"><label class="form-label">Product</label><select id="stock-product" class="form-select"></select></div>
-                <div class="col-md-4"><label class="form-label">Account Type</label><input id="stock-account-type" class="form-control" placeholder="e.g. Solo"></div>
-                <div class="col-md-4"><label class="form-label">Duration</label><input id="stock-duration" class="form-control" placeholder="e.g. 1m"></div>
-                <div class="col-md-6"><input id="stock-email" class="form-control" placeholder="Email"></div>
-                <div class="col-md-6"><input id="stock-password" class="form-control" placeholder="Password"></div>
-                <div class="col-md-6"><input id="stock-profile" class="form-control" placeholder="Profile"></div>
-                <div class="col-md-6"><input id="stock-pin" class="form-control" placeholder="PIN"></div>
-                <div class="col-md-4"><input id="stock-archive-after" type="number" value="30" class="form-control" placeholder="Archive Days"></div>
-                <div class="col-md-4"><input id="stock-premium-until" type="date" class="form-control"></div>
-                <div class="col-md-4"><input id="stock-quantity" type="number" value="1" class="form-control" placeholder="Qty"></div>
-                <div class="col-12"><button onclick="saveStock()" class="btn btn-primary">Save Stock</button></div>
+              <h3 class="mb-3">Product Prices</h3>
+              
+              <!-- Add Price Form -->
+              <div class="mb-3">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-3">
+                    <label class="form-label">Product</label>
+                    <select id="price-product" class="form-select">
+                      <option value="">Select product</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Account Type</label>
+                    <input id="price-account-type" class="form-control" placeholder="e.g. solo profile">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input id="price-duration" class="form-control" placeholder="e.g. 1m, 3m">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Price (₱)</label>
+                    <input id="price-amount" type="number" step="0.01" class="form-control" placeholder="0.00">
+                  </div>
+                  <div class="col-md-2 d-grid">
+                    <button id="btn-add-price" class="btn btn-primary" type="button">
+                      Add Price
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Prices List -->
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Account Type</th>
+                      <th>Duration</th>
+                      <th>Price</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="prices-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
 
+          <!-- Add Stock -->
+          <div id="panel-add-stock" class="panel-admin">
+            <div class="card-clean">
+              <h3 class="mb-3">Add Stock</h3>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Product</label>
+                  <select id="stock-product" class="form-select">
+                    <option value="">Select product</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Account Type</label>
+                  <input id="stock-account-type" class="form-control" placeholder="e.g. solo profile">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Duration</label>
+                  <input id="stock-duration" class="form-control" placeholder="e.g. 1m, 3m">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Price (₱)</label>
+                  <input id="stock-price" type="number" step="0.01" class="form-control" placeholder="0.00">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Account Email</label>
+                  <input id="stock-email" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Password</label>
+                  <input id="stock-password" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Profile</label>
+                  <input id="stock-profile" class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">PIN</label>
+                  <input id="stock-pin" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Archive After (days)</label>
+                  <input id="stock-archive-after" type="number" min="0" value="30" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Premium Until</label>
+                  <input id="stock-premium-until" type="date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Quantity (slots)</label>
+                  <input id="stock-quantity" type="number" min="1" value="1" class="form-control">
+                </div>
+              </div>
+
+              <button id="btn-save-stock" class="btn btn-primary mt-3" type="button">
+                Save Stock
+              </button>
+              <small class="text-muted d-block mt-2">
+                Every row represents one account; <strong>Quantity</strong> is number of slots. When buyers purchase, remaining slots
+                will auto decrement.
+              </small>
+            </div>
+          </div>
+
+          <!-- Stocks List -->
           <div id="panel-manage-stocks" class="panel-admin">
             <div class="card-clean">
-              <h3>Stocks List</h3>
-              <div class="table-responsive"><table class="records-table"><thead><tr><th>Product</th><th>Type</th><th>Email</th><th>Status</th><th>Qty</th><th>Actions</th></tr></thead><tbody id="stocks-table-body"></tbody></table></div>
+              <h3 class="mb-3">Stocks List</h3>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Product</th>
+                      <th>Account Type</th>
+                      <th>Duration</th>
+                      <th>Email</th>
+                      <th>Status</th>
+                      <th>Premium Until</th>
+                      <th>Qty</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stocks-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
+          <!-- Pending Orders -->
           <div id="panel-pending-orders" class="panel-admin">
             <div class="card-clean">
-              <h3>Pending Orders</h3>
-              <div class="table-responsive"><table class="records-table"><thead><tr><th>Buyer</th><th>Product</th><th>Price</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody id="orders-table-body"></tbody></table></div>
+              <h3 class="mb-3">Pending Orders</h3>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Buyer</th>
+                      <th>Product</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Price</th>
+                      <th>Payment</th>
+                      <th>Proof</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orders-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          <div id="panel-sold-orders" class="panel-admin">
-            <div class="card-clean">
-              <h3>Sold / Delivered Orders</h3>
-              <div class="table-responsive"><table class="records-table"><thead><tr><th>Date</th><th>Buyer</th><th>Product</th><th>Ref #</th><th>Proof</th><th>Status</th></tr></thead><tbody id="sold-orders-table-body"></tbody></table></div>
-            </div>
-          </div>
-
+          <!-- Records (Sold Accounts) -->
           <div id="panel-records" class="panel-admin">
             <div class="card-clean">
-              <div class="d-flex justify-content-between mb-3"><h3 class="mb-0">Records</h3><button onclick="exportRecordsCSV()" class="btn btn-sm btn-outline-secondary">Export CSV</button></div>
-              <div class="table-responsive"><table class="records-table"><thead><tr><th>ID</th><th>Buyer</th><th>Product</th><th>Expiry</th><th>Price</th></tr></thead><tbody id="records-table-body"></tbody></table></div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Sold Accounts</h3>
+                <div>
+                  <button id="btn-add-record" class="btn btn-sm btn-outline-primary me-2" type="button">
+                    Add Manual Record
+                  </button>
+                  <button id="btn-export-records" class="btn btn-sm btn-outline-secondary" type="button">
+                    Export CSV
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>Record ID</th>
+                      <th>Order ID</th>
+                      <th>Buyer</th>
+                      <th>Source</th>
+                      <th>Product</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Purchase Date</th>
+                      <th>Expiry</th>
+                      <th>+Days</th>
+                      <th>Updated Expiry</th>
+                      <th>Price</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="records-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
+          <!-- Store Rules -->
           <div id="panel-store-rules" class="panel-admin">
-             <div class="card-clean">
-               <h3>Store Rules</h3>
-               <div class="input-group mb-3"><input id="rule-text" class="form-control" placeholder="Rule text"><input id="rule-product-id" class="form-control" placeholder="Product ID (opt)"><button onclick="addRule()" class="btn btn-primary">Add</button></div>
-               <ul id="rules-list" class="list-unstyled"></ul>
-             </div>
+            <div class="card-clean">
+              <h3 class="mb-3">Store Rules</h3>
+              <p class="text-muted mb-2">
+                Manage rules in the <code>rules</code> table. Rules can be general or linked to a specific product.
+              </p>
+
+              <div class="row g-2 mb-3">
+                <div class="col-md-3">
+                  <label class="form-label">Product ID</label>
+                  <select id="rule-product-id" class="form-select">
+                    <option value="">General Rule</option>
+                  </select>
+                </div>
+                <div class="col-md-7">
+                  <label class="form-label">Rule Text</label>
+                  <input id="rule-text" class="form-control" placeholder="Do not change password...">
+                </div>
+                <div class="col-md-2 d-grid">
+                  <button id="btn-add-rule" class="btn btn-primary" type="button">Add Rule</button>
+                </div>
+              </div>
+
+              <ul id="rules-list" class="list-unstyled mb-0">
+                <!-- JS will insert <li> -->
+              </ul>
+            </div>
           </div>
 
+          <!-- Reports -->
           <div id="panel-reports" class="panel-admin">
             <div class="card-clean">
-              <h3>Reports</h3>
-              <div class="table-responsive"><table class="records-table"><thead><tr><th>ID</th><th>Order ID</th><th>Issue</th><th>Status</th></tr></thead><tbody id="reports-table-body"></tbody></table></div>
+              <h3 class="mb-3">Reports</h3>
+              <p class="text-muted mb-2">
+                This panel shows all reports from the <code>reports</code> table.
+              </p>
+              <div class="table-responsive">
+                <table class="records-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Order ID</th>
+                      <th>Buyer ID</th>
+                      <th>Issue</th>
+                      <th>Status</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reports-table-body">
+                    <!-- JS will insert rows -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -164,235 +654,1531 @@
     </div>
   </main>
 
-  <div class="modal fade" id="priceModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+  <!-- STOCK EDIT MODAL -->
+  <div class="modal fade" id="stockModal" tabindex="-1">
+    <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Manage Prices: <span id="priceModalProdId"></span></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Stock</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+        </div>
         <div class="modal-body">
-          <div class="row g-2 mb-3 border-bottom pb-3">
-            <div class="col-3"><input id="new-price-type" class="form-control" placeholder="Type (e.g. Solo)"></div>
-            <div class="col-3"><input id="new-price-dur" class="form-control" placeholder="Duration (e.g. 1m)"></div>
-            <div class="col-3"><input id="new-price-val" type="number" class="form-control" placeholder="Price"></div>
-            <div class="col-3"><button onclick="addPriceRow()" class="btn btn-primary w-100">Add</button></div>
-          </div>
-          <table class="table table-sm"><thead><tr><th>Type</th><th>Duration</th><th>Price</th><th>Action</th></tr></thead><tbody id="prices-table-body"></tbody></table>
+          <form id="stockForm">
+            <input type="hidden" id="stock-edit-id">
+            <div class="mb-2">
+              <label class="form-label">Email</label>
+              <input id="stock-edit-email" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Password</label>
+              <input id="stock-edit-password" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Profile</label>
+              <input id="stock-edit-profile" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">PIN</label>
+              <input id="stock-edit-pin" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Price (₱)</label>
+              <input id="stock-edit-price" type="number" step="0.01" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Status</label>
+              <select id="stock-edit-status" class="form-select">
+                <option value="available">available</option>
+                <option value="sold">sold</option>
+                <option value="archived">archived</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Premium Until</label>
+              <input id="stock-edit-premium" type="date" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Quantity (slots)</label>
+              <input id="stock-edit-qty" type="number" min="0" class="form-control">
+            </div>
+            <button class="btn btn-primary mt-2" type="submit">Save changes</button>
+          </form>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const ADMIN_ALLOW_UIDS = ["5196f372-803a-4aec-9c46-72242e73a9b8"];
-    
-    let currentPriceProdId = null;
+  <!-- MANUAL RECORD / EDIT MODAL -->
+  <div class="modal fade" id="recordModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="recordModalTitle">Add Manual Record</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="recordForm">
+            <input type="hidden" id="rec-id">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Order ID (optional)</label>
+                <input id="rec-order-id" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Buyer (email)</label>
+                <input id="rec-buyer" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Source</label>
+                <input id="rec-source" class="form-control" value="manual" required>
+              </div>
 
-    function showToast(msg, type="info") {
-      const box = document.getElementById("toastContainer");
-      const el = document.createElement("div");
-      el.className = `toast align-items-center text-bg-${type === 'error' ? 'danger' : type} border-0`;
-      el.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-      box.appendChild(el);
-      new bootstrap.Toast(el).show();
+              <div class="col-md-4">
+                <label class="form-label">Product ID</label>
+                <input id="rec-product-id" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Account Type</label>
+                <input id="rec-account-type" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Duration</label>
+                <input id="rec-duration" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Purchase Date</label>
+                <input id="rec-purchase-date" type="date" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Expiry Date</label>
+                <input id="rec-expiry-date" type="date" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Additional Days</label>
+                <input id="rec-additional-days" type="number" min="0" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Price</label>
+                <input id="rec-price" type="number" step="0.01" min="0" class="form-control">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Account Email (optional)</label>
+                <input id="rec-account-email" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Password (optional)</label>
+                <input id="rec-account-password" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Profile (optional)</label>
+                <input id="rec-profile" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">PIN (optional)</label>
+                <input id="rec-pin" class="form-control">
+              </div>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Save Record</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Supabase JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // ========= CONFIG =========
+    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ADMIN_ALLOW_UIDS = [
+      "5196f372-803a-4aec-9c46-72242e73a9b8"
+    ];
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+
+      const wrapper = document.createElement("div");
+      const bsType =
+        type === "success"
+          ? "success"
+          : type === "danger" || type === "error"
+            ? "danger"
+            : type === "warning"
+              ? "warning"
+              : "secondary";
+
+      wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
+      wrapper.role = "alert";
+      wrapper.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      container.appendChild(wrapper);
+      const toast = new bootstrap.Toast(wrapper);
+      toast.show();
+      wrapper.addEventListener("hidden.bs.toast", () => wrapper.remove());
     }
 
-    // AUTH
-    document.getElementById("btnAdminLogin").addEventListener("click", async () => {
-      const uid = document.getElementById("adminUidInput").value.trim();
-      if (ADMIN_ALLOW_UIDS.includes(uid)) {
+    function safeNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function calculateExpiryDate(purchaseDate, duration) {
+      if (!duration) return null;
+      
+      const date = new Date(purchaseDate);
+      const match = duration.match(/(\d+)([dmwy])/);
+      if (!match) return null;
+      
+      const amount = parseInt(match[1]);
+      const unit = match[2];
+      
+      switch(unit) {
+        case 'd': date.setDate(date.getDate() + amount); break;
+        case 'm': date.setMonth(date.getMonth() + amount); break;
+        case 'w': date.setDate(date.getDate() + (amount * 7)); break;
+        case 'y': date.setFullYear(date.getFullYear() + amount); break;
+      }
+      
+      return date.toISOString().split('T')[0];
+    }
+
+    // ========= ADMIN GATE =========
+    async function guardAdmin() {
+      const stored = localStorage.getItem("aiax_admin_uid");
+      if (stored) {
         document.getElementById("adminGate").classList.add("hidden");
         document.getElementById("adminContent").classList.remove("hidden");
-        loadAllData();
-      } else { showToast("Invalid UID", "error"); }
-    });
-
-    async function loadAllData() {
-      loadProducts(); loadStocks(); loadPendingOrders(); loadSoldOrders(); loadRecords(); loadRules(); loadReports(); refreshStats();
+        return true;
+      }
+      return false;
     }
 
-    // PRODUCTS & PRICES
+    async function handleAdminLogin() {
+      const input = document.getElementById("adminUidInput");
+      const uid = (input.value || "").trim();
+      if (!uid) {
+        showToast("Please paste your admin UID.", "warning");
+        return;
+      }
+
+      try {
+        if (!ADMIN_ALLOW_UIDS.includes(uid)) {
+          showToast("UID not allowed.", "danger");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("admin_uids")
+          .select("uid")
+          .eq("uid", uid)
+          .maybeSingle();
+
+        if (error || !data) {
+          showToast("UID not registered in admin_uids table.", "danger");
+          return;
+        }
+
+        localStorage.setItem("aiax_admin_uid", uid);
+        document.getElementById("adminGate").classList.add("hidden");
+        document.getElementById("adminContent").classList.remove("hidden");
+        showToast("Admin console unlocked.", "success");
+
+        await initialLoads();
+      } catch (err) {
+        console.error("[adminLogin] error:", err);
+        showToast("Failed to verify admin UID.", "danger");
+      }
+    }
+
+    async function initialLoads() {
+      refreshStats();
+      loadProducts();
+      loadProductPrices();
+      loadStocks();
+      loadPendingOrders();
+      loadRecords();
+      loadRules();
+      loadReports();
+    }
+
+    // ========= STATS =========
+    async function refreshStats() {
+      try {
+        const [
+          { data: prodRows },
+          { data: stockRows },
+          { data: orderRows },
+          { data: recRows }
+        ] = await Promise.all([
+          supabase.from("products").select("id"),
+          supabase.from("stocks").select("id, status, quantity"),
+          supabase.from("orders").select("id, status"),
+          supabase.from("records").select("price"),
+        ]);
+
+        const productsCount = prodRows?.length || 0;
+
+        const availableStock = (stockRows || []).filter(
+          (s) => (s.status || "").toLowerCase() === "available" && safeNumber(s.quantity) > 0
+        ).length;
+
+        const pendingOrders = (orderRows || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        ).length;
+
+        const totalRevenue = (recRows || []).reduce(
+          (sum, r) => sum + safeNumber(r.price),
+          0
+        );
+
+        document.getElementById("stat-products").textContent = productsCount;
+        document.getElementById("stat-stock").textContent = availableStock;
+        document.getElementById("stat-pending").textContent = pendingOrders;
+        document.getElementById("stat-revenue").textContent =
+          "₱" + totalRevenue.toLocaleString("en-PH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+      } catch (err) {
+        console.error("[stats] error:", err);
+      }
+    }
+
+    // ========= PRODUCTS =========
     async function loadProducts() {
-      const { data } = await supabase.from("products").select("*").order("name");
       const tbody = document.getElementById("products-table-body");
-      const stockSel = document.getElementById("stock-product");
-      tbody.innerHTML = ""; stockSel.innerHTML = "<option value=''>Select Product</option>";
+      const selectStockProduct = document.getElementById("stock-product");
+      const selectPriceProduct = document.getElementById("price-product");
+      const selectRuleProduct = document.getElementById("rule-product-id");
       
-      data.forEach(p => {
-        tbody.innerHTML += `<tr>
-          <td>${p.id}</td><td>${p.name}</td><td>${p.category}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-dark me-1" onclick="openPriceModal('${p.id}')">Prices</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p.id}')">Del</button>
-          </td></tr>`;
-        stockSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-      });
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      if (selectStockProduct) {
+        selectStockProduct.innerHTML = '<option value="">Select product</option>';
+      }
+      if (selectPriceProduct) {
+        selectPriceProduct.innerHTML = '<option value="">Select product</option>';
+      }
+      if (selectRuleProduct) {
+        selectRuleProduct.innerHTML = '<option value="">General Rule</option>';
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, category")
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 4;
+          td.textContent = "No products found.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((p) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = p.id;
+          tr.appendChild(tdId);
+
+          const tdName = document.createElement("td");
+          tdName.textContent = p.name;
+          tr.appendChild(tdName);
+
+          const tdCat = document.createElement("td");
+          tdCat.textContent = p.category;
+          tr.appendChild(tdCat);
+
+          const tdAct = document.createElement("td");
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-sm btn-outline-primary me-1";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => startEditProduct(p));
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-sm btn-outline-danger";
+          delBtn.textContent = "Delete";
+          delBtn.addEventListener("click", () => deleteProduct(p.id));
+
+          tdAct.appendChild(editBtn);
+          tdAct.appendChild(delBtn);
+          tr.appendChild(tdAct);
+
+          tbody.appendChild(tr);
+
+          // Populate dropdowns
+          [selectStockProduct, selectPriceProduct, selectRuleProduct].forEach(select => {
+            if (select) {
+              const opt = document.createElement("option");
+              opt.value = p.id;
+              opt.textContent = `${p.name} (${p.category})`;
+              select.appendChild(opt);
+            }
+          });
+        });
+      } catch (err) {
+        console.error("[products] error:", err);
+        showToast("Failed to load products.", "danger");
+      }
+    }
+
+    function resetProductForm() {
+      document.getElementById("prod-edit-id").value = "";
+      document.getElementById("new-prod-id").value = "";
+      document.getElementById("new-prod-id").disabled = false;
+      document.getElementById("new-prod-name").value = "";
+      document.getElementById("new-prod-cat").value = "";
+      document.getElementById("btn-save-product").textContent = "Add";
+      document.getElementById("btn-cancel-prod-edit").classList.add("d-none");
+    }
+
+    function startEditProduct(p) {
+      document.getElementById("prod-edit-id").value = p.id;
+      document.getElementById("new-prod-id").value = p.id;
+      document.getElementById("new-prod-id").disabled = true;
+      document.getElementById("new-prod-name").value = p.name || "";
+      document.getElementById("new-prod-cat").value = p.category || "";
+      document.getElementById("btn-save-product").textContent = "Update";
+      document.getElementById("btn-cancel-prod-edit").classList.remove("d-none");
     }
 
     async function saveProduct() {
-      const id = document.getElementById("new-prod-id").value, name = document.getElementById("new-prod-name").value, cat = document.getElementById("new-prod-cat").value;
-      if(!id || !name) return showToast("Fill ID and Name", "warning");
-      await supabase.from("products").insert({ id, name, category: cat });
-      showToast("Product Added", "success"); loadProducts();
+      const editId = document.getElementById("prod-edit-id").value;
+      const id = document.getElementById("new-prod-id").value.trim();
+      const name = document.getElementById("new-prod-name").value.trim();
+      const category = document.getElementById("new-prod-cat").value.trim();
+
+      if (!id || !name || !category) {
+        showToast("Please fill product id, name, and category.", "warning");
+        return;
+      }
+
+      try {
+        if (editId) {
+          const { error } = await supabase
+            .from("products")
+            .update({ name, category })
+            .eq("id", editId);
+          if (error) throw error;
+          showToast("Product updated.", "success");
+        } else {
+          const { error } = await supabase.from("products").insert({
+            id,
+            name,
+            category
+          });
+          if (error) throw error;
+          showToast("Product added.", "success");
+        }
+
+        resetProductForm();
+        await loadProducts();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveProduct] error:", err);
+        showToast("Failed to save product.", "danger");
+      }
     }
 
-    async function deleteProduct(id) { if(confirm("Delete?")) { await supabase.from("products").delete().eq("id", id); loadProducts(); } }
-
-    // PRICE MODAL LOGIC
-    async function openPriceModal(pid) {
-      currentPriceProdId = pid;
-      document.getElementById("priceModalProdId").textContent = pid;
-      new bootstrap.Modal(document.getElementById("priceModal")).show();
-      loadPrices(pid);
+    async function deleteProduct(id) {
+      if (!confirm(`Delete product ${id}?`)) return;
+      try {
+        const { error } = await supabase.from("products").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Product deleted.", "success");
+        await loadProducts();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteProduct] error:", err);
+        showToast("Failed to delete product.", "danger");
+      }
     }
 
-    async function loadPrices(pid) {
-      const { data } = await supabase.from("product_prices").select("*").eq("product_id", pid);
-      const tbody = document.getElementById("prices-table-body"); tbody.innerHTML = "";
-      data.forEach(r => tbody.innerHTML += `<tr><td>${r.account_type}</td><td>${r.duration}</td><td>₱${r.price}</td><td><button class="btn btn-sm btn-danger" onclick="delPrice(${r.id})">X</button></td></tr>`);
+    // ========= PRODUCT PRICES =========
+    async function loadProductPrices() {
+      const tbody = document.getElementById("prices-table-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+
+      try {
+        // Load existing prices from stocks table
+        const { data: prices, error: priceError } = await supabase
+          .from("stocks")
+          .select("id, product_id, account_type, duration, price")
+          .order("product_id");
+
+        if (priceError) throw priceError;
+
+        // Load products for names
+        const { data: products, error: prodError } = await supabase
+          .from("products")
+          .select("id, name");
+
+        if (prodError) throw prodError;
+
+        const productMap = {};
+        products.forEach(p => productMap[p.id] = p.name);
+
+        if (!prices || !prices.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.textContent = "No prices configured yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        // Get unique combinations
+        const uniqueCombos = {};
+        prices.forEach(price => {
+          const key = `${price.product_id}-${price.account_type}-${price.duration}`;
+          if (!uniqueCombos[key]) {
+            uniqueCombos[key] = price;
+          }
+        });
+
+        Object.values(uniqueCombos).forEach(price => {
+          const tr = document.createElement("tr");
+          
+          const productName = productMap[price.product_id] || price.product_id;
+          
+          tr.innerHTML = `
+            <td>${productName}</td>
+            <td>${price.account_type}</td>
+            <td>${price.duration}</td>
+            <td>₱${safeNumber(price.price).toFixed(2)}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1 btn-edit-price">Edit</button>
+              <button class="btn btn-sm btn-outline-danger btn-delete-price">Delete</button>
+            </td>
+          `;
+          
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error("[productPrices] error:", err);
+        showToast("Failed to load product prices.", "danger");
+      }
     }
 
-    async function addPriceRow() {
-      const type=document.getElementById("new-price-type").value, dur=document.getElementById("new-price-dur").value, price=document.getElementById("new-price-val").value;
-      if(!type || !dur || !price) return;
-      await supabase.from("product_prices").insert({product_id: currentPriceProdId, account_type: type, duration: dur, price: price});
-      loadPrices(currentPriceProdId);
-    }
-    async function delPrice(id) { await supabase.from("product_prices").delete().eq("id", id); loadPrices(currentPriceProdId); }
+    async function addProductPrice() {
+      const product_id = document.getElementById("price-product").value;
+      const account_type = document.getElementById("price-account-type").value.trim();
+      const duration = document.getElementById("price-duration").value.trim();
+      const price = Number(document.getElementById("price-amount").value);
 
-    // STOCKS
-    async function saveStock() {
-      const pid = document.getElementById("stock-product").value;
-      if(!pid) return showToast("Select Product", "warning");
-      const payload = {
-        product_id: pid,
-        account_type: document.getElementById("stock-account-type").value,
-        duration: document.getElementById("stock-duration").value,
-        email: document.getElementById("stock-email").value,
-        password: document.getElementById("stock-password").value,
-        profile: document.getElementById("stock-profile").value,
-        pin: document.getElementById("stock-pin").value,
-        quantity: document.getElementById("stock-quantity").value || 1,
-        premium_until: document.getElementById("stock-premium-until").value || null,
-        status: 'available'
-      };
-      await supabase.from("stocks").insert(payload);
-      showToast("Stock Added", "success"); loadStocks(); refreshStats();
+      if (!product_id || !account_type || !duration || !price) {
+        showToast("Please fill all fields.", "warning");
+        return;
+      }
+
+      try {
+        // Update all stocks with this combination to have the new price
+        const { error } = await supabase
+          .from("stocks")
+          .update({ price })
+          .eq("product_id", product_id)
+          .eq("account_type", account_type)
+          .eq("duration", duration);
+
+        if (error) throw error;
+
+        showToast("Price updated successfully.", "success");
+        
+        // Clear form
+        document.getElementById("price-account-type").value = "";
+        document.getElementById("price-duration").value = "";
+        document.getElementById("price-amount").value = "";
+        
+        await loadProductPrices();
+        await loadStocks();
+      } catch (err) {
+        console.error("[addProductPrice] error:", err);
+        showToast("Failed to update price: " + (err.message || String(err)), "danger");
+      }
     }
 
+    // ========= STOCKS =========
     async function loadStocks() {
-      const { data } = await supabase.from("stocks").select("*").order("created_at", {ascending: false});
-      const tbody = document.getElementById("stocks-table-body"); tbody.innerHTML = "";
-      data.forEach(s => tbody.innerHTML += `<tr><td>${s.product_id}</td><td>${s.account_type} / ${s.duration}</td><td>${s.email}</td><td>${s.status}</td><td>${s.quantity}</td><td><button class="btn btn-sm btn-danger" onclick="deleteStock(${s.id})">Del</button></td></tr>`);
-    }
-    async function deleteStock(id) { if(confirm("Delete?")) { await supabase.from("stocks").delete().eq("id", id); loadStocks(); } }
+      const tbody = document.getElementById("stocks-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
 
-    // ORDERS & EXPIRY CALCULATION
-    function calculateExpiry(dateIso, durationStr) {
-      const d = new Date(dateIso); const dur = durationStr.toLowerCase();
-      if(dur.includes('month') || dur.includes('m')) d.setMonth(d.getMonth() + (parseInt(dur)||1));
-      else if(dur.includes('day') || dur.includes('d')) d.setDate(d.getDate() + (parseInt(dur)||30));
-      else if(dur.includes('year') || dur.includes('y')) d.setFullYear(d.getFullYear() + (parseInt(dur)||1));
-      else d.setDate(d.getDate() + 30);
-      return d.toISOString();
+      try {
+        const [{ data: stocks, error: errStocks }, { data: products, error: errProd }] =
+          await Promise.all([
+            supabase
+              .from("stocks")
+              .select("id, product_id, account_type, duration, email, password, profile, pin, status, premium_until, quantity, price"),
+            supabase.from("products").select("id, name"),
+          ]);
+
+        if (errStocks) throw errStocks;
+        if (errProd) throw errProd;
+
+        const prodMap = {};
+        (products || []).forEach((p) => (prodMap[p.id] = p.name));
+
+        if (!stocks || !stocks.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 9;
+          td.textContent = "No stocks yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        stocks.forEach((s) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = s.id;
+          tr.appendChild(tdId);
+
+          const tdProduct = document.createElement("td");
+          tdProduct.textContent = prodMap[s.product_id] || s.product_id || "-";
+          tr.appendChild(tdProduct);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = s.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDuration = document.createElement("td");
+          tdDuration.textContent = s.duration || "-";
+          tr.appendChild(tdDuration);
+
+          const tdEmail = document.createElement("td");
+          tdEmail.textContent = s.email || "-";
+          tr.appendChild(tdEmail);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = s.status || "-";
+          tr.appendChild(tdStatus);
+
+          const tdPrem = document.createElement("td");
+          tdPrem.textContent = s.premium_until || "-";
+          tr.appendChild(tdPrem);
+
+          const tdQty = document.createElement("td");
+          tdQty.textContent = safeNumber(s.quantity);
+          tr.appendChild(tdQty);
+
+          const tdAct = document.createElement("td");
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-sm btn-outline-primary me-1";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => openStockEditModal(s));
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn btn-sm btn-outline-danger";
+          delBtn.textContent = "Delete";
+          delBtn.addEventListener("click", () => deleteStock(s.id));
+
+          tdAct.appendChild(editBtn);
+          tdAct.appendChild(delBtn);
+          tr.appendChild(tdAct);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[stocks] error:", err);
+        showToast("Failed to load stocks.", "danger");
+      }
     }
 
+    async function deleteStock(id) {
+      if (!confirm(`Delete stock #${id}?`)) return;
+      try {
+        const { error } = await supabase.from("stocks").delete().eq("id", id);
+        if (error) throw error;
+        showToast("Stock deleted.", "success");
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteStock] error:", err);
+        showToast("Failed to delete stock.", "danger");
+      }
+    }
+
+    async function saveStock() {
+      const product_id = document.getElementById("stock-product")?.value || "";
+      const account_type =
+        document.getElementById("stock-account-type")?.value.trim() || "";
+      const duration =
+        document.getElementById("stock-duration")?.value.trim() || "";
+      const price = Number(document.getElementById("stock-price")?.value || 0);
+      const email = document.getElementById("stock-email")?.value.trim() || "";
+      const password =
+        document.getElementById("stock-password")?.value.trim() || "";
+      const profile =
+        document.getElementById("stock-profile")?.value.trim() || "";
+      const pin = document.getElementById("stock-pin")?.value.trim() || "";
+      const archive_after = Number(
+        document.getElementById("stock-archive-after")?.value || 0
+      );
+      const premium_until =
+        document.getElementById("stock-premium-until")?.value || null;
+      const quantity = Number(
+        document.getElementById("stock-quantity")?.value || 1
+      );
+
+      if (!product_id) {
+        showToast("Please select a product first.", "warning");
+        return;
+      }
+      if (!account_type || !duration) {
+        showToast("Please fill account type and duration.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("stocks").insert([
+          {
+            product_id,
+            account_type,
+            duration,
+            price,
+            email,
+            password,
+            profile,
+            pin,
+            archive_after: Number.isFinite(archive_after) ? archive_after : 0,
+            premium_until: premium_until || null,
+            status: "available",
+            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+          },
+        ]);
+
+        if (error) throw error;
+
+        showToast("Stock saved!", "success");
+
+        // Clear form
+        ["stock-email", "stock-password", "stock-profile", "stock-pin", "stock-price"].forEach(
+          (id) => {
+            const input = document.getElementById(id);
+            if (input) input.value = "";
+          }
+        );
+
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveStock] error:", err);
+        showToast("Failed to save stock.", "danger");
+      }
+    }
+
+    // STOCK EDIT
+    function openStockEditModal(s) {
+      document.getElementById("stock-edit-id").value = s.id;
+      document.getElementById("stock-edit-email").value = s.email || "";
+      document.getElementById("stock-edit-password").value = s.password || "";
+      document.getElementById("stock-edit-profile").value = s.profile || "";
+      document.getElementById("stock-edit-pin").value = s.pin || "";
+      document.getElementById("stock-edit-price").value = safeNumber(s.price);
+      document.getElementById("stock-edit-status").value = (s.status || "available");
+      document.getElementById("stock-edit-premium").value =
+        s.premium_until ? s.premium_until.substring(0, 10) : "";
+      document.getElementById("stock-edit-qty").value = safeNumber(s.quantity);
+
+      const m = new bootstrap.Modal(document.getElementById("stockModal"));
+      m.show();
+    }
+
+    async function saveStockEdit(e) {
+      e.preventDefault();
+      const id = document.getElementById("stock-edit-id").value;
+      if (!id) return;
+
+      const email = document.getElementById("stock-edit-email").value.trim() || null;
+      const password = document.getElementById("stock-edit-password").value.trim() || null;
+      const profile = document.getElementById("stock-edit-profile").value.trim() || null;
+      const pin = document.getElementById("stock-edit-pin").value.trim() || null;
+      const price = Number(document.getElementById("stock-edit-price").value) || 0;
+      const status = document.getElementById("stock-edit-status").value || "available";
+      const premium_raw = document.getElementById("stock-edit-premium").value;
+      const qtyVal = document.getElementById("stock-edit-qty").value;
+
+      const payload = {
+        email,
+        password,
+        profile,
+        pin,
+        price,
+        status,
+        quantity: qtyVal ? Number(qtyVal) : 0,
+        premium_until: premium_raw ? premium_raw : null,
+      };
+
+      try {
+        const { error } = await supabase
+          .from("stocks")
+          .update(payload)
+          .eq("id", id);
+        if (error) throw error;
+
+        showToast("Stock updated.", "success");
+        bootstrap.Modal.getInstance(document.getElementById("stockModal")).hide();
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveStockEdit] error:", err);
+        showToast("Failed to update stock.", "danger");
+      }
+    }
+
+    // ========= ORDERS (PENDING + CONFIRM PAYMENT) =========
     async function loadPendingOrders() {
-      const { data } = await supabase.from("orders").select("*").eq("status", "pending");
-      const tbody = document.getElementById("orders-table-body"); tbody.innerHTML = data.length ? "" : "<tr><td colspan='6'>No pending orders.</td></tr>";
-      data.forEach(o => {
-        let proof = o.proof_image_url ? `<a href="${o.proof_image_url}" target="_blank">Proof</a>` : 'None';
-        tbody.innerHTML += `<tr><td>${o.buyer_email}</td><td>${o.product_id}<br>${o.account_type}</td><td>₱${o.price}</td><td>${o.payment_method}<br>Ref:${o.reference_number}<br>${proof}</td><td>${o.status}</td><td><button class="btn btn-sm btn-success" onclick="markOrderPaid('${o.id}')">Confirm</button></td></tr>`;
-      });
+      const tbody = document.getElementById("orders-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select(
+            "id, buyer_id, buyer_email, product_id, account_type, duration, price, status, payment_method, reference_number, proof_image_url, created_at"
+          )
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const pending = (data || []).filter(
+          (o) => (o.status || "").toLowerCase() === "pending"
+        );
+
+        if (!pending.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 10;
+          td.textContent = "No pending orders.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        pending.forEach((o) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = o.id;
+          tr.appendChild(tdId);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.innerHTML = `
+            <div>${o.buyer_email || "-"}</div>
+            <div class="small text-muted">${o.buyer_id || ""}</div>
+          `;
+          tr.appendChild(tdBuyer);
+
+          const tdProd = document.createElement("td");
+          tdProd.textContent = o.product_id;
+          tr.appendChild(tdProd);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = o.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDur = document.createElement("td");
+          tdDur.textContent = o.duration || "-";
+          tr.appendChild(tdDur);
+
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(o.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          const tdPay = document.createElement("td");
+          tdPay.innerHTML = `
+            <div class="small">${o.payment_method || "-"}</div>
+            <div class="small text-muted">Ref: ${o.reference_number || "-"}</div>
+          `;
+          tr.appendChild(tdPay);
+
+          const tdProof = document.createElement("td");
+          if (o.proof_image_url) {
+            tdProof.innerHTML = `<a href="${o.proof_image_url}" target="_blank" class="btn btn-sm btn-outline-primary">View Proof</a>`;
+          } else {
+            tdProof.textContent = "No proof";
+          }
+          tr.appendChild(tdProof);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = o.status;
+          tr.appendChild(tdStatus);
+
+          const tdAction = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.className = "btn btn-sm btn-success";
+          btn.textContent = "Confirm payment";
+          btn.addEventListener("click", () => markOrderPaid(o.id));
+          tdAction.appendChild(btn);
+          tr.appendChild(tdAction);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[orders] error:", err);
+        showToast("Failed to load orders.", "danger");
+      }
     }
 
     async function markOrderPaid(orderId) {
-      if (!confirm("Confirm payment & delivery?")) return;
-      const { data: order } = await supabase.from("orders").select("*").eq("id", orderId).single();
-      
-      // Find stock
-      const { data: stock } = await supabase.from("stocks").select("*").eq("product_id", order.product_id).eq("account_type", order.account_type).eq("duration", order.duration).eq("status", "available").gt("quantity", 0).limit(1).maybeSingle();
+      if (!confirm(`Confirm payment for order ${orderId}?`)) return;
 
-      if (!stock) return showToast("No stock available for this combo!", "error");
+      try {
+        // 1) get order
+        const { data: order, error: errOrder } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("id", orderId)
+          .maybeSingle();
 
-      // Update Stock
-      const newQty = stock.quantity - 1;
-      const newStatus = newQty <= 0 ? 'sold' : 'available';
-      await supabase.from("stocks").update({ quantity: newQty, status: newStatus }).eq("id", stock.id);
+        if (errOrder) throw errOrder;
+        if (!order) {
+          showToast("Order not found.", "danger");
+          return;
+        }
 
-      // Create Record with Expiry
-      const now = new Date().toISOString();
-      const expiry = calculateExpiry(now, order.duration);
-      
-      await supabase.from("records").insert({
-        order_id: order.id, buyer: order.buyer_email, source: "shop",
-        product_id: order.product_id, account_type: order.account_type, duration: order.duration,
-        price: order.price, purchase_date: now, expiry_date: expiry,
-        account_email: stock.email, account_password: stock.password, profile: stock.profile, pin: stock.pin
-      });
+        if ((order.status || "").toLowerCase() !== "pending") {
+          showToast("Order is not pending anymore.", "warning");
+          await loadPendingOrders();
+          return;
+        }
 
-      // Update Order
-      await supabase.from("orders").update({ status: "delivered" }).eq("id", orderId);
-      
-      showToast("Order Confirmed & Delivered!", "success");
-      loadPendingOrders(); loadStocks(); loadSoldOrders(); refreshStats();
+        // 2) find matching stock
+        const { data: stockRow, error: errStock } = await supabase
+          .from("stocks")
+          .select("*")
+          .eq("product_id", order.product_id)
+          .eq("account_type", order.account_type)
+          .eq("duration", order.duration)
+          .eq("status", "available")
+          .gt("quantity", 0)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (errStock) throw errStock;
+
+        if (!stockRow) {
+          showToast("No available stock matching this order.", "warning");
+          return;
+        }
+
+        const currentQty = safeNumber(stockRow.quantity);
+        const newQty = currentQty > 0 ? currentQty - 1 : 0;
+        const newStatus = newQty <= 0 ? "sold" : "available";
+
+        // 3) update stock quantity + status
+        const { error: updStockErr } = await supabase
+          .from("stocks")
+          .update({
+            quantity: newQty,
+            status: newStatus,
+          })
+          .eq("id", stockRow.id);
+
+        if (updStockErr) throw updStockErr;
+
+        // 4) Calculate expiry date based on duration
+        let expiry_date = null;
+        if (order.duration) {
+          expiry_date = calculateExpiryDate(new Date().toISOString(), order.duration);
+        }
+
+        // 5) insert into records (delivered account)
+        const buyerEmail = order.buyer_email || order.buyer_id || null;
+
+        const nowIso = new Date().toISOString();
+
+        const { error: recErr } = await supabase.from("records").insert({
+          order_id: order.id,
+          buyer: buyerEmail,
+          source: "premium-shop",
+          product_id: order.product_id,
+          account_type: order.account_type,
+          duration: order.duration,
+          purchase_date: nowIso,
+          expiry_date: expiry_date,
+          updated_expiry: expiry_date, // Initially same as expiry_date
+          price: order.price,
+          account_email: stockRow.email,
+          account_password: stockRow.password,
+          profile: stockRow.profile,
+          pin: stockRow.pin,
+        });
+
+        if (recErr) throw recErr;
+
+        // 6) update order status to delivered
+        const { error: updOrderErr } = await supabase
+          .from("orders")
+          .update({ status: "delivered" })
+          .eq("id", order.id);
+
+        if (updOrderErr) throw updOrderErr;
+
+        showToast("Payment confirmed and account delivered.", "success");
+
+        await loadPendingOrders();
+        await loadStocks();
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[markOrderPaid] error:", err);
+        showToast("Failed to confirm payment: " + (err.message || String(err)), "danger");
+      }
     }
 
-    async function loadSoldOrders() {
-      const { data } = await supabase.from("orders").select("*").eq("status", "delivered").order("created_at", {ascending: false});
-      const tbody = document.getElementById("sold-orders-table-body"); tbody.innerHTML = data.length ? "" : "<tr><td colspan='6'>No sold orders.</td></tr>";
-      data.forEach(o => {
-         let proof = o.proof_image_url ? `<a href="${o.proof_image_url}" target="_blank">Proof</a>` : 'None';
-         tbody.innerHTML += `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.buyer_email}</td><td>${o.product_id}</td><td>${o.reference_number}</td><td>${proof}</td><td><span class="badge bg-success">Delivered</span></td></tr>`;
-      });
-    }
-
-    // RECORDS, RULES, REPORTS (Retained)
+    // ========= RECORDS (SOLD ACCOUNTS) =========
     async function loadRecords() {
-      const { data } = await supabase.from("records").select("*").order("created_at", {ascending: false});
-      const tbody = document.getElementById("records-table-body"); tbody.innerHTML = "";
-      data.forEach(r => tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.buyer}</td><td>${r.product_id}</td><td>${r.expiry_date?new Date(r.expiry_date).toLocaleDateString():'-'}</td><td>₱${r.price}</td></tr>`);
+      const tbody = document.getElementById("records-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("records")
+          .select(
+            "id, order_id, buyer, source, product_id, account_type, duration, purchase_date, expiry_date, additional_days, updated_expiry, price, account_email, account_password, profile, pin"
+          )
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 13;
+          td.textContent = "No records yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((r) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = r.id;
+          tr.appendChild(tdId);
+
+          const tdOrder = document.createElement("td");
+          tdOrder.textContent = r.order_id || "-";
+          tr.appendChild(tdOrder);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = r.buyer || "-";
+          tr.appendChild(tdBuyer);
+
+          const tdSource = document.createElement("td");
+          tdSource.textContent = r.source || "-";
+          tr.appendChild(tdSource);
+
+          const tdProd = document.createElement("td");
+          tdProd.textContent = r.product_id || "-";
+          tr.appendChild(tdProd);
+
+          const tdType = document.createElement("td");
+          tdType.textContent = r.account_type || "-";
+          tr.appendChild(tdType);
+
+          const tdDur = document.createElement("td");
+          tdDur.textContent = r.duration || "-";
+          tr.appendChild(tdDur);
+
+          const tdDate = document.createElement("td");
+          tdDate.textContent = r.purchase_date ? new Date(r.purchase_date).toLocaleDateString() : "-";
+          tr.appendChild(tdDate);
+
+          const tdExp = document.createElement("td");
+          tdExp.textContent = r.expiry_date ? new Date(r.expiry_date).toLocaleDateString() : "-";
+          tr.appendChild(tdExp);
+
+          const tdAdd = document.createElement("td");
+          tdAdd.textContent = r.additional_days ?? "-";
+          tr.appendChild(tdAdd);
+
+          const tdUpd = document.createElement("td");
+          tdUpd.textContent = r.updated_expiry ? new Date(r.updated_expiry).toLocaleDateString() : "-";
+          tr.appendChild(tdUpd);
+
+          const tdPrice = document.createElement("td");
+          tdPrice.textContent = "₱" + safeNumber(r.price).toFixed(2);
+          tr.appendChild(tdPrice);
+
+          const tdAct = document.createElement("td");
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-sm btn-outline-primary";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => openRecordEditModal(r));
+          tdAct.appendChild(editBtn);
+          tr.appendChild(tdAct);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[records] error:", err);
+        showToast("Failed to load records.", "danger");
+      }
     }
+
+    function openRecordEditModal(r) {
+      document.getElementById("recordModalTitle").textContent = "Edit Record";
+      document.getElementById("rec-id").value = r.id;
+      document.getElementById("rec-order-id").value = r.order_id || "";
+      document.getElementById("rec-buyer").value = r.buyer || "";
+      document.getElementById("rec-source").value = r.source || "manual";
+      document.getElementById("rec-product-id").value = r.product_id || "";
+      document.getElementById("rec-account-type").value = r.account_type || "";
+      document.getElementById("rec-duration").value = r.duration || "";
+      document.getElementById("rec-price").value = r.price || "";
+
+      document.getElementById("rec-purchase-date").value =
+        r.purchase_date ? r.purchase_date.substring(0, 10) : "";
+      document.getElementById("rec-expiry-date").value =
+        r.expiry_date ? r.expiry_date.substring(0, 10) : "";
+      document.getElementById("rec-additional-days").value =
+        r.additional_days != null ? r.additional_days : "";
+
+      document.getElementById("rec-account-email").value = r.account_email || "";
+      document.getElementById("rec-account-password").value = r.account_password || "";
+      document.getElementById("rec-profile").value = r.profile || "";
+      document.getElementById("rec-pin").value = r.pin || "";
+
+      const m = new bootstrap.Modal(document.getElementById("recordModal"));
+      m.show();
+    }
+
+    function openRecordAddModal() {
+      document.getElementById("recordModalTitle").textContent = "Add Manual Record";
+      document.getElementById("recordForm").reset();
+      document.getElementById("rec-id").value = "";
+      const m = new bootstrap.Modal(document.getElementById("recordModal"));
+      m.show();
+    }
+
+    async function saveManualRecord(e) {
+      e.preventDefault();
+
+      const recId = document.getElementById("rec-id").value || null;
+
+      const order_id = document.getElementById("rec-order-id").value.trim() || null;
+      const buyer = document.getElementById("rec-buyer").value.trim();
+      const source = document.getElementById("rec-source").value.trim() || "manual";
+      const product_id = document.getElementById("rec-product-id").value.trim();
+      const account_type = document.getElementById("rec-account-type").value.trim() || null;
+      const duration = document.getElementById("rec-duration").value.trim() || null;
+
+      const purchase_date_raw = document.getElementById("rec-purchase-date").value;
+      const expiry_raw = document.getElementById("rec-expiry-date").value;
+      const addDaysRaw = document.getElementById("rec-additional-days").value;
+
+      const priceVal = document.getElementById("rec-price").value;
+      const account_email = document.getElementById("rec-account-email").value.trim() || null;
+      const account_password = document.getElementById("rec-account-password").value.trim() || null;
+      const profile = document.getElementById("rec-profile").value.trim() || null;
+      const pin = document.getElementById("rec-pin").value.trim() || null;
+
+      if (!buyer || !product_id) {
+        showToast("Buyer and product_id are required.", "warning");
+        return;
+      }
+
+      const purchase_date = purchase_date_raw
+        ? new Date(purchase_date_raw).toISOString()
+        : new Date().toISOString();
+
+      // Auto-calculate expiry if duration is provided but no expiry date
+      let expiry_date = expiry_raw ? new Date(expiry_raw).toISOString() : null;
+      if (!expiry_date && duration) {
+        const calculatedExpiry = calculateExpiryDate(purchase_date_raw || new Date(), duration);
+        if (calculatedExpiry) {
+          expiry_date = new Date(calculatedExpiry).toISOString();
+        }
+      }
+
+      const additional_days = addDaysRaw ? Number(addDaysRaw) : null;
+
+      let updated_expiry = expiry_date;
+      if (expiry_date && additional_days && Number.isFinite(additional_days) && additional_days > 0) {
+        const base = new Date(expiry_date);
+        base.setDate(base.getDate() + additional_days);
+        updated_expiry = base.toISOString();
+      }
+
+      const payload = {
+        order_id,
+        buyer,
+        source,
+        product_id,
+        account_type,
+        duration,
+        purchase_date,
+        expiry_date,
+        additional_days,
+        updated_expiry,
+        price: priceVal ? Number(priceVal) : null,
+        account_email,
+        account_password,
+        profile,
+        pin,
+      };
+
+      try {
+        if (recId) {
+          const { error } = await supabase
+            .from("records")
+            .update(payload)
+            .eq("id", recId);
+          if (error) throw error;
+          showToast("Record updated.", "success");
+        } else {
+          const { error } = await supabase.from("records").insert(payload);
+          if (error) throw error;
+          showToast("Record added.", "success");
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById("recordModal")).hide();
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveManualRecord] error:", err);
+        showToast("Failed to save record: " + (err.message || String(err)), "danger");
+      }
+    }
+
     async function exportRecordsCSV() {
-       const { data } = await supabase.from("records").select("*");
-       if(!data || !data.length) return showToast("No records", "warning");
-       const headers = Object.keys(data[0]).join(",");
-       const rows = data.map(row => Object.values(row).map(v => `"${v}"`).join(",")).join("\n");
-       const blob = new Blob([headers + "\n" + rows], { type: "text/csv" });
-       const url = URL.createObjectURL(blob);
-       const a = document.createElement("a"); a.href = url; a.download = "records.csv"; a.click();
+      try {
+        const { data, error } = await supabase
+          .from("records")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          showToast("No records to export.", "warning");
+          return;
+        }
+
+        const headers = Object.keys(data[0]);
+        const rows = [
+          headers.join(","),
+          ...data.map((row) =>
+            headers
+              .map((h) => {
+                const val = row[h];
+                if (val == null) return "";
+                const s = String(val).replace(/"/g, '""');
+                return `"${s}"`;
+              })
+              .join(",")
+          ),
+        ];
+        const csv = rows.join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "records_export.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("[exportRecordsCSV] error:", err);
+        showToast("Failed to export records.", "danger");
+      }
     }
+
+    // ========= RULES =========
     async function loadRules() {
-      const { data } = await supabase.from("rules").select("*");
-      const ul = document.getElementById("rules-list"); ul.innerHTML = "";
-      data.forEach(r => ul.innerHTML += `<li>${r.rule_text} <button class="btn btn-sm btn-link text-danger" onclick="deleteRule(${r.id})">Del</button></li>`);
+      const ul = document.getElementById("rules-list");
+      if (!ul) return;
+      ul.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("rules")
+          .select("id, rule_text, product_id")
+          .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const li = document.createElement("li");
+          li.textContent = "No rules found.";
+          ul.appendChild(li);
+          return;
+        }
+
+        data.forEach((r) => {
+          const li = document.createElement("li");
+          li.className = "mb-1";
+          li.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                ${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${r.rule_text}
+              </div>
+              <div>
+                <button class="btn btn-sm btn-outline-primary me-1 btn-edit-rule">Edit</button>
+                <button class="btn btn-sm btn-outline-danger btn-del-rule">Delete</button>
+              </div>
+            </div>
+          `;
+          li.dataset.id = r.id;
+          li.dataset.productId = r.product_id || "";
+          li.dataset.ruleText = r.rule_text;
+
+          ul.appendChild(li);
+        });
+
+        ul.querySelectorAll(".btn-edit-rule").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const li = e.target.closest("li");
+            const id = Number(li.dataset.id);
+            const currentText = li.dataset.ruleText || "";
+            const currentProd = li.dataset.productId || "";
+
+            const newProd = prompt("Product ID (blank for general rule):", currentProd);
+            if (newProd === null) return;
+            const newText = prompt("Rule text:", currentText);
+            if (newText === null) return;
+
+            try {
+              const { error } = await supabase
+                .from("rules")
+                .update({
+                  product_id: newProd.trim() || null,
+                  rule_text: newText.trim(),
+                })
+                .eq("id", id);
+              if (error) throw error;
+              showToast("Rule updated.", "success");
+              await loadRules();
+            } catch (err) {
+              console.error("[editRule] error:", err);
+              showToast("Failed to update rule.", "danger");
+            }
+          });
+        });
+
+        ul.querySelectorAll(".btn-del-rule").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const li = e.target.closest("li");
+            const id = Number(li.dataset.id);
+            if (!confirm(`Delete rule #${id}?`)) return;
+            try {
+              const { error } = await supabase.from("rules").delete().eq("id", id);
+              if (error) throw error;
+              showToast("Rule deleted.", "success");
+              await loadRules();
+            } catch (err) {
+              console.error("[deleteRule] error:", err);
+              showToast("Failed to delete rule.", "danger");
+            }
+          });
+        });
+      } catch (err) {
+        console.error("[rules] error:", err);
+        showToast("Failed to load rules.", "danger");
+      }
     }
-    async function addRule() { await supabase.from("rules").insert({ rule_text: document.getElementById("rule-text").value, product_id: document.getElementById("rule-product-id").value || null }); loadRules(); }
-    async function deleteRule(id) { await supabase.from("rules").delete().eq("id", id); loadRules(); }
+
+    async function addRule() {
+      const product_id = document.getElementById("rule-product-id").value.trim() || null;
+      const rule_text = document.getElementById("rule-text").value.trim();
+
+      if (!rule_text) {
+        showToast("Rule text is required.", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("rules").insert({
+          product_id,
+          rule_text,
+        });
+        if (error) throw error;
+        showToast("Rule added.", "success");
+        document.getElementById("rule-product-id").value = "";
+        document.getElementById("rule-text").value = "";
+        await loadRules();
+      } catch (err) {
+        console.error("[addRule] error:", err);
+        showToast("Failed to add rule.", "danger");
+      }
+    }
+
+    // ========= REPORTS =========
     async function loadReports() {
-      const { data } = await supabase.from("reports").select("*");
-      const tbody = document.getElementById("reports-table-body"); tbody.innerHTML = "";
-      data.forEach(r => tbody.innerHTML += `<tr><td>${r.id}</td><td>${r.order_id}</td><td>${r.issue_description}</td><td>${r.status}</td></tr>`);
+      const tbody = document.getElementById("reports-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data, error } = await supabase
+          .from("reports")
+          .select("id, order_id, buyer_id, issue_description, status, created_at")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent = "No reports yet.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        data.forEach((rep) => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = rep.id;
+          tr.appendChild(tdId);
+
+          const tdOrder = document.createElement("td");
+          tdOrder.textContent = rep.order_id || "-";
+          tr.appendChild(tdOrder);
+
+          const tdBuyer = document.createElement("td");
+          tdBuyer.textContent = rep.buyer_id ?? "-";
+          tr.appendChild(tdBuyer);
+
+          const tdIssue = document.createElement("td");
+          tdIssue.textContent = rep.issue_description || "-";
+          tr.appendChild(tdIssue);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.textContent = rep.status || "-";
+          tr.appendChild(tdStatus);
+
+          const tdCreated = document.createElement("td");
+          tdCreated.textContent = rep.created_at || "-";
+          tr.appendChild(tdCreated);
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[reports] error:", err);
+        showToast("Failed to load reports.", "danger");
+      }
     }
 
-    async function refreshStats() {
-      const { data: rData } = await supabase.from("records").select("price");
-      const total = rData.reduce((sum, x) => sum + (x.price||0), 0);
-      document.getElementById("stat-revenue").textContent = "₱" + total.toLocaleString();
-      // Counts would be fetched similarly
-    }
+    // ========= TABS =========
+    function initTabs() {
+      const buttons = document.querySelectorAll(".sidebar button");
+      const panels = document.querySelectorAll(".panel-admin");
+      if (!buttons.length || !panels.length) return;
 
-    // TABS
-    document.querySelectorAll(".sidebar button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".sidebar button").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".panel-admin").forEach(p => p.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(btn.dataset.target).classList.add("active");
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-target");
+          if (!targetId) return;
+
+          buttons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          panels.forEach((p) => {
+            if (p.id === targetId) p.classList.add("active");
+            else p.classList.remove("active");
+          });
+        });
       });
+    }
+
+    // ========= INIT =========
+    document.addEventListener("DOMContentLoaded", async () => {
+      initTabs();
+
+      document
+        .getElementById("btnAdminLogin")
+        .addEventListener("click", handleAdminLogin);
+
+      const ok = await guardAdmin();
+      if (ok) {
+        await initialLoads();
+      }
+
+      const btnSaveStock = document.getElementById("btn-save-stock");
+      if (btnSaveStock) {
+        btnSaveStock.addEventListener("click", saveStock);
+      }
+
+      const btnSaveProduct = document.getElementById("btn-save-product");
+      if (btnSaveProduct) {
+        btnSaveProduct.addEventListener("click", saveProduct);
+      }
+
+      document
+        .getElementById("btn-cancel-prod-edit")
+        .addEventListener("click", resetProductForm);
+
+      const btnAddPrice = document.getElementById("btn-add-price");
+      if (btnAddPrice) {
+        btnAddPrice.addEventListener("click", addProductPrice);
+      }
+
+      const btnAddRule = document.getElementById("btn-add-rule");
+      if (btnAddRule) {
+        btnAddRule.addEventListener("click", addRule);
+      }
+
+      const btnAddRecord = document.getElementById("btn-add-record");
+      if (btnAddRecord) {
+        btnAddRecord.addEventListener("click", openRecordAddModal);
+      }
+
+      const btnExportRecords = document.getElementById("btn-export-records");
+      if (btnExportRecords) {
+        btnExportRecords.addEventListener("click", exportRecordsCSV);
+      }
+
+      document
+        .getElementById("recordForm")
+        .addEventListener("submit", saveManualRecord);
+
+      document
+        .getElementById("stockForm")
+        .addEventListener("submit", saveStockEdit);
     });
   </script>
 </body>
