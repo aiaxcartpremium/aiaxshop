@@ -937,14 +937,6 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const ADMIN_ALLOW_UIDS = [
-      "5196f372-803a-4aec-9c46-72242e73a9b8"
-    ];
-
-    // Global variables for dropdown data
-    let allAccountTypes = [];
-    let allDurations = [];
-
     function showToast(message, type = "info") {
       const container = document.getElementById("toastContainer");
       if (!container) return;
@@ -974,91 +966,6 @@
       return Number.isFinite(n) ? n : 0;
     }
 
-    // ========= DROPDOWN MANAGEMENT =========
-    async function loadDropdownData() {
-      try {
-        // Load account types and durations from stocks
-        const { data: stocksData, error: stocksError } = await supabase
-          .from("stocks")
-          .select("account_type, duration")
-          .not("account_type", "is", null)
-          .not("duration", "is", null);
-
-        if (stocksError) throw stocksError;
-
-        // Extract unique values
-        allAccountTypes = [...new Set(stocksData.map(item => item.account_type))].sort();
-        allDurations = [...new Set(stocksData.map(item => item.duration))].sort();
-
-        populateAllDropdowns();
-      } catch (err) {
-        console.error("[loadDropdownData] error:", err);
-      }
-    }
-
-    function populateAllDropdowns() {
-      // Populate account type dropdowns
-      const accountTypeSelectors = [
-        "stock-account-type", "price-account-type", "rec-account-type"
-      ];
-      
-      accountTypeSelectors.forEach(selector => {
-        const element = document.getElementById(selector);
-        if (element) {
-          const currentValue = element.value;
-          element.innerHTML = '<option value="">Select account type</option>';
-          allAccountTypes.forEach(type => {
-            const option = document.createElement("option");
-            option.value = type;
-            option.textContent = type;
-            element.appendChild(option);
-          });
-          if (currentValue) element.value = currentValue;
-        }
-      });
-
-      // Populate duration dropdowns
-      const durationSelectors = [
-        "stock-duration", "price-duration", "rec-duration"
-      ];
-      
-      durationSelectors.forEach(selector => {
-        const element = document.getElementById(selector);
-        if (element) {
-          const currentValue = element.value;
-          element.innerHTML = '<option value="">Select duration</option>';
-          allDurations.forEach(duration => {
-            const option = document.createElement("option");
-            option.value = duration;
-            option.textContent = duration;
-            element.appendChild(option);
-          });
-          if (currentValue) element.value = currentValue;
-        }
-      });
-    }
-
-    // ========= EXPIRY CALCULATION =========
-    function calculateExpiryDate(duration, startDate = new Date()) {
-      if (!duration) return null;
-      
-      const date = new Date(startDate);
-      const match = duration.match(/(\d+)([dmwy])/);
-      if (!match) return null;
-      
-      const amount = parseInt(match[1]);
-      const unit = match[2];
-      
-      switch(unit) {
-        case 'd': date.setDate(date.getDate() + amount); break;
-        case 'm': date.setMonth(date.getMonth() + amount); break;
-        case 'w': date.setDate(date.getDate() + (amount * 7)); break;
-        case 'y': date.setFullYear(date.getFullYear() + amount); break;
-      }
-      
-      return date.toISOString().split('T')[0];
-    }
-
     // ========= ADMIN GATE =========
     async function guardAdmin() {
       const stored = localStorage.getItem("aiax_admin_uid");
@@ -1070,41 +977,45 @@
       return false;
     }
 
-    // In admin.html, replace the handleAdminLogin function with this:
-async function handleAdminLogin() {
-  const input = document.getElementById("adminUidInput");
-  const uid = (input.value || "").trim();
-  
-  if (!uid) {
-    showToast("❌ Please enter admin UID", "warning");
-    return;
-  }
+    async function handleAdminLogin() {
+      const input = document.getElementById("adminUidInput");
+      const uid = (input.value || "").trim();
+      
+      if (!uid) {
+        showToast("❌ Please enter admin UID", "warning");
+        return;
+      }
 
-  try {
-    // Simple UID check - you can add more complex validation if needed
-    if (uid.length < 10) {
-      showToast("❌ Invalid UID format", "danger");
-      return;
+      try {
+        // Check if UID exists in admin_uids table
+        const { data, error } = await supabase
+          .from("admin_uids")
+          .select("uid")
+          .eq("uid", uid)
+          .single();
+
+        if (error || !data) {
+          showToast("❌ Invalid admin UID", "danger");
+          return;
+        }
+
+        // Store the UID and unlock
+        localStorage.setItem("aiax_admin_uid", uid);
+        document.getElementById("adminGate").classList.add("hidden");
+        document.getElementById("adminContent").classList.remove("hidden");
+        showToast("✅ Admin console unlocked", "success");
+
+        await initialLoads();
+      } catch (err) {
+        console.error("[adminLogin] error:", err);
+        showToast("❌ Failed to unlock admin", "danger");
+      }
     }
-
-    // Store the UID and unlock
-    localStorage.setItem("aiax_admin_uid", uid);
-    document.getElementById("adminGate").classList.add("hidden");
-    document.getElementById("adminContent").classList.remove("hidden");
-    showToast("✅ Admin console unlocked", "success");
-
-    await initialLoads();
-  } catch (err) {
-    console.error("[adminLogin] error:", err);
-    showToast("❌ Failed to unlock admin", "danger");
-  }
-}
 
     async function initialLoads() {
       showToast("🔄 Loading admin data...", "info");
       await refreshStats();
       await loadProducts();
-      await loadDropdownData();
       await loadProductPrices();
       await loadStocks();
       await loadPendingOrders();
@@ -1625,4 +1536,548 @@ async function handleAdminLogin() {
     }
 
     // ========= ORDERS (PENDING + CONFIRM PAYMENT) =========
-    async function loadPendingOrders()
+    async function loadPendingOrders() {
+      const tbody = document.getElementById("orders-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data: orders, error } = await supabase
+          .from("orders")
+          .select("id, buyer_email, product_id, account_type, duration, price, payment_method, reference_number, proof_image_url, status")
+          .eq("status", "pending")
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        if (!orders || !orders.length) {
+          tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">No pending orders</td></tr>';
+          return;
+        }
+
+        orders.forEach((o) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${o.id}</td>
+            <td>${o.buyer_email}</td>
+            <td>${o.product_id}</td>
+            <td>${o.account_type}</td>
+            <td>${o.duration}</td>
+            <td>₱${safeNumber(o.price).toFixed(2)}</td>
+            <td>${o.payment_method}</td>
+            <td>
+              ${o.proof_image_url ? 
+                `<button class="btn btn-sm btn-outline-primary" onclick="viewProof('${o.proof_image_url}')">
+                  <i class="fa fa-eye me-1"></i> View
+                </button>` : 
+                'No proof'
+              }
+            </td>
+            <td>
+              <span class="badge bg-warning">${o.status}</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-success me-1" onclick="confirmOrder(${o.id})">
+                <i class="fa fa-check me-1"></i> Confirm
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="cancelOrder(${o.id})">
+                <i class="fa fa-times me-1"></i> Cancel
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[pendingOrders] error:", err);
+        showToast("❌ Failed to load pending orders", "danger");
+      }
+    }
+
+    function viewProof(imageUrl) {
+      window.open(imageUrl, '_blank');
+    }
+
+    async function confirmOrder(orderId) {
+      if (!confirm("✅ Confirm this order and deliver account?")) return;
+      
+      try {
+        // Find available stock for this order
+        const { data: order, error: orderError } = await supabase
+          .from("orders")
+          .select("product_id, account_type, duration, buyer_email, price")
+          .eq("id", orderId)
+          .single();
+
+        if (orderError) throw orderError;
+
+        const { data: stocks, error: stocksError } = await supabase
+          .from("stocks")
+          .select("id, email, password, profile, pin, premium_until, quantity")
+          .eq("product_id", order.product_id)
+          .eq("account_type", order.account_type)
+          .eq("duration", order.duration)
+          .eq("status", "available")
+          .gt("quantity", 0)
+          .limit(1);
+
+        if (stocksError) throw stocksError;
+
+        if (!stocks || !stocks.length) {
+          showToast("❌ No available stock for this order", "danger");
+          return;
+        }
+
+        const stock = stocks[0];
+
+        // Update order status
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update({ status: "delivered" })
+          .eq("id", orderId);
+
+        if (updateError) throw updateError;
+
+        // Update stock quantity or status
+        const newQuantity = stock.quantity - 1;
+        if (newQuantity <= 0) {
+          await supabase
+            .from("stocks")
+            .update({ status: "sold", quantity: 0 })
+            .eq("id", stock.id);
+        } else {
+          await supabase
+            .from("stocks")
+            .update({ quantity: newQuantity })
+            .eq("id", stock.id);
+        }
+
+        // Create record
+        const { error: recordError } = await supabase
+          .from("records")
+          .insert({
+            order_id: orderId,
+            buyer: order.buyer_email,
+            product_id: order.product_id,
+            account_type: order.account_type,
+            duration: order.duration,
+            purchase_date: new Date().toISOString(),
+            account_email: stock.email,
+            account_password: stock.password,
+            profile: stock.profile,
+            pin: stock.pin,
+            price: order.price,
+            source: "premium-shop"
+          });
+
+        if (recordError) throw recordError;
+
+        showToast("✅ Order confirmed and delivered", "success");
+        await loadPendingOrders();
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[confirmOrder] error:", err);
+        showToast("❌ Failed to confirm order", "danger");
+      }
+    }
+
+    async function cancelOrder(orderId) {
+      if (!confirm("❌ Cancel this order?")) return;
+      
+      try {
+        const { error } = await supabase
+          .from("orders")
+          .update({ status: "cancelled" })
+          .eq("id", orderId);
+
+        if (error) throw error;
+
+        showToast("✅ Order cancelled", "success");
+        await loadPendingOrders();
+        await refreshStats();
+      } catch (err) {
+        console.error("[cancelOrder] error:", err);
+        showToast("❌ Failed to cancel order", "danger");
+      }
+    }
+
+    // ========= RECORDS =========
+    async function loadRecords() {
+      const tbody = document.getElementById("records-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data: records, error } = await supabase
+          .from("records")
+          .select("*")
+          .order("purchase_date", { ascending: false });
+
+        if (error) throw error;
+
+        if (!records || !records.length) {
+          tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-3">No records yet</td></tr>';
+          return;
+        }
+
+        records.forEach((r) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.id}</td>
+            <td>${r.order_id || "-"}</td>
+            <td>${r.buyer}</td>
+            <td>${r.product_id}</td>
+            <td>${r.account_type}</td>
+            <td>${r.duration}</td>
+            <td>${r.purchase_date ? new Date(r.purchase_date).toLocaleDateString() : "-"}</td>
+            <td>${r.expiry_date || "-"}</td>
+            <td>${r.additional_days || "0"}</td>
+            <td>${r.updated_expiry || "-"}</td>
+            <td>₱${safeNumber(r.price).toFixed(2)}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="editRecord(${r.id})">
+                <i class="fa fa-edit me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteRecord(${r.id})">
+                <i class="fa fa-trash me-1"></i> Delete
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[records] error:", err);
+        showToast("❌ Failed to load records", "danger");
+      }
+    }
+
+    async function editRecord(recordId) {
+      try {
+        const { data: record, error } = await supabase
+          .from("records")
+          .select("*")
+          .eq("id", recordId)
+          .single();
+
+        if (error) throw error;
+
+        document.getElementById("rec-id").value = record.id;
+        document.getElementById("rec-order-id").value = record.order_id || "";
+        document.getElementById("rec-buyer").value = record.buyer;
+        document.getElementById("rec-source").value = record.source || "premium-shop";
+        document.getElementById("rec-product-id").value = record.product_id;
+        document.getElementById("rec-account-type").value = record.account_type || "";
+        document.getElementById("rec-duration").value = record.duration || "";
+        document.getElementById("rec-purchase-date").value = record.purchase_date ? record.purchase_date.substring(0, 10) : "";
+        document.getElementById("rec-expiry-date").value = record.expiry_date ? record.expiry_date.substring(0, 10) : "";
+        document.getElementById("rec-additional-days").value = record.additional_days || 0;
+        document.getElementById("rec-price").value = safeNumber(record.price);
+        document.getElementById("rec-account-email").value = record.account_email || "";
+        document.getElementById("rec-account-password").value = record.account_password || "";
+        document.getElementById("rec-profile").value = record.profile || "";
+        document.getElementById("rec-pin").value = record.pin || "";
+
+        document.getElementById("recordModalTitle").textContent = "✏️ Edit Record";
+        const m = new bootstrap.Modal(document.getElementById("recordModal"));
+        m.show();
+      } catch (err) {
+        console.error("[editRecord] error:", err);
+        showToast("❌ Failed to load record", "danger");
+      }
+    }
+
+    async function deleteRecord(recordId) {
+      if (!confirm("❌ Delete this record?")) return;
+      
+      try {
+        const { error } = await supabase
+          .from("records")
+          .delete()
+          .eq("id", recordId);
+
+        if (error) throw error;
+
+        showToast("✅ Record deleted", "success");
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[deleteRecord] error:", err);
+        showToast("❌ Failed to delete record", "danger");
+      }
+    }
+
+    async function saveRecord(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById("rec-id").value;
+      const order_id = document.getElementById("rec-order-id").value.trim() || null;
+      const buyer = document.getElementById("rec-buyer").value.trim();
+      const source = document.getElementById("rec-source").value;
+      const product_id = document.getElementById("rec-product-id").value;
+      const account_type = document.getElementById("rec-account-type").value || null;
+      const duration = document.getElementById("rec-duration").value || null;
+      const purchase_date = document.getElementById("rec-purchase-date").value || new Date().toISOString().substring(0, 10);
+      const expiry_date = document.getElementById("rec-expiry-date").value || null;
+      const additional_days = Number(document.getElementById("rec-additional-days").value) || 0;
+      const price = Number(document.getElementById("rec-price").value) || 0;
+      const account_email = document.getElementById("rec-account-email").value.trim() || null;
+      const account_password = document.getElementById("rec-account-password").value.trim() || null;
+      const profile = document.getElementById("rec-profile").value.trim() || null;
+      const pin = document.getElementById("rec-pin").value.trim() || null;
+
+      if (!buyer || !product_id) {
+        showToast("❌ Please fill buyer and product", "warning");
+        return;
+      }
+
+      const recordData = {
+        order_id,
+        buyer,
+        source,
+        product_id,
+        account_type,
+        duration,
+        purchase_date,
+        expiry_date: expiry_date || null,
+        additional_days,
+        price,
+        account_email,
+        account_password,
+        profile,
+        pin
+      };
+
+      try {
+        if (id) {
+          // Update existing record
+          const { error } = await supabase
+            .from("records")
+            .update(recordData)
+            .eq("id", id);
+
+          if (error) throw error;
+          showToast("✅ Record updated", "success");
+        } else {
+          // Create new record
+          const { error } = await supabase
+            .from("records")
+            .insert([recordData]);
+
+          if (error) throw error;
+          showToast("✅ Record created", "success");
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById("recordModal")).hide();
+        await loadRecords();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveRecord] error:", err);
+        showToast("❌ Failed to save record", "danger");
+      }
+    }
+
+    // ========= RULES =========
+    async function loadRules() {
+      const list = document.getElementById("rules-list");
+      if (!list) return;
+      list.innerHTML = "";
+
+      try {
+        const { data: rules, error } = await supabase
+          .from("rules")
+          .select("id, product_id, rule_text")
+          .order("id");
+
+        if (error) throw error;
+
+        if (!rules || !rules.length) {
+          list.innerHTML = '<li class="text-center text-muted py-3">No rules yet</li>';
+          return;
+        }
+
+        rules.forEach((r) => {
+          const li = document.createElement("li");
+          li.className = "mb-2 p-3 border rounded";
+          li.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-bold">${r.product_id || "General Rule"}</div>
+                <div class="text-muted">${r.rule_text}</div>
+              </div>
+              <div>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteRule(${r.id})">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>`;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("[rules] error:", err);
+        showToast("❌ Failed to load rules", "danger");
+      }
+    }
+
+    async function addRule() {
+      const product_id = document.getElementById("rule-product-id").value.trim() || null;
+      const rule_text = document.getElementById("rule-text").value.trim();
+
+      if (!rule_text) {
+        showToast("❌ Please enter rule text", "warning");
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from("rules")
+          .insert([{ product_id, rule_text }]);
+
+        if (error) throw error;
+
+        showToast("✅ Rule added", "success");
+        document.getElementById("rule-text").value = "";
+        await loadRules();
+      } catch (err) {
+        console.error("[addRule] error:", err);
+        showToast("❌ Failed to add rule", "danger");
+      }
+    }
+
+    async function deleteRule(ruleId) {
+      if (!confirm("❌ Delete this rule?")) return;
+      
+      try {
+        const { error } = await supabase
+          .from("rules")
+          .delete()
+          .eq("id", ruleId);
+
+        if (error) throw error;
+
+        showToast("✅ Rule deleted", "success");
+        await loadRules();
+      } catch (err) {
+        console.error("[deleteRule] error:", err);
+        showToast("❌ Failed to delete rule", "danger");
+      }
+    }
+
+    // ========= REPORTS =========
+    async function loadReports() {
+      const tbody = document.getElementById("reports-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      try {
+        const { data: reports, error } = await supabase
+          .from("reports")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!reports || !reports.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No reports yet</td></tr>';
+          return;
+        }
+
+        reports.forEach((r) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.id}</td>
+            <td>${r.order_id}</td>
+            <td>${r.buyer_id}</td>
+            <td>${r.issue_description}</td>
+            <td><span class="badge ${r.status === 'open' ? 'bg-warning' : 'bg-success'}">${r.status}</span></td>
+            <td>${new Date(r.created_at).toLocaleString()}</td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("[reports] error:", err);
+        showToast("❌ Failed to load reports", "danger");
+      }
+    }
+
+    // ========= INITIALIZATION =========
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Check if already authenticated
+      await guardAdmin();
+
+      // Admin login
+      document.getElementById("btnAdminLogin").addEventListener("click", handleAdminLogin);
+
+      // Sidebar navigation
+      document.querySelectorAll(".sidebar button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-target");
+          
+          // Update active button
+          document.querySelectorAll(".sidebar button").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          
+          // Show target panel
+          document.querySelectorAll(".panel-admin").forEach(panel => panel.classList.remove("active"));
+          document.getElementById(target).classList.add("active");
+        });
+      });
+
+      // Product management
+      document.getElementById("btn-save-product").addEventListener("click", saveProduct);
+      document.getElementById("btn-cancel-prod-edit").addEventListener("click", resetProductForm);
+
+      // Price management
+      document.getElementById("btn-add-price").addEventListener("click", addProductPrice);
+
+      // Stock management
+      document.getElementById("btn-save-stock").addEventListener("click", saveStock);
+      document.getElementById("stockForm").addEventListener("submit", saveStockEdit);
+
+      // Records management
+      document.getElementById("btn-add-record").addEventListener("click", () => {
+        document.getElementById("rec-id").value = "";
+        document.getElementById("recordForm").reset();
+        document.getElementById("recordModalTitle").textContent = "📝 Add Manual Record";
+        new bootstrap.Modal(document.getElementById("recordModal")).show();
+      });
+      document.getElementById("recordForm").addEventListener("submit", saveRecord);
+
+      // Rules management
+      document.getElementById("btn-add-rule").addEventListener("click", addRule);
+
+      // Export records
+      document.getElementById("btn-export-records").addEventListener("click", exportRecordsToCSV);
+    });
+
+    function exportRecordsToCSV() {
+      // Simple CSV export implementation
+      const table = document.getElementById("records-table-body");
+      let csv = "Record ID,Order ID,Buyer,Product,Account Type,Duration,Purchase Date,Expiry,Additional Days,Updated Expiry,Price\n";
+      
+      table.querySelectorAll("tr").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length >= 11) {
+          const rowData = Array.from(cells).slice(0, 11).map(cell => {
+            let text = cell.textContent.trim();
+            // Escape commas and quotes for CSV
+            if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+              text = '"' + text.replace(/"/g, '""') + '"';
+            }
+            return text;
+          });
+          csv += rowData.join(',') + '\n';
+        }
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `records-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      showToast("✅ Records exported to CSV", "success");
+    }
+  </script>
+</body>
+</html>
