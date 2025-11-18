@@ -6,14 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Bootstrap + Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -136,6 +130,111 @@
       padding: 0.5rem 1.5rem;
       font-weight: 600;
       transition: all 0.3s ease;
+    }
+
+    /* Buyer Panel - MOVED TO TOP */
+    .buyer-panel {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 107, 107, 0.1);
+    }
+
+    .buyer-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(255, 107, 107, 0.1);
+    }
+
+    .buyer-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .buyer-meta {
+      flex: 1;
+    }
+
+    .buyer-meta #buyerWelcome {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.2rem;
+    }
+
+    .buyer-meta small {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .buyer-tabs {
+      margin-top: 0.5rem;
+      border-bottom: 2px solid rgba(255, 107, 107, 0.1);
+    }
+
+    .buyer-tabs .nav-link {
+      border-radius: 50px;
+      font-size: 0.9rem;
+      padding: 0.5rem 1.2rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 0.5rem;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .buyer-tabs .nav-link.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .buyer-tab-pane {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    /* Improved Rules Styling */
+    .rules-container {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 107, 107, 0.1);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .rule-item {
+      padding: 0.8rem;
+      margin-bottom: 0.8rem;
+      border-radius: 10px;
+      background: rgba(255, 107, 107, 0.05);
+      border-left: 4px solid var(--primary);
+    }
+
+    .rule-product {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+    }
+
+    .rule-text {
+      color: var(--dark);
+      line-height: 1.4;
     }
 
     .category-row {
@@ -270,80 +369,6 @@
       box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
     }
 
-    .buyer-panel {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-      padding: 1.5rem;
-      border: 1px solid rgba(255, 107, 107, 0.1);
-    }
-
-    .buyer-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid rgba(255, 107, 107, 0.1);
-    }
-
-    .buyer-avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: white;
-      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-    }
-
-    .buyer-meta {
-      flex: 1;
-    }
-
-    .buyer-meta #buyerWelcome {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--dark);
-      margin-bottom: 0.2rem;
-    }
-
-    .buyer-meta small {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .buyer-tabs {
-      margin-top: 0.5rem;
-      border-bottom: 2px solid rgba(255, 107, 107, 0.1);
-    }
-
-    .buyer-tabs .nav-link {
-      border-radius: 50px;
-      font-size: 0.9rem;
-      padding: 0.5rem 1.2rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-right: 0.5rem;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-    }
-
-    .buyer-tabs .nav-link.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
-
-    .buyer-tab-pane {
-      margin-top: 1.5rem;
-      font-size: 0.9rem;
-    }
-
     .small-muted {
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -428,6 +453,11 @@
         display: flex;
         gap: 0.5rem;
       }
+      
+      .buyer-header {
+        flex-direction: column;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -467,29 +497,7 @@
       </div>
     </section>
 
-    <!-- Categories -->
-    <section>
-      <div class="category-row" id="categoryRow">
-        <button class="category-pill active" data-cat="all">All Products</button>
-        <button class="category-pill" data-cat="entertainment">🎬 Entertainment</button>
-        <button class="category-pill" data-cat="streaming">📺 Streaming</button>
-        <button class="category-pill" data-cat="educational">📚 Educational</button>
-        <button class="category-pill" data-cat="editing">🎨 Editing</button>
-        <button class="category-pill" data-cat="ai">🤖 AI Tools</button>
-      </div>
-
-      <div id="productsGrid" class="products-grid">
-        <!-- Products will be loaded here -->
-        <div class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading products...</span>
-          </div>
-          <p class="mt-2 text-muted">Loading premium products...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Buyer panel -->
+    <!-- Buyer Panel - MOVED TO TOP -->
     <section class="buyer-panel">
       <div class="buyer-header">
         <div class="buyer-avatar" id="buyerAvatar">?</div>
@@ -532,7 +540,7 @@
       </ul>
 
       <div class="tab-content buyer-tab-pane">
-        <!-- Rules -->
+        <!-- Rules - IMPROVED STYLING -->
         <div class="tab-pane fade show active" id="pane-rules" role="tabpanel">
           <div class="row g-2 mb-3">
             <div class="col-md-6">
@@ -544,11 +552,16 @@
               </select>
             </div>
           </div>
-          <ul id="rulesList" class="list-group list-group-flush small">
-            <li class="list-group-item text-center text-muted">
-              Loading rules...
-            </li>
-          </ul>
+          <div class="rules-container">
+            <div id="rulesList">
+              <div class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                Loading rules...
+              </div>
+            </div>
+          </div>
           <div class="small-muted mt-3">
             <i class="fa fa-info-circle me-1"></i>
             Rules are set by the admin. Please read before purchasing.
@@ -560,11 +573,13 @@
           <div class="row g-4">
             <div class="col-md-6">
               <h6>💬 Recent Feedback</h6>
-              <ul id="feedbackList" class="list-group list-group-flush small mb-2">
-                <li class="list-group-item text-center text-muted">
-                  Loading feedback...
-                </li>
-              </ul>
+              <div class="rules-container">
+                <ul id="feedbackList" class="list-group list-group-flush small mb-2">
+                  <li class="list-group-item text-center text-muted">
+                    Loading feedback...
+                  </li>
+                </ul>
+              </div>
             </div>
             <div class="col-md-6">
               <h6>📝 Send Feedback</h6>
@@ -660,8 +675,31 @@
         </div>
       </div>
     </section>
+
+    <!-- Categories & Products - MOVED TO BOTTOM -->
+    <section>
+      <div class="category-row" id="categoryRow">
+        <button class="category-pill active" data-cat="all">All Products</button>
+        <button class="category-pill" data-cat="entertainment">🎬 Entertainment</button>
+        <button class="category-pill" data-cat="streaming">📺 Streaming</button>
+        <button class="category-pill" data-cat="educational">📚 Educational</button>
+        <button class="category-pill" data-cat="editing">🎨 Editing</button>
+        <button class="category-pill" data-cat="ai">🤖 AI Tools</button>
+      </div>
+
+      <div id="productsGrid" class="products-grid">
+        <!-- Products will be loaded here -->
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading products...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading premium products...</p>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <!-- Rest of your modals remain the same -->
   <!-- Product modal -->
   <div class="modal fade" id="productModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1412,11 +1450,11 @@
     }
 
     function renderRulesList() {
-      const ul = document.getElementById("rulesList");
+      const container = document.getElementById("rulesList");
       const search = (document.getElementById("rulesSearch").value || "").toLowerCase();
       const prodFilter = document.getElementById("rulesProductFilter").value.trim();
 
-      ul.innerHTML = "";
+      container.innerHTML = "";
       const rows = (window._allRules || []).filter((r) => {
         if (prodFilter && (r.product_id || "").toLowerCase() !== prodFilter.toLowerCase()) return false;
         if (search && !(r.rule_text || "").toLowerCase().includes(search)) return false;
@@ -1424,15 +1462,27 @@
       });
 
       if (!rows.length) {
-        ul.innerHTML = '<li class="list-group-item text-center text-muted">No rules found</li>';
+        container.innerHTML = '<div class="text-center text-muted py-4">No rules found</div>';
         return;
       }
 
       rows.forEach((r) => {
-        const li = document.createElement("li");
-        li.className = "list-group-item small";
-        li.innerHTML = `${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${r.rule_text}`;
-        ul.appendChild(li);
+        const ruleDiv = document.createElement("div");
+        ruleDiv.className = "rule-item";
+        
+        if (r.product_id) {
+          const productDiv = document.createElement("div");
+          productDiv.className = "rule-product";
+          productDiv.textContent = `📦 ${r.product_id}`;
+          ruleDiv.appendChild(productDiv);
+        }
+        
+        const textDiv = document.createElement("div");
+        textDiv.className = "rule-text";
+        textDiv.textContent = r.rule_text;
+        ruleDiv.appendChild(textDiv);
+        
+        container.appendChild(ruleDiv);
       });
     }
 
