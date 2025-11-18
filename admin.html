@@ -316,6 +316,7 @@
 
         <!-- Main panels -->
         <section class="admin-main">
+
           <!-- Products List -->
           <div id="panel-products" class="panel-admin active">
             <div class="card-clean">
@@ -323,14 +324,15 @@
                 <h3 class="mb-0">Products</h3>
               </div>
 
-              <!-- Add Product Form -->
+              <!-- Add / Edit Product Form -->
               <div class="mb-3">
+                <input type="hidden" id="prod-edit-id">
                 <div class="row g-2 align-items-end">
                   <div class="col-md-3">
                     <label class="form-label">Product ID</label>
                     <input id="new-prod-id" class="form-control" placeholder="e.g. netflix">
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label">Name</label>
                     <input id="new-prod-name" class="form-control" placeholder="Netflix Premium">
                   </div>
@@ -338,13 +340,16 @@
                     <label class="form-label">Category</label>
                     <input id="new-prod-cat" class="form-control" placeholder="entertainment">
                   </div>
-                  <div class="col-md-2">
-                    <label class="form-label">Icon</label>
-                    <input id="new-prod-icon" class="form-control" placeholder="📺">
+                  <div class="col-md-2 d-grid">
+                    <button id="btn-save-product" class="btn btn-primary" type="button">
+                      Add
+                    </button>
                   </div>
-                  <div class="col-md-1 d-grid">
-                    <button id="btn-add-product" class="btn btn-primary" type="button">Add</button>
-                  </div>
+                </div>
+                <div class="mt-1">
+                  <button id="btn-cancel-prod-edit" type="button" class="btn btn-link p-0 small d-none">
+                    Cancel edit
+                  </button>
                 </div>
                 <small class="text-muted">
                   Product IDs must match those used on the buyer site (e.g., <code>netflix</code>, <code>viu</code>, etc.).
@@ -358,8 +363,6 @@
                       <th>ID</th>
                       <th>Name</th>
                       <th>Category</th>
-                      <th>Icon</th>
-                      <th>Stock (display only)</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -384,15 +387,12 @@
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Account Type</label>
-                  <select id="stock-account-type" class="form-select" disabled>
-                    <option value="">Select account type</option>
-                  </select>
+                  <!-- text input para magamit agad -->
+                  <input id="stock-account-type" class="form-control" placeholder="e.g. solo profile">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Duration</label>
-                  <select id="stock-duration" class="form-select" disabled>
-                    <option value="">Select duration</option>
-                  </select>
+                  <input id="stock-duration" class="form-control" placeholder="e.g. 1m, 3m">
                 </div>
 
                 <div class="col-md-3">
@@ -516,7 +516,11 @@
                       <th>Type</th>
                       <th>Duration</th>
                       <th>Purchase Date</th>
+                      <th>Expiry</th>
+                      <th>+Days</th>
+                      <th>Updated Expiry</th>
                       <th>Price</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody id="records-table-body">
@@ -581,21 +585,73 @@
               </div>
             </div>
           </div>
+
         </section>
       </div>
     </div>
   </main>
 
-  <!-- MANUAL RECORD MODAL -->
+  <!-- STOCK EDIT MODAL -->
+  <div class="modal fade" id="stockModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Stock</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="stockForm">
+            <input type="hidden" id="stock-edit-id">
+            <div class="mb-2">
+              <label class="form-label">Email</label>
+              <input id="stock-edit-email" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Password</label>
+              <input id="stock-edit-password" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Profile</label>
+              <input id="stock-edit-profile" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">PIN</label>
+              <input id="stock-edit-pin" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Status</label>
+              <select id="stock-edit-status" class="form-select">
+                <option value="available">available</option>
+                <option value="sold">sold</option>
+                <option value="archived">archived</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Premium Until</label>
+              <input id="stock-edit-premium" type="date" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Quantity (slots)</label>
+              <input id="stock-edit-qty" type="number" min="0" class="form-control">
+            </div>
+            <button class="btn btn-primary mt-2" type="submit">Save changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANUAL RECORD / EDIT MODAL -->
   <div class="modal fade" id="recordModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Add Manual Record</h5>
+          <h5 class="modal-title" id="recordModalTitle">Add Manual Record</h5>
           <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="recordForm">
+            <input type="hidden" id="rec-id">
             <div class="row g-3">
               <div class="col-md-4">
                 <label class="form-label">Order ID (optional)</label>
@@ -627,6 +683,15 @@
                 <label class="form-label">Purchase Date</label>
                 <input id="rec-purchase-date" type="date" class="form-control">
               </div>
+              <div class="col-md-4">
+                <label class="form-label">Expiry Date</label>
+                <input id="rec-expiry-date" type="date" class="form-control">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Additional Days</label>
+                <input id="rec-additional-days" type="number" min="0" class="form-control">
+              </div>
+
               <div class="col-md-4">
                 <label class="form-label">Price</label>
                 <input id="rec-price" type="number" step="0.01" min="0" class="form-control">
@@ -671,9 +736,8 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // (optional) allow-list in FE, pero main protection via admin_uids table
     const ADMIN_ALLOW_UIDS = [
-      "5196f372-803a-4aec-9c46-72242e73a9b8"  // uid mo
+      "5196f372-803a-4aec-9c46-72242e73a9b8"
     ];
 
     function showToast(message, type = "info") {
@@ -685,10 +749,10 @@
         type === "success"
           ? "success"
           : type === "danger" || type === "error"
-          ? "danger"
-          : type === "warning"
-          ? "warning"
-          : "secondary";
+            ? "danger"
+            : type === "warning"
+              ? "warning"
+              : "secondary";
 
       wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
       wrapper.role = "alert";
@@ -750,30 +814,37 @@
         document.getElementById("adminContent").classList.remove("hidden");
         showToast("Admin console unlocked.", "success");
 
-        // initial loads
-        refreshStats();
-        loadProducts();
-        loadStocks();
-        loadPendingOrders();
-        loadRecords();
-        loadRules();
-        loadReports();
+        await initialLoads();
       } catch (err) {
         console.error("[adminLogin] error:", err);
         showToast("Failed to verify admin UID.", "danger");
       }
     }
 
+    async function initialLoads() {
+      refreshStats();
+      loadProducts();
+      loadStocks();
+      loadPendingOrders();
+      loadRecords();
+      loadRules();
+      loadReports();
+    }
+
     // ========= STATS =========
     async function refreshStats() {
       try {
-        const [{ data: prodRows }, { data: stockRows }, { data: orderRows }, { data: recRows }] =
-          await Promise.all([
-            supabase.from("products").select("id, stock"),
-            supabase.from("stocks").select("id, status, quantity"),
-            supabase.from("orders").select("id, status"),
-            supabase.from("records").select("price"),
-          ]);
+        const [
+          { data: prodRows },
+          { data: stockRows },
+          { data: orderRows },
+          { data: recRows }
+        ] = await Promise.all([
+          supabase.from("products").select("id"),
+          supabase.from("stocks").select("id, status, quantity"),
+          supabase.from("orders").select("id, status"),
+          supabase.from("records").select("price"),
+        ]);
 
         const productsCount = prodRows?.length || 0;
 
@@ -794,8 +865,7 @@
         document.getElementById("stat-stock").textContent = availableStock;
         document.getElementById("stat-pending").textContent = pendingOrders;
         document.getElementById("stat-revenue").textContent =
-          "₱" +
-          totalRevenue.toLocaleString("en-PH", {
+          "₱" + totalRevenue.toLocaleString("en-PH", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           });
@@ -818,7 +888,7 @@
       try {
         const { data, error } = await supabase
           .from("products")
-          .select("id, name, category, icon, stock")
+          .select("id, name, category")
           .order("name", { ascending: true });
 
         if (error) throw error;
@@ -826,7 +896,7 @@
         if (!data || !data.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 6;
+          td.colSpan = 4;
           td.textContent = "No products found.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -848,19 +918,12 @@
           tdCat.textContent = p.category;
           tr.appendChild(tdCat);
 
-          const tdIcon = document.createElement("td");
-          tdIcon.textContent = p.icon || "";
-          tr.appendChild(tdIcon);
-
-          const tdStock = document.createElement("td");
-          tdStock.textContent = p.stock ?? 0;
-          tr.appendChild(tdStock);
-
           const tdAct = document.createElement("td");
+
           const editBtn = document.createElement("button");
           editBtn.className = "btn btn-sm btn-outline-primary me-1";
           editBtn.textContent = "Edit";
-          editBtn.addEventListener("click", () => editProduct(p));
+          editBtn.addEventListener("click", () => startEditProduct(p));
 
           const delBtn = document.createElement("button");
           delBtn.className = "btn btn-sm btn-outline-danger";
@@ -886,11 +949,31 @@
       }
     }
 
-    async function addProduct() {
+    function resetProductForm() {
+      document.getElementById("prod-edit-id").value = "";
+      document.getElementById("new-prod-id").value = "";
+      document.getElementById("new-prod-id").disabled = false;
+      document.getElementById("new-prod-name").value = "";
+      document.getElementById("new-prod-cat").value = "";
+      document.getElementById("btn-save-product").textContent = "Add";
+      document.getElementById("btn-cancel-prod-edit").classList.add("d-none");
+    }
+
+    function startEditProduct(p) {
+      document.getElementById("prod-edit-id").value = p.id;
+      document.getElementById("new-prod-id").value = p.id;
+      document.getElementById("new-prod-id").disabled = true;
+      document.getElementById("new-prod-name").value = p.name || "";
+      document.getElementById("new-prod-cat").value = p.category || "";
+      document.getElementById("btn-save-product").textContent = "Update";
+      document.getElementById("btn-cancel-prod-edit").classList.remove("d-none");
+    }
+
+    async function saveProduct() {
+      const editId = document.getElementById("prod-edit-id").value;
       const id = document.getElementById("new-prod-id").value.trim();
       const name = document.getElementById("new-prod-name").value.trim();
       const category = document.getElementById("new-prod-cat").value.trim();
-      const icon = document.getElementById("new-prod-icon").value.trim() || null;
 
       if (!id || !name || !category) {
         showToast("Please fill product id, name, and category.", "warning");
@@ -898,47 +981,29 @@
       }
 
       try {
-        const { error } = await supabase.from("products").insert({
-          id,
-          name,
-          category,
-          icon,
-          stock: 0,
-        });
-        if (error) throw error;
+        if (editId) {
+          const { error } = await supabase
+            .from("products")
+            .update({ name, category })
+            .eq("id", editId);
+          if (error) throw error;
+          showToast("Product updated.", "success");
+        } else {
+          const { error } = await supabase.from("products").insert({
+            id,
+            name,
+            category
+          });
+          if (error) throw error;
+          showToast("Product added.", "success");
+        }
 
-        showToast("Product added.", "success");
-        ["new-prod-id", "new-prod-name", "new-prod-cat", "new-prod-icon"].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.value = "";
-        });
+        resetProductForm();
         await loadProducts();
         await refreshStats();
       } catch (err) {
-        console.error("[addProduct] error:", err);
-        showToast("Failed to add product.", "danger");
-      }
-    }
-
-    async function editProduct(p) {
-      const newName = prompt("New name:", p.name || "");
-      if (newName === null) return;
-      const newCat = prompt("New category:", p.category || "");
-      if (newCat === null) return;
-      const newIcon = prompt("New icon:", p.icon || "");
-      if (newIcon === null) return;
-
-      try {
-        const { error } = await supabase
-          .from("products")
-          .update({ name: newName.trim(), category: newCat.trim(), icon: newIcon.trim() })
-          .eq("id", p.id);
-        if (error) throw error;
-        showToast("Product updated.", "success");
-        await loadProducts();
-      } catch (err) {
-        console.error("[editProduct] error:", err);
-        showToast("Failed to update product.", "danger");
+        console.error("[saveProduct] error:", err);
+        showToast("Failed to save product.", "danger");
       }
     }
 
@@ -967,7 +1032,7 @@
           await Promise.all([
             supabase
               .from("stocks")
-              .select("id, product_id, account_type, duration, email, status, premium_until, quantity"),
+              .select("id, product_id, account_type, duration, email, password, profile, pin, status, premium_until, quantity"),
             supabase.from("products").select("id, name"),
           ]);
 
@@ -1023,10 +1088,18 @@
           tr.appendChild(tdQty);
 
           const tdAct = document.createElement("td");
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-sm btn-outline-primary me-1";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => openStockEditModal(s));
+
           const delBtn = document.createElement("button");
           delBtn.className = "btn btn-sm btn-outline-danger";
           delBtn.textContent = "Delete";
           delBtn.addEventListener("click", () => deleteStock(s.id));
+
+          tdAct.appendChild(editBtn);
           tdAct.appendChild(delBtn);
           tr.appendChild(tdAct);
 
@@ -1118,6 +1191,62 @@
       }
     }
 
+    // STOCK EDIT
+    function openStockEditModal(s) {
+      document.getElementById("stock-edit-id").value = s.id;
+      document.getElementById("stock-edit-email").value = s.email || "";
+      document.getElementById("stock-edit-password").value = s.password || "";
+      document.getElementById("stock-edit-profile").value = s.profile || "";
+      document.getElementById("stock-edit-pin").value = s.pin || "";
+      document.getElementById("stock-edit-status").value = (s.status || "available");
+      document.getElementById("stock-edit-premium").value =
+        s.premium_until ? s.premium_until.substring(0, 10) : "";
+      document.getElementById("stock-edit-qty").value = safeNumber(s.quantity);
+
+      const m = new bootstrap.Modal(document.getElementById("stockModal"));
+      m.show();
+    }
+
+    async function saveStockEdit(e) {
+      e.preventDefault();
+      const id = document.getElementById("stock-edit-id").value;
+      if (!id) return;
+
+      const email = document.getElementById("stock-edit-email").value.trim() || null;
+      const password = document.getElementById("stock-edit-password").value.trim() || null;
+      const profile = document.getElementById("stock-edit-profile").value.trim() || null;
+      const pin = document.getElementById("stock-edit-pin").value.trim() || null;
+      const status = document.getElementById("stock-edit-status").value || "available";
+      const premium_raw = document.getElementById("stock-edit-premium").value;
+      const qtyVal = document.getElementById("stock-edit-qty").value;
+
+      const payload = {
+        email,
+        password,
+        profile,
+        pin,
+        status,
+        quantity: qtyVal ? Number(qtyVal) : 0,
+        premium_until: premium_raw ? premium_raw : null,
+      };
+
+      try {
+        const { error } = await supabase
+          .from("stocks")
+          .update(payload)
+          .eq("id", id);
+        if (error) throw error;
+
+        showToast("Stock updated.", "success");
+        bootstrap.Modal.getInstance(document.getElementById("stockModal")).hide();
+        await loadStocks();
+        await refreshStats();
+      } catch (err) {
+        console.error("[saveStockEdit] error:", err);
+        showToast("Failed to update stock.", "danger");
+      }
+    }
+
     // ========= ORDERS (PENDING + CONFIRM PAYMENT) =========
     async function loadPendingOrders() {
       const tbody = document.getElementById("orders-table-body");
@@ -1182,11 +1311,7 @@
           tdPay.innerHTML = `
             <div class="small">${o.payment_method || "-"}</div>
             <div class="small text-muted">Ref: ${o.reference_number || "-"}</div>
-            ${
-              o.proof_image_url
-                ? `<a href="${o.proof_image_url}" target="_blank" class="small">View proof</a>`
-                : ""
-            }
+            ${o.proof_image_url ? `<a href="${o.proof_image_url}" target="_blank" class="small">View proof</a>` : ""}
           `;
           tr.appendChild(tdPay);
 
@@ -1233,7 +1358,7 @@
           return;
         }
 
-        // 2) find matching stock (product_id + account_type + duration + available + quantity>0)
+        // 2) find matching stock
         const { data: stockRow, error: errStock } = await supabase
           .from("stocks")
           .select("*")
@@ -1271,6 +1396,8 @@
         // 4) insert into records (delivered account)
         const buyerEmail = order.buyer_email || order.gmail || order.buyer_id || null;
 
+        const nowIso = new Date().toISOString();
+
         const { error: recErr } = await supabase.from("records").insert({
           order_id: order.id,
           buyer: buyerEmail,
@@ -1278,7 +1405,7 @@
           product_id: order.product_id,
           account_type: order.account_type,
           duration: order.duration,
-          purchase_date: new Date().toISOString(),
+          purchase_date: nowIso,
           price: order.price,
           account_email: stockRow.email,
           account_password: stockRow.password,
@@ -1318,7 +1445,7 @@
         const { data, error } = await supabase
           .from("records")
           .select(
-            "id, order_id, buyer, source, product_id, account_type, duration, purchase_date, price"
+            "id, order_id, buyer, source, product_id, account_type, duration, purchase_date, expiry_date, additional_days, updated_expiry, price"
           )
           .order("created_at", { ascending: false });
 
@@ -1327,7 +1454,7 @@
         if (!data || !data.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 9;
+          td.colSpan = 13;
           td.textContent = "No records yet.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -1369,9 +1496,29 @@
           tdDate.textContent = r.purchase_date || "-";
           tr.appendChild(tdDate);
 
+          const tdExp = document.createElement("td");
+          tdExp.textContent = r.expiry_date || "-";
+          tr.appendChild(tdExp);
+
+          const tdAdd = document.createElement("td");
+          tdAdd.textContent = r.additional_days ?? "-";
+          tr.appendChild(tdAdd);
+
+          const tdUpd = document.createElement("td");
+          tdUpd.textContent = r.updated_expiry || "-";
+          tr.appendChild(tdUpd);
+
           const tdPrice = document.createElement("td");
           tdPrice.textContent = "₱" + safeNumber(r.price).toFixed(2);
           tr.appendChild(tdPrice);
+
+          const tdAct = document.createElement("td");
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-sm btn-outline-primary";
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", () => openRecordEditModal(r));
+          tdAct.appendChild(editBtn);
+          tr.appendChild(tdAct);
 
           tbody.appendChild(tr);
         });
@@ -1381,8 +1528,45 @@
       }
     }
 
+    function openRecordEditModal(r) {
+      document.getElementById("recordModalTitle").textContent = "Edit Record";
+      document.getElementById("rec-id").value = r.id;
+      document.getElementById("rec-order-id").value = r.order_id || "";
+      document.getElementById("rec-buyer").value = r.buyer || "";
+      document.getElementById("rec-source").value = r.source || "manual";
+      document.getElementById("rec-product-id").value = r.product_id || "";
+      document.getElementById("rec-account-type").value = r.account_type || "";
+      document.getElementById("rec-duration").value = r.duration || "";
+      document.getElementById("rec-price").value = r.price || "";
+
+      document.getElementById("rec-purchase-date").value =
+        r.purchase_date ? r.purchase_date.substring(0, 10) : "";
+      document.getElementById("rec-expiry-date").value =
+        r.expiry_date ? r.expiry_date.substring(0, 10) : "";
+      document.getElementById("rec-additional-days").value =
+        r.additional_days != null ? r.additional_days : "";
+
+      document.getElementById("rec-account-email").value = r.account_email || "";
+      document.getElementById("rec-account-password").value = r.account_password || "";
+      document.getElementById("rec-profile").value = r.profile || "";
+      document.getElementById("rec-pin").value = r.pin || "";
+
+      const m = new bootstrap.Modal(document.getElementById("recordModal"));
+      m.show();
+    }
+
+    function openRecordAddModal() {
+      document.getElementById("recordModalTitle").textContent = "Add Manual Record";
+      document.getElementById("recordForm").reset();
+      document.getElementById("rec-id").value = "";
+      const m = new bootstrap.Modal(document.getElementById("recordModal"));
+      m.show();
+    }
+
     async function saveManualRecord(e) {
       e.preventDefault();
+
+      const recId = document.getElementById("rec-id").value || null;
 
       const order_id = document.getElementById("rec-order-id").value.trim() || null;
       const buyer = document.getElementById("rec-buyer").value.trim();
@@ -1390,7 +1574,11 @@
       const product_id = document.getElementById("rec-product-id").value.trim();
       const account_type = document.getElementById("rec-account-type").value.trim() || null;
       const duration = document.getElementById("rec-duration").value.trim() || null;
+
       const purchase_date_raw = document.getElementById("rec-purchase-date").value;
+      const expiry_raw = document.getElementById("rec-expiry-date").value;
+      const addDaysRaw = document.getElementById("rec-additional-days").value;
+
       const priceVal = document.getElementById("rec-price").value;
       const account_email = document.getElementById("rec-account-email").value.trim() || null;
       const account_password = document.getElementById("rec-account-password").value.trim() || null;
@@ -1402,6 +1590,22 @@
         return;
       }
 
+      const purchase_date = purchase_date_raw
+        ? new Date(purchase_date_raw).toISOString()
+        : new Date().toISOString();
+
+      let expiry_date = expiry_raw ? new Date(expiry_raw).toISOString() : null;
+      const additional_days = addDaysRaw ? Number(addDaysRaw) : null;
+
+      let updated_expiry = null;
+      if (expiry_raw) {
+        const base = new Date(expiry_raw);
+        if (additional_days && Number.isFinite(additional_days) && additional_days > 0) {
+          base.setDate(base.getDate() + additional_days);
+        }
+        updated_expiry = base.toISOString();
+      }
+
       const payload = {
         order_id,
         buyer,
@@ -1409,7 +1613,10 @@
         product_id,
         account_type,
         duration,
-        purchase_date: purchase_date_raw ? new Date(purchase_date_raw).toISOString() : new Date().toISOString(),
+        purchase_date,
+        expiry_date,
+        additional_days,
+        updated_expiry,
         price: priceVal ? Number(priceVal) : null,
         account_email,
         account_password,
@@ -1418,16 +1625,26 @@
       };
 
       try {
-        const { error } = await supabase.from("records").insert(payload);
-        if (error) throw error;
-        showToast("Record added.", "success");
+        if (recId) {
+          const { error } = await supabase
+            .from("records")
+            .update(payload)
+            .eq("id", recId);
+          if (error) throw error;
+          showToast("Record updated.", "success");
+        } else {
+          const { error } = await supabase.from("records").insert(payload);
+          if (error) throw error;
+          showToast("Record added.", "success");
+        }
+
         document.getElementById("recordForm").reset();
         bootstrap.Modal.getInstance(document.getElementById("recordModal")).hide();
         await loadRecords();
         await refreshStats();
       } catch (err) {
         console.error("[saveManualRecord] error:", err);
-        showToast("Failed to add record.", "danger");
+        showToast("Failed to save record.", "danger");
       }
     }
 
@@ -1523,6 +1740,7 @@
             const id = Number(li.dataset.id);
             const currentText = li.dataset.ruleText || "";
             const currentProd = li.dataset.productId || "";
+
             const newProd = prompt("Product ID (blank for general rule):", currentProd);
             if (newProd === null) return;
             const newText = prompt("Rule text:", currentText);
@@ -1678,18 +1896,13 @@
     document.addEventListener("DOMContentLoaded", async () => {
       initTabs();
 
-      document.getElementById("btnAdminLogin").addEventListener("click", handleAdminLogin);
+      document
+        .getElementById("btnAdminLogin")
+        .addEventListener("click", handleAdminLogin);
 
       const ok = await guardAdmin();
       if (ok) {
-        // already unlocked
-        refreshStats();
-        loadProducts();
-        loadStocks();
-        loadPendingOrders();
-        loadRecords();
-        loadRules();
-        loadReports();
+        await initialLoads();
       }
 
       const btnSaveStock = document.getElementById("btn-save-stock");
@@ -1697,10 +1910,14 @@
         btnSaveStock.addEventListener("click", saveStock);
       }
 
-      const btnAddProduct = document.getElementById("btn-add-product");
-      if (btnAddProduct) {
-        btnAddProduct.addEventListener("click", addProduct);
+      const btnSaveProduct = document.getElementById("btn-save-product");
+      if (btnSaveProduct) {
+        btnSaveProduct.addEventListener("click", saveProduct);
       }
+
+      document
+        .getElementById("btn-cancel-prod-edit")
+        .addEventListener("click", resetProductForm);
 
       const btnAddRule = document.getElementById("btn-add-rule");
       if (btnAddRule) {
@@ -1709,11 +1926,7 @@
 
       const btnAddRecord = document.getElementById("btn-add-record");
       if (btnAddRecord) {
-        btnAddRecord.addEventListener("click", () => {
-          document.getElementById("recordForm").reset();
-          const m = new bootstrap.Modal(document.getElementById("recordModal"));
-          m.show();
-        });
+        btnAddRecord.addEventListener("click", openRecordAddModal);
       }
 
       const btnExportRecords = document.getElementById("btn-export-records");
@@ -1721,7 +1934,13 @@
         btnExportRecords.addEventListener("click", exportRecordsCSV);
       }
 
-      document.getElementById("recordForm").addEventListener("submit", saveManualRecord);
+      document
+        .getElementById("recordForm")
+        .addEventListener("submit", saveManualRecord);
+
+      document
+        .getElementById("stockForm")
+        .addEventListener("submit", saveStockEdit);
     });
   </script>
 </body>
