@@ -18,7 +18,7 @@
 
   <style>
     :root {
-      --primary: #ffb0b5;
+      --primary: #ff6b6b;
       --secondary: #ffd3d6;
       --accent: #f9dcc0;
       --light: #fefaf7;
@@ -33,22 +33,24 @@
     body {
       margin: 0;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--light);
+      background: linear-gradient(135deg, #fefaf7 0%, #fff5f5 100%);
       color: var(--dark);
+      min-height: 100vh;
     }
 
     header {
       background: var(--secondary);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
       position: sticky;
       top: 0;
       z-index: 30;
+      backdrop-filter: blur(10px);
     }
 
     .header-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 0.9rem 1.25rem;
+      padding: 1rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -56,231 +58,302 @@
 
     .logo {
       display: flex;
-      gap: 0.4rem;
+      gap: 0.5rem;
       align-items: center;
-      font-weight: 700;
-      font-size: 1.4rem;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--dark);
+    }
+
+    .logo span:first-child {
+      font-size: 1.8rem;
     }
 
     .top-nav a {
       text-decoration: none;
-      margin-left: 0.7rem;
-      padding: 0.35rem 1.1rem;
-      border-radius: 999px;
+      margin-left: 0.8rem;
+      padding: 0.5rem 1.3rem;
+      border-radius: 50px;
       color: var(--dark);
-      font-weight: 500;
-      background: #ffeef0;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
     }
 
     .top-nav a.active,
     .top-nav a:hover {
       background: var(--primary);
       color: #fff;
+      border-color: var(--primary);
+      transform: translateY(-2px);
     }
 
     main {
-      max-width: 1100px;
-      margin: 1.5rem auto 2.5rem;
-      padding: 0 1.25rem;
+      max-width: 1200px;
+      margin: 2rem auto 3rem;
+      padding: 0 1.5rem;
     }
 
     .hero {
-      background: #fff;
-      border-radius: 18px;
-      padding: 1.4rem 1.4rem 1.1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+      background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);
+      border-radius: 20px;
+      padding: 2rem 2rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
       display: flex;
       justify-content: space-between;
-      gap: 1rem;
+      align-items: center;
+      gap: 2rem;
       flex-wrap: wrap;
+      border: 1px solid rgba(255, 107, 107, 0.1);
     }
 
     .hero h1 {
-      font-size: 1.5rem;
-      margin: 0 0 0.3rem;
+      font-size: 2rem;
+      margin: 0 0 0.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
     }
 
     .hero p {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 1rem;
       color: var(--text-muted);
+      line-height: 1.6;
     }
 
     .hero-right {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 1rem;
     }
 
     .hero-right button {
-      border-radius: 999px;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
     .category-row {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.8rem;
       overflow-x: auto;
-      padding: 0.25rem 0.15rem 0.6rem;
-      margin-bottom: 0.5rem;
+      padding: 1rem 0.5rem;
+      margin-bottom: 1rem;
+      scrollbar-width: none;
+    }
+
+    .category-row::-webkit-scrollbar {
+      display: none;
     }
 
     .category-pill {
       flex-shrink: 0;
-      padding: 0.35rem 0.95rem;
-      border-radius: 999px;
-      border: 1px solid #ffdfe3;
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      border: 2px solid #ffdfe3;
       background: #fff;
       font-size: 0.9rem;
       cursor: pointer;
       white-space: nowrap;
       color: var(--text-muted);
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
     .category-pill.active {
       background: var(--primary);
       border-color: var(--primary);
       color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
     }
 
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 900px) {
-      .products-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-    @media (max-width: 640px) {
-      .products-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .product-card {
       background: #fff;
-      border-radius: 16px;
-      padding: 0.9rem 0.95rem 1rem;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 1rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 107, 107, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%);
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.15);
     }
 
     .product-top {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 1rem;
     }
 
     .product-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: #ffeef0;
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #ffeef0 0%, #ffd3d6 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
+      color: var(--primary);
     }
 
     .product-title {
-      font-weight: 600;
-      font-size: 0.98rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--dark);
     }
 
     .product-cat {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .product-slots {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       color: var(--primary);
-      font-weight: 600;
+      font-weight: 700;
+      padding: 0.3rem 0.8rem;
+      background: rgba(255, 107, 107, 0.1);
+      border-radius: 20px;
+      display: inline-block;
     }
 
     .product-footer {
-      margin-top: 0.3rem;
+      margin-top: auto;
       display: flex;
       justify-content: flex-end;
     }
 
     .btn-primary {
-      background: #007bff;
-      border-color: #007bff;
+      background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%);
+      border: none;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
     .btn-primary:hover {
-      background: #0069d9;
-      border-color: #0062cc;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
     }
 
     .buyer-panel {
       background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-      padding: 1.1rem 1.1rem 1.2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 107, 107, 0.1);
     }
 
     .buyer-header {
       display: flex;
       align-items: center;
-      gap: 0.9rem;
-      margin-bottom: 0.8rem;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(255, 107, 107, 0.1);
     }
 
     .buyer-avatar {
-      width: 52px;
-      height: 52px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      background: var(--secondary);
+      background: linear-gradient(135deg, var(--primary) 0%, #ff8e8e 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .buyer-meta {
+      flex: 1;
+    }
+
+    .buyer-meta #buyerWelcome {
+      font-size: 1.2rem;
       font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.2rem;
     }
 
     .buyer-meta small {
       color: var(--text-muted);
+      font-size: 0.9rem;
     }
 
     .buyer-tabs {
-      margin-top: 0.4rem;
+      margin-top: 0.5rem;
+      border-bottom: 2px solid rgba(255, 107, 107, 0.1);
     }
 
     .buyer-tabs .nav-link {
-      border-radius: 999px;
+      border-radius: 50px;
       font-size: 0.9rem;
-      padding: 0.3rem 0.9rem;
+      padding: 0.5rem 1.2rem;
       color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 0.5rem;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
     }
 
     .buyer-tabs .nav-link.active {
       background: var(--primary);
       color: #fff;
+      border-color: var(--primary);
     }
 
     .buyer-tab-pane {
-      margin-top: 0.9rem;
-      font-size: 0.86rem;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
     }
 
     .small-muted {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
     }
 
     .order-status-pill {
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 600;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: lowercase;
     }
 
@@ -308,19 +381,53 @@
     }
 
     .price-highlight {
-      color: #e53935;
-      font-weight: 700;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 1.1rem;
     }
 
     .slots-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-      font-size: 0.8rem;
-      padding: 0.12rem 0.55rem;
-      border-radius: 999px;
-      background: #ffeef0;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      background: rgba(255, 107, 107, 0.1);
       color: var(--primary);
+      font-weight: 700;
+    }
+
+    .table th {
+      background: rgba(255, 107, 107, 0.05);
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        text-align: center;
+        padding: 1.5rem;
+      }
+      
+      .hero-right {
+        justify-content: center;
+        width: 100%;
+      }
+      
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header-inner {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .top-nav {
+        display: flex;
+        gap: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -347,15 +454,15 @@
     <!-- Hero -->
     <section class="hero">
       <div>
-        <h1>Premium accounts, hassle-free.</h1>
+        <h1>Premium Accounts, Zero Hassle</h1>
         <p>
-          Choose your app, send payment, upload proof. Admin will confirm and
-          deliver accounts inside this site.
+          Choose your favorite apps, complete your payment, and receive premium accounts instantly. 
+          Fast, reliable, and secure premium account delivery.
         </p>
       </div>
       <div class="hero-right">
         <button id="btnOpenLogin" class="btn btn-outline-dark btn-sm" type="button">
-          <i class="fa fa-user"></i> Login / Sign up
+          <i class="fa fa-user me-2"></i> Login / Sign up
         </button>
       </div>
     </section>
@@ -363,16 +470,22 @@
     <!-- Categories -->
     <section>
       <div class="category-row" id="categoryRow">
-        <button class="category-pill active" data-cat="all">All</button>
-        <button class="category-pill" data-cat="entertainment">Entertainment</button>
-        <button class="category-pill" data-cat="streaming">Streaming</button>
-        <button class="category-pill" data-cat="educational">Educational</button>
-        <button class="category-pill" data-cat="editing">Editing</button>
-        <button class="category-pill" data-cat="ai">AI</button>
+        <button class="category-pill active" data-cat="all">All Products</button>
+        <button class="category-pill" data-cat="entertainment">🎬 Entertainment</button>
+        <button class="category-pill" data-cat="streaming">📺 Streaming</button>
+        <button class="category-pill" data-cat="educational">📚 Educational</button>
+        <button class="category-pill" data-cat="editing">🎨 Editing</button>
+        <button class="category-pill" data-cat="ai">🤖 AI Tools</button>
       </div>
 
       <div id="productsGrid" class="products-grid">
-        <!-- product cards via JS -->
+        <!-- Products will be loaded here -->
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading products...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading premium products...</p>
+        </div>
       </div>
     </section>
 
@@ -385,35 +498,35 @@
           <small id="buyerSubtext">Login to track your orders and delivered accounts.</small>
         </div>
         <div class="ms-auto d-flex gap-2">
-          <button id="btnBuyerLoginHeader" class="btn btn-sm btn-outline-dark" type="button">
-            Login
+          <button id="btnBuyerLoginHeader" class="btn btn-outline-dark btn-sm" type="button">
+            <i class="fa fa-sign-in me-1"></i> Login
           </button>
-          <button id="btnBuyerLogoutHeader" class="btn btn-sm btn-outline-secondary hidden" type="button">
-            Logout
+          <button id="btnBuyerLogoutHeader" class="btn btn-outline-secondary btn-sm hidden" type="button">
+            <i class="fa fa-sign-out me-1"></i> Logout
           </button>
         </div>
       </div>
 
-      <!-- Tabs on TOP -->
+      <!-- Tabs -->
       <ul class="nav nav-pills buyer-tabs" id="buyerTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="tab-rules" data-bs-toggle="pill" data-bs-target="#pane-rules" type="button">
-            Rules
+            📋 Rules
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="tab-feedback" data-bs-toggle="pill" data-bs-target="#pane-feedback" type="button">
-            Feedback
+            💬 Feedback
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="tab-orders" data-bs-toggle="pill" data-bs-target="#pane-orders" type="button">
-            My Orders
+            📦 My Orders
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="tab-delivered" data-bs-toggle="pill" data-bs-target="#pane-delivered" type="button">
-            Delivered Accounts
+            ✅ Delivered Accounts
           </button>
         </li>
       </ul>
@@ -421,65 +534,72 @@
       <div class="tab-content buyer-tab-pane">
         <!-- Rules -->
         <div class="tab-pane fade show active" id="pane-rules" role="tabpanel">
-          <div class="row g-2 mb-2">
-            <div class="col-md-4">
-              <input id="rulesSearch" class="form-control form-control-sm" placeholder="Search rule text..." />
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <input id="rulesSearch" class="form-control form-control-sm" placeholder="🔍 Search rules..." />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <select id="rulesProductFilter" class="form-select form-select-sm">
                 <option value="">All products</option>
               </select>
             </div>
           </div>
           <ul id="rulesList" class="list-group list-group-flush small">
-            <!-- li via JS -->
+            <li class="list-group-item text-center text-muted">
+              Loading rules...
+            </li>
           </ul>
-          <div class="small-muted mt-2">
-            Rules come from the admin. Always read before purchasing.
+          <div class="small-muted mt-3">
+            <i class="fa fa-info-circle me-1"></i>
+            Rules are set by the admin. Please read before purchasing.
           </div>
         </div>
 
         <!-- Feedback -->
         <div class="tab-pane fade" id="pane-feedback" role="tabpanel">
-          <div class="row g-3">
+          <div class="row g-4">
             <div class="col-md-6">
-              <h6>Recent feedback</h6>
+              <h6>💬 Recent Feedback</h6>
               <ul id="feedbackList" class="list-group list-group-flush small mb-2">
-                <!-- li via JS -->
+                <li class="list-group-item text-center text-muted">
+                  Loading feedback...
+                </li>
               </ul>
             </div>
             <div class="col-md-6">
-              <h6>Send feedback</h6>
+              <h6>📝 Send Feedback</h6>
               <form id="feedbackForm" class="small">
-                <div class="mb-1">
+                <div class="mb-2">
                   <label class="form-label small">Product (optional)</label>
                   <select id="feedbackProduct" class="form-select form-select-sm">
-                    <option value="">General</option>
-                  </select>
-                </div>
-                <div class="mb-1">
-                  <label class="form-label small">Message</label>
-                  <textarea id="feedbackMessage" class="form-control form-control-sm" rows="3" required></textarea>
-                </div>
-                <div class="mb-1">
-                  <label class="form-label small">Rating</label>
-                  <select id="feedbackRating" class="form-select form-select-sm" required>
-                    <option value="">Choose...</option>
-                    <option value="5">⭐⭐⭐⭐⭐</option>
-                    <option value="4">⭐⭐⭐⭐</option>
-                    <option value="3">⭐⭐⭐</option>
-                    <option value="2">⭐⭐</option>
-                    <option value="1">⭐</option>
+                    <option value="">General Feedback</option>
                   </select>
                 </div>
                 <div class="mb-2">
+                  <label class="form-label small">Message</label>
+                  <textarea id="feedbackMessage" class="form-control form-control-sm" rows="3" placeholder="Share your experience..." required></textarea>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small">Rating</label>
+                  <select id="feedbackRating" class="form-select form-select-sm" required>
+                    <option value="">Choose rating...</option>
+                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ Very Good</option>
+                    <option value="3">⭐⭐⭐ Good</option>
+                    <option value="2">⭐⭐ Fair</option>
+                    <option value="1">⭐ Poor</option>
+                  </select>
+                </div>
+                <div class="mb-3">
                   <label class="form-label small">Screenshot (optional)</label>
                   <input id="feedbackImage" type="file" accept="image/*" class="form-control form-control-sm" />
-                  <div class="small-muted">Image will be stored as Base64 string.</div>
+                  <div class="small-muted">Image will be stored securely.</div>
                 </div>
-                <button class="btn btn-primary btn-sm" type="submit">Submit feedback</button>
-                <div class="small-muted mt-1">
-                  Please login so we can tag feedback to your account.
+                <button class="btn btn-primary btn-sm w-100" type="submit">
+                  <i class="fa fa-paper-plane me-1"></i> Submit Feedback
+                </button>
+                <div class="small-muted mt-2 text-center">
+                  Please login so we can associate feedback with your account.
                 </div>
               </form>
             </div>
@@ -488,8 +608,8 @@
 
         <!-- My orders -->
         <div class="tab-pane fade" id="pane-orders" role="tabpanel">
-          <div id="ordersGuestNote" class="small-muted mb-2">
-            Login to see your orders.
+          <div id="ordersGuestNote" class="small-muted mb-3 text-center">
+            <i class="fa fa-user me-1"></i> Please login to view your orders.
           </div>
           <div class="table-responsive">
             <table class="table table-sm align-middle mb-0">
@@ -504,20 +624,20 @@
                 </tr>
               </thead>
               <tbody id="ordersTableBody">
-                <!-- rows via JS -->
+                <!-- Orders will be loaded here -->
               </tbody>
             </table>
           </div>
-          <div class="small-muted mt-2">
-            Payments are manually confirmed by admin. You'll be notified here
-            when status becomes <strong>Delivered</strong>.
+          <div class="small-muted mt-3">
+            <i class="fa fa-clock me-1"></i>
+            Payments are manually confirmed by admin. You'll be notified when status becomes <strong>Delivered</strong>.
           </div>
         </div>
 
         <!-- Delivered -->
         <div class="tab-pane fade" id="pane-delivered" role="tabpanel">
-          <div id="deliveredGuestNote" class="small-muted mb-2">
-            Login to see delivered accounts (email, password, profile, pin).
+          <div id="deliveredGuestNote" class="small-muted mb-3 text-center">
+            <i class="fa fa-user me-1"></i> Please login to view delivered accounts.
           </div>
           <div class="table-responsive">
             <table class="table table-sm align-middle mb-0">
@@ -525,15 +645,15 @@
                 <tr>
                   <th>Product</th>
                   <th>Combo</th>
-                  <th>Purchase date</th>
-                  <th>Account email</th>
+                  <th>Purchase Date</th>
+                  <th>Account Email</th>
                   <th>Password</th>
                   <th>Profile</th>
                   <th>PIN</th>
                 </tr>
               </thead>
               <tbody id="deliveredTableBody">
-                <!-- rows via JS -->
+                <!-- Delivered accounts will be loaded here -->
               </tbody>
             </table>
           </div>
@@ -547,70 +667,79 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="pmTitle" class="modal-title">Product</h5>
+          <h5 id="pmTitle" class="modal-title">Product Details</h5>
           <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="row g-3">
+          <div class="row g-4">
             <div class="col-md-7">
-              <h6>Choose combo</h6>
-              <div class="mb-2">
-                <label class="form-label small">Account type</label>
+              <h6>🎯 Choose Combo</h6>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Account Type</label>
                 <select id="pmAccountType" class="form-select form-select-sm">
-                  <option value="">Select type</option>
+                  <option value="">Select account type...</option>
                 </select>
               </div>
-              <div class="mb-2">
-                <label class="form-label small">Duration</label>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Duration</label>
                 <select id="pmDuration" class="form-select form-select-sm" disabled>
-                  <option value="">Select duration</option>
+                  <option value="">Select duration...</option>
                 </select>
               </div>
-              <div class="mb-2 small">
-                <div>Price: <span id="pmPrice" class="price-highlight">₱0.00</span></div>
-                <div class="mt-1">
-                  Available slots:
+              <div class="mb-3 small">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span>Price:</span>
+                  <span id="pmPrice" class="price-highlight">₱0.00</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span>Available Slots:</span>
                   <span id="pmSlots" class="slots-pill">
-                    0 <span>(no pricing rows)</span>
+                    0 <span>slots</span>
                   </span>
                 </div>
               </div>
-              <div class="small-muted">
-                If slots are <strong>0</strong>, you can't place an order for
-                this combo.
+              <div class="alert alert-light small">
+                <i class="fa fa-info-circle me-1"></i>
+                If slots are <strong>0</strong>, this combo is currently unavailable.
               </div>
             </div>
             <div class="col-md-5">
-              <h6>Payment details</h6>
-              <div class="small-muted mb-1">
-                Send the exact amount first, then fill-out details and upload
-                your payment screenshot.
+              <h6>💳 Payment Details</h6>
+              <div class="small-muted mb-3">
+                Send the exact amount, then fill out the details and upload your payment proof.
               </div>
-              <div class="border rounded p-2 mb-2 small">
-                <div><strong>GCash:</strong> <span id="cfgGcash">09XXXXXXXXX</span></div>
-                <div><strong>Maya:</strong> <span id="cfgMaya">09XXXXXXXXX</span></div>
-                <div class="small-muted mt-1">
-                  (Edit numbers directly in the HTML config.)
+              <div class="border rounded p-3 mb-3 small bg-light">
+                <div class="mb-2">
+                  <strong>GCash:</strong> 
+                  <span id="cfgGcash" class="fw-bold">09XXXXXXXXX</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Maya:</strong> 
+                  <span id="cfgMaya" class="fw-bold">09XXXXXXXXX</span>
+                </div>
+                <div class="small-muted mt-2">
+                  <i class="fa fa-exclamation-circle me-1"></i>
+                  Contact admin to update payment numbers.
                 </div>
               </div>
-              <div class="mb-2">
-                <label class="form-label small">Payment method</label>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Payment Method</label>
                 <select id="pmPaymentMethod" class="form-select form-select-sm">
                   <option value="gcash">GCash</option>
                   <option value="maya">Maya</option>
                 </select>
               </div>
-              <div class="mb-2">
-                <label class="form-label small">Reference number *</label>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Reference Number *</label>
                 <input
                   id="pmRefNumber"
                   class="form-control form-control-sm"
-                  placeholder="e.g. GCash / Maya ref #"
+                  placeholder="e.g. GCash/Maya reference number"
                   required
                 />
               </div>
-              <div class="mb-2">
-                <label class="form-label small">Proof of payment (screenshot) *</label>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Proof of Payment *</label>
                 <input
                   id="pmProof"
                   type="file"
@@ -618,11 +747,13 @@
                   class="form-control form-control-sm"
                   required
                 />
-                <div class="small-muted">
-                  Image will be stored as Base64 string.
+                <div class="small-muted mt-1">
+                  <i class="fa fa-shield me-1"></i>
+                  Your payment proof is stored securely.
                 </div>
               </div>
-              <div id="pmLoginWarning" class="alert alert-warning small py-1 px-2 mt-2">
+              <div id="pmLoginWarning" class="alert alert-warning small py-2">
+                <i class="fa fa-exclamation-triangle me-1"></i>
                 You must login before placing an order.
               </div>
             </div>
@@ -630,10 +761,10 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">
-            Close
+            <i class="fa fa-times me-1"></i> Close
           </button>
           <button id="pmPlaceOrder" class="btn btn-primary btn-sm" type="button">
-            Place order
+            <i class="fa fa-shopping-cart me-1"></i> Place Order
           </button>
         </div>
       </div>
@@ -645,7 +776,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="authModalTitle" class="modal-title">Login</h5>
+          <h5 id="authModalTitle" class="modal-title">Account Access</h5>
           <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -658,7 +789,7 @@
                 data-bs-target="#auth-login-pane"
                 type="button"
               >
-                Login
+                <i class="fa fa-sign-in me-1"></i> Login
               </button>
             </li>
             <li class="nav-item">
@@ -669,7 +800,7 @@
                 data-bs-target="#auth-signup-pane"
                 type="button"
               >
-                Sign up
+                <i class="fa fa-user-plus me-1"></i> Sign up
               </button>
             </li>
           </ul>
@@ -680,57 +811,60 @@
               role="tabpanel"
             >
               <form id="loginForm">
-                <div class="mb-2">
-                  <label class="form-label small">Email</label>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Email</label>
                   <input
                     id="loginEmail"
                     type="email"
                     class="form-control form-control-sm"
-                    placeholder="you@example.com"
+                    placeholder="your@email.com"
                     required
                   />
                 </div>
-                <div class="mb-2">
-                  <label class="form-label small">Password</label>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Password</label>
                   <input
                     id="loginPassword"
                     type="password"
                     class="form-control form-control-sm"
+                    placeholder="Enter your password"
                     required
                   />
                 </div>
-                <button class="btn btn-primary btn-sm" type="submit">
-                  Login
+                <button class="btn btn-primary btn-sm w-100" type="submit">
+                  <i class="fa fa-sign-in me-1"></i> Login
                 </button>
               </form>
             </div>
             <div class="tab-pane fade" id="auth-signup-pane" role="tabpanel">
               <form id="signupForm">
-                <div class="mb-2">
-                  <label class="form-label small">Email</label>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Email</label>
                   <input
                     id="signupEmail"
                     type="email"
                     class="form-control form-control-sm"
-                    placeholder="you@example.com"
+                    placeholder="your@email.com"
                     required
                   />
                 </div>
-                <div class="mb-2">
-                  <label class="form-label small">Password</label>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Password</label>
                   <input
                     id="signupPassword"
                     type="password"
                     class="form-control form-control-sm"
+                    placeholder="At least 6 characters"
                     minlength="6"
                     required
                   />
                 </div>
-                <button class="btn btn-primary btn-sm" type="submit">
-                  Create account
+                <button class="btn btn-primary btn-sm w-100" type="submit">
+                  <i class="fa fa-user-plus me-1"></i> Create Account
                 </button>
-                <div class="small-muted mt-1">
-                  No forced <code>@gmail.com</code> – use any valid email.
+                <div class="small-muted mt-2 text-center">
+                  <i class="fa fa-info-circle me-1"></i>
+                  Use any valid email address for registration.
                 </div>
               </form>
             </div>
@@ -745,23 +879,24 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Report issue</h5>
+          <h5 class="modal-title">Report Issue</h5>
           <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body small">
           <form id="reportForm">
             <input type="hidden" id="reportOrderId" />
-            <div class="mb-2">
-              <label class="form-label small">Issue</label>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Issue Description</label>
               <textarea
                 id="reportIssue"
                 class="form-control form-control-sm"
                 rows="3"
+                placeholder="Describe the issue you're experiencing..."
                 required
               ></textarea>
             </div>
-            <button class="btn btn-primary btn-sm" type="submit">
-              Submit report
+            <button class="btn btn-primary btn-sm w-100" type="submit">
+              <i class="fa fa-flag me-1"></i> Submit Report
             </button>
           </form>
         </div>
@@ -778,7 +913,7 @@
     const SUPABASE_ANON_KEY =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
-    // Replace these 2 with your real numbers
+    // Payment configuration
     const PAYMENT_CONFIG = {
       gcash_number: "09XXXXXXXXX",
       maya_number: "09XXXXXXXXX",
@@ -791,8 +926,8 @@
 
     let currentUser = null;
     let allProducts = [];
-    let productCombos = {}; // product_id -> { account_type -> { durations... } }
-    let productStocksSummary = {}; // product_id -> total slots
+    let productCombos = {};
+    let productStocksSummary = {};
 
     let currentProductForModal = null;
     let modalInstanceProduct = null;
@@ -803,13 +938,10 @@
       const container = document.getElementById("toastContainer");
       const wrapper = document.createElement("div");
       const bsType =
-        type === "success"
-          ? "success"
-          : type === "danger" || type === "error"
-          ? "danger"
-          : type === "warning"
-          ? "warning"
-          : "secondary";
+        type === "success" ? "success" :
+        type === "danger" || type === "error" ? "danger" :
+        type === "warning" ? "warning" : "secondary";
+      
       wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
       wrapper.role = "alert";
       wrapper.innerHTML = `
@@ -862,7 +994,7 @@
         const email = currentUser.email || "User";
         const initial = email.charAt(0).toUpperCase();
         avatar.textContent = initial || "U";
-        welcome.textContent = "Welcome, " + email;
+        welcome.textContent = `Welcome, ${email}`;
         subtext.textContent = "Track your orders and delivered accounts.";
         btnLogin.classList.add("hidden");
         btnLogout.classList.remove("hidden");
@@ -872,13 +1004,11 @@
       } else {
         avatar.textContent = "?";
         welcome.textContent = "Welcome, Guest";
-        subtext.textContent =
-          "Login to track your orders and delivered accounts.";
+        subtext.textContent = "Login to track your orders and delivered accounts.";
         btnLogin.classList.remove("hidden");
         btnLogout.classList.add("hidden");
-        guestOrdersNote.textContent = "Login to see your orders.";
-        guestDeliveredNote.textContent =
-          "Login to see delivered accounts (email, password, profile, pin).";
+        guestOrdersNote.innerHTML = '<i class="fa fa-user me-1"></i> Please login to view your orders.';
+        guestDeliveredNote.innerHTML = '<i class="fa fa-user me-1"></i> Please login to view delivered accounts.';
         pmLoginWarning.classList.remove("hidden");
       }
     }
@@ -903,12 +1033,12 @@
           }, { onConflict: 'id' });
         }
         
-        showToast("Logged in successfully.", "success");
+        showToast("🎉 Logged in successfully!", "success");
         await refreshUser();
         if (modalInstanceAuth) modalInstanceAuth.hide();
       } catch (err) {
         console.error("[login]", err);
-        showToast("Login failed: " + (err.message || "Error"), "danger");
+        showToast("❌ Login failed: " + (err.message || "Error"), "danger");
       }
     }
 
@@ -924,7 +1054,6 @@
         if (error) throw error;
 
         if (data.user) {
-          // Insert buyer profile
           await supabase.from("buyers").insert({
             id: data.user.id,
             email: data.user.email,
@@ -932,11 +1061,11 @@
           });
         }
 
-        showToast("Account created. Please check your email for verification.", "success");
+        showToast("🎉 Account created! Please check your email for verification.", "success");
         if (modalInstanceAuth) modalInstanceAuth.hide();
       } catch (err) {
         console.error("[signup]", err);
-        showToast("Sign up failed: " + (err.message || "Error"), "danger");
+        showToast("❌ Sign up failed: " + (err.message || "Error"), "danger");
       }
     }
 
@@ -948,11 +1077,14 @@
       }
       currentUser = null;
       updateBuyerUI();
+      showToast("👋 Logged out successfully", "info");
     }
 
-    // ========= PRODUCTS + STOCKS + PRICES =========
+    // ========= PRODUCTS + STOCKS =========
     async function loadProductsAndCombos() {
       try {
+        showToast("🔄 Loading products...", "info");
+        
         const [prodRes, stocksRes] = await Promise.all([
           supabase.from("products").select("id,name,category,icon").order("name"),
           supabase
@@ -965,6 +1097,8 @@
         if (stocksRes.error) throw stocksRes.error;
 
         allProducts = prodRes.data || [];
+        console.log("Loaded products:", allProducts);
+        console.log("Loaded stocks:", stocksRes.data);
 
         // Rebuild productCombos from stocks data
         productCombos = {};
@@ -975,7 +1109,6 @@
           if (!productCombos[row.product_id][row.account_type])
             productCombos[row.product_id][row.account_type] = {};
           
-          // Use price from stocks table
           productCombos[row.product_id][row.account_type][row.duration] = row.price || 100;
           
           const key = row.product_id + "||" + row.account_type + "||" + row.duration;
@@ -983,70 +1116,89 @@
           productStocksSummary[key] = (productStocksSummary[key] || 0) + (qty > 0 ? qty : 0);
         });
 
+        console.log("Product combos:", productCombos);
+        console.log("Product stocks summary:", productStocksSummary);
+
         renderProductsGrid();
         populateRulesProductFilter();
         populateFeedbackProducts();
+        
+        if (allProducts.length > 0) {
+          showToast(`✅ Loaded ${allProducts.length} products`, "success");
+        } else {
+          showToast("ℹ️ No products available yet", "info");
+        }
       } catch (err) {
         console.error("[loadProductsAndCombos]", err);
-        showToast("Failed to load products.", "danger");
+        showToast("❌ Failed to load products", "danger");
       }
     }
 
     function renderProductsGrid(activeCategory = "all") {
       const grid = document.getElementById("productsGrid");
-      grid.innerHTML = "";
-
+      
       if (!allProducts.length) {
-        grid.innerHTML = "<div>No products configured yet.</div>";
+        grid.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <div class="text-muted">
+              <i class="fa fa-box-open fa-3x mb-3"></i>
+              <h5>No products available</h5>
+              <p>Check back later for new premium accounts.</p>
+            </div>
+          </div>`;
         return;
       }
 
-      allProducts.forEach((p) => {
-        if (activeCategory !== "all") {
-          if ((p.category || "").toLowerCase() !== activeCategory) return;
-        }
+      let filteredProducts = allProducts;
+      if (activeCategory !== "all") {
+        filteredProducts = allProducts.filter(p => 
+          (p.category || "").toLowerCase() === activeCategory.toLowerCase()
+        );
+      }
 
-        let totalSlots = 0;
-        const combos = productCombos[p.id];
-        if (combos) {
-          Object.keys(combos).forEach((acct) => {
-            Object.keys(combos[acct]).forEach((dur) => {
-              const key = p.id + "||" + acct + "||" + dur;
-              totalSlots += productStocksSummary[key] || 0;
-            });
-          });
-        }
-
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-          <div class="product-top">
-            <div class="product-icon">${p.icon || "🎬"}</div>
-            <div>
-              <div class="product-title">${p.name}</div>
-              <div class="product-cat">${p.category || "-"}</div>
+      if (filteredProducts.length === 0) {
+        grid.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <div class="text-muted">
+              <i class="fa fa-search fa-3x mb-3"></i>
+              <h5>No products in this category</h5>
+              <p>Try selecting a different category.</p>
             </div>
-          </div>
-          <div class="mt-2 d-flex justify-content-between align-items-center">
-            <span class="product-slots">${
-              totalSlots > 0
-                ? totalSlots + " slot(s) available"
-                : "0 slot(s)"
-            }</span>
-          </div>
-        `;
+          </div>`;
+        return;
+      }
 
-        const footer = document.createElement("div");
-        footer.className = "product-footer";
-        const btn = document.createElement("button");
-        btn.className = "btn btn-primary btn-sm";
-        btn.textContent = "View combos / Buy";
-        btn.addEventListener("click", () => openProductModal(p.id));
-        footer.appendChild(btn);
-        card.appendChild(footer);
+      grid.innerHTML = filteredProducts.map((p) => {
+        let totalSlots = 0;
+        const combos = productCombos[p.id] || {};
+        Object.keys(combos).forEach((acct) => {
+          Object.keys(combos[acct]).forEach((dur) => {
+            const key = p.id + "||" + acct + "||" + dur;
+            totalSlots += productStocksSummary[key] || 0;
+          });
+        });
 
-        grid.appendChild(card);
-      });
+        return `
+          <div class="product-card">
+            <div class="product-top">
+              <div class="product-icon">${p.icon || "🎬"}</div>
+              <div>
+                <div class="product-title">${p.name}</div>
+                <div class="product-cat">${p.category || "Uncategorized"}</div>
+              </div>
+            </div>
+            <div class="mt-2 d-flex justify-content-between align-items-center">
+              <span class="product-slots">
+                ${totalSlots > 0 ? totalSlots + " slot(s) available" : "Out of stock"}
+              </span>
+            </div>
+            <div class="product-footer">
+              <button class="btn btn-primary btn-sm" onclick="openProductModal('${p.id}')">
+                <i class="fa fa-shopping-cart me-1"></i> View Combos
+              </button>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     function initCategoryPills() {
@@ -1065,23 +1217,24 @@
 
     // ========= PRODUCT MODAL =========
     function updatePaymentConfigDisplay() {
-      document.getElementById("cfgGcash").textContent =
-        PAYMENT_CONFIG.gcash_number;
-      document.getElementById("cfgMaya").textContent =
-        PAYMENT_CONFIG.maya_number;
+      document.getElementById("cfgGcash").textContent = PAYMENT_CONFIG.gcash_number;
+      document.getElementById("cfgMaya").textContent = PAYMENT_CONFIG.maya_number;
     }
 
     function openProductModal(productId) {
       currentProductForModal = productId;
       const p = allProducts.find((x) => x.id === productId);
-      if (!p) return;
+      if (!p) {
+        showToast("Product not found", "danger");
+        return;
+      }
 
       document.getElementById("pmTitle").textContent = p.name;
 
       const selType = document.getElementById("pmAccountType");
       const selDur = document.getElementById("pmDuration");
-      selType.innerHTML = '<option value="">Select type</option>';
-      selDur.innerHTML = '<option value="">Select duration</option>';
+      selType.innerHTML = '<option value="">Select account type...</option>';
+      selDur.innerHTML = '<option value="">Select duration...</option>';
       selDur.disabled = true;
 
       const combos = productCombos[productId] || {};
@@ -1093,8 +1246,7 @@
       });
 
       document.getElementById("pmPrice").textContent = "₱0.00";
-      document.getElementById("pmSlots").innerHTML =
-        '0 <span>(no pricing rows)</span>';
+      document.getElementById("pmSlots").innerHTML = '0 <span>slots</span>';
       document.getElementById("pmRefNumber").value = "";
       document.getElementById("pmPaymentMethod").value = "gcash";
       document.getElementById("pmProof").value = "";
@@ -1117,13 +1269,12 @@
       const selType = document.getElementById("pmAccountType");
       const selDur = document.getElementById("pmDuration");
       const typeVal = selType.value;
-      selDur.innerHTML = '<option value="">Select duration</option>';
+      selDur.innerHTML = '<option value="">Select duration...</option>';
 
       if (!typeVal) {
         selDur.disabled = true;
         document.getElementById("pmPrice").textContent = "₱0.00";
-        document.getElementById("pmSlots").innerHTML =
-          '0 <span>(select combo)</span>';
+        document.getElementById("pmSlots").innerHTML = '0 <span>slots</span>';
         return;
       }
       const combos = productCombos[productId]?.[typeVal] || {};
@@ -1144,16 +1295,12 @@
       const durVal = document.getElementById("pmDuration").value;
 
       const price = productCombos[productId]?.[typeVal]?.[durVal] || 0;
-      document.getElementById("pmPrice").textContent =
-        "₱" + safeNumber(price).toFixed(2);
+      document.getElementById("pmPrice").textContent = "₱" + safeNumber(price).toFixed(2);
 
       const key = productId + "||" + typeVal + "||" + durVal;
       const slots = productStocksSummary[key] || 0;
-      document.getElementById("pmSlots").innerHTML =
-        slots +
-        (slots > 0
-          ? ' <span>slot(s)</span>'
-          : ' <span>(no stock for this combo)</span>');
+      document.getElementById("pmSlots").innerHTML = 
+        slots + (slots > 0 ? ' <span>slot(s)</span>' : ' <span>(out of stock)</span>');
     }
 
     function getFileAsBase64(file) {
@@ -1168,44 +1315,39 @@
 
     async function placeOrder() {
       if (!currentUser) {
-        showToast("Please login first.", "warning");
+        showToast("🔐 Please login first", "warning");
         return;
       }
       const productId = currentProductForModal;
       if (!productId) return;
 
-      const account_type = document
-        .getElementById("pmAccountType")
-        .value.trim();
+      const account_type = document.getElementById("pmAccountType").value.trim();
       const duration = document.getElementById("pmDuration").value.trim();
-      const payment_method =
-        document.getElementById("pmPaymentMethod").value || "gcash";
-      const reference_number =
-        document.getElementById("pmRefNumber").value.trim();
+      const payment_method = document.getElementById("pmPaymentMethod").value || "gcash";
+      const reference_number = document.getElementById("pmRefNumber").value.trim();
       const proofFile = document.getElementById("pmProof").files[0];
 
       // Validation
       if (!account_type || !duration) {
-        showToast("Select account type and duration.", "warning");
+        showToast("❌ Please select account type and duration", "warning");
         return;
       }
 
       if (!reference_number) {
-        showToast("Reference number is required.", "warning");
+        showToast("❌ Reference number is required", "warning");
         return;
       }
 
       if (!proofFile) {
-        showToast("Proof of payment is required.", "warning");
+        showToast("❌ Proof of payment is required", "warning");
         return;
       }
 
-      const price =
-        productCombos[productId]?.[account_type]?.[duration] || 0;
+      const price = productCombos[productId]?.[account_type]?.[duration] || 0;
       const key = productId + "||" + account_type + "||" + duration;
       const slots = productStocksSummary[key] || 0;
       if (slots <= 0) {
-        showToast("No available slot for this combo.", "warning");
+        showToast("❌ No available slots for this combo", "warning");
         return;
       }
 
@@ -1214,7 +1356,7 @@
         proof_image_url = await getFileAsBase64(proofFile);
       } catch (err) {
         console.error("[base64]", err);
-        showToast("Failed to process image.", "danger");
+        showToast("❌ Failed to process image", "danger");
         return;
       }
 
@@ -1232,12 +1374,12 @@
           proof_image_url,
         });
         if (error) throw error;
-        showToast("Order placed. Please wait for admin confirmation.", "success");
+        showToast("✅ Order placed! Waiting for admin confirmation.", "success");
         if (modalInstanceProduct) modalInstanceProduct.hide();
         await loadMyOrders();
       } catch (err) {
         console.error("[placeOrder]", err);
-        showToast("Failed to place order: " + (err.message || "Error"), "danger");
+        showToast("❌ Failed to place order: " + (err.message || "Error"), "danger");
       }
     }
 
@@ -1271,41 +1413,25 @@
 
     function renderRulesList() {
       const ul = document.getElementById("rulesList");
-      const search = (document.getElementById("rulesSearch").value || "")
-        .toLowerCase();
-      const prodFilter = document
-        .getElementById("rulesProductFilter")
-        .value.trim();
+      const search = (document.getElementById("rulesSearch").value || "").toLowerCase();
+      const prodFilter = document.getElementById("rulesProductFilter").value.trim();
 
       ul.innerHTML = "";
       const rows = (window._allRules || []).filter((r) => {
-        if (
-          prodFilter &&
-          (r.product_id || "").toLowerCase() !== prodFilter.toLowerCase()
-        )
-          return false;
-        if (
-          search &&
-          !(r.rule_text || "")
-            .toLowerCase()
-            .includes(search)
-        )
-          return false;
+        if (prodFilter && (r.product_id || "").toLowerCase() !== prodFilter.toLowerCase()) return false;
+        if (search && !(r.rule_text || "").toLowerCase().includes(search)) return false;
         return true;
       });
 
       if (!rows.length) {
-        ul.innerHTML =
-          '<li class="list-group-item small">No rules found.</li>';
+        ul.innerHTML = '<li class="list-group-item text-center text-muted">No rules found</li>';
         return;
       }
 
       rows.forEach((r) => {
         const li = document.createElement("li");
         li.className = "list-group-item small";
-        li.innerHTML = `${
-          r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""
-        }${r.rule_text}`;
+        li.innerHTML = `${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${r.rule_text}`;
         ul.appendChild(li);
       });
     }
@@ -1321,8 +1447,7 @@
         const ul = document.getElementById("feedbackList");
         ul.innerHTML = "";
         if (!data || !data.length) {
-          ul.innerHTML =
-            '<li class="list-group-item small">No feedback yet.</li>';
+          ul.innerHTML = '<li class="list-group-item text-center text-muted">No feedback yet</li>';
           return;
         }
         data.forEach((f) => {
@@ -1330,14 +1455,10 @@
           li.className = "list-group-item small";
           const stars = "⭐".repeat(safeNumber(f.rating));
           li.innerHTML = `
-            <div>${f.product_id ? `<strong>[${f.product_id}]</strong> ` : ""}${
-            f.message
-          }</div>
+            <div>${f.product_id ? `<strong>[${f.product_id}]</strong> ` : ""}${f.message}</div>
             <div class="d-flex justify-content-between mt-1">
               <span>${stars}</span>
-              <span class="text-muted">${new Date(
-                f.created_at
-              ).toLocaleString()}</span>
+              <span class="text-muted">${new Date(f.created_at).toLocaleString()}</span>
             </div>`;
           ul.appendChild(li);
         });
@@ -1349,7 +1470,7 @@
     function populateFeedbackProducts() {
       const sel = document.getElementById("feedbackProduct");
       if (!sel) return;
-      sel.innerHTML = '<option value="">General</option>';
+      sel.innerHTML = '<option value="">General Feedback</option>';
       allProducts.forEach((p) => {
         const opt = document.createElement("option");
         opt.value = p.id;
@@ -1360,26 +1481,23 @@
 
     async function handleFeedbackSubmit(e) {
       e.preventDefault();
-      const message = document
-        .getElementById("feedbackMessage")
-        .value.trim();
-      const rating = safeNumber(
-        document.getElementById("feedbackRating").value
-      );
-      const product_id = document
-        .getElementById("feedbackProduct")
-        .value.trim() || null;
+      const message = document.getElementById("feedbackMessage").value.trim();
+      const rating = safeNumber(document.getElementById("feedbackRating").value);
+      const product_id = document.getElementById("feedbackProduct").value.trim() || null;
       const file = document.getElementById("feedbackImage").files[0] || null;
+      
       if (!message || !rating) {
-        showToast("Fill message and rating.", "warning");
+        showToast("❌ Please fill message and rating", "warning");
         return;
       }
+      
       let image_base64 = null;
       try {
         image_base64 = await getFileAsBase64(file);
       } catch (err) {
         console.error("[fb base64]", err);
       }
+      
       try {
         const { error } = await supabase.from("feedback").insert({
           buyer_id: currentUser ? currentUser.id : null,
@@ -1389,12 +1507,12 @@
           image_url: image_base64,
         });
         if (error) throw error;
-        showToast("Feedback submitted. Thank you!", "success");
+        showToast("✅ Feedback submitted. Thank you!", "success");
         document.getElementById("feedbackForm").reset();
         await loadFeedback();
       } catch (err) {
         console.error("[feedback]", err);
-        showToast("Failed to submit feedback.", "danger");
+        showToast("❌ Failed to submit feedback", "danger");
       }
     }
 
@@ -1404,17 +1522,14 @@
       try {
         const { data, error } = await supabase
           .from("orders")
-          .select(
-            "id,product_id,account_type,duration,price,status,payment_method,reference_number,created_at"
-          )
+          .select("id,product_id,account_type,duration,price,status,payment_method,reference_number,created_at")
           .eq("buyer_id", currentUser.id)
           .order("created_at", { ascending: false });
         if (error) throw error;
         const tbody = document.getElementById("ordersTableBody");
         tbody.innerHTML = "";
         if (!data || !data.length) {
-          tbody.innerHTML =
-            '<tr><td colspan="6" class="small text-muted">No orders yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No orders yet</td></tr>';
           return;
         }
         data.forEach((o) => {
@@ -1428,19 +1543,15 @@
             <td>${o.product_id}</td>
             <td>${o.account_type || "-"} / ${o.duration || "-"}</td>
             <td>₱${safeNumber(o.price).toFixed(2)}</td>
-            <td><span class="order-status-pill ${statusClass}">${
-            o.status || "pending"
-          }</span></td>
+            <td><span class="order-status-pill ${statusClass}">${o.status || "pending"}</span></td>
             <td class="small">
               ${o.payment_method || "-"}<br>
-              <span class="text-muted">Ref: ${
-                o.reference_number || "-"
-              }</span>
+              <span class="text-muted">Ref: ${o.reference_number || "-"}</span>
             </td>
             <td>
-              <button class="btn btn-sm btn-outline-danger" data-order-id="${
-                o.id
-              }">Report</button>
+              <button class="btn btn-sm btn-outline-danger" data-order-id="${o.id}">
+                <i class="fa fa-flag me-1"></i> Report
+              </button>
             </td>`;
           tbody.appendChild(tr);
         });
@@ -1470,15 +1581,13 @@
     async function handleReportSubmit(e) {
       e.preventDefault();
       if (!currentUser) {
-        showToast("Login first before reporting.", "warning");
+        showToast("🔐 Please login first", "warning");
         return;
       }
       const order_id = document.getElementById("reportOrderId").value;
-      const issue_description = document
-        .getElementById("reportIssue")
-        .value.trim();
+      const issue_description = document.getElementById("reportIssue").value.trim();
       if (!issue_description) {
-        showToast("Describe the issue.", "warning");
+        showToast("❌ Please describe the issue", "warning");
         return;
       }
       try {
@@ -1489,11 +1598,11 @@
           status: "open",
         });
         if (error) throw error;
-        showToast("Report submitted.", "success");
+        showToast("✅ Report submitted", "success");
         if (modalInstanceReport) modalInstanceReport.hide();
       } catch (err) {
         console.error("[report]", err);
-        showToast("Failed to submit report.", "danger");
+        showToast("❌ Failed to submit report", "danger");
       }
     }
 
@@ -1502,17 +1611,14 @@
       try {
         const { data, error } = await supabase
           .from("records")
-          .select(
-            "id,product_id,account_type,duration,purchase_date,account_email,account_password,profile,pin,buyer"
-          )
+          .select("id,product_id,account_type,duration,purchase_date,account_email,account_password,profile,pin,buyer")
           .eq("buyer", currentUser.email)
           .order("purchase_date", { ascending: false });
         if (error) throw error;
         const tbody = document.getElementById("deliveredTableBody");
         tbody.innerHTML = "";
         if (!data || !data.length) {
-          tbody.innerHTML =
-            '<tr><td colspan="7" class="small text-muted">No delivered accounts yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">No delivered accounts yet</td></tr>';
           return;
         }
         data.forEach((r) => {
@@ -1520,7 +1626,7 @@
           tr.innerHTML = `
             <td>${r.product_id || "-"}</td>
             <td>${r.account_type || "-"} / ${r.duration || "-"}</td>
-            <td>${r.purchase_date || "-"}</td>
+            <td>${r.purchase_date ? new Date(r.purchase_date).toLocaleDateString() : "-"}</td>
             <td>${r.account_email || "-"}</td>
             <td>${r.account_password || "-"}</td>
             <td>${r.profile || "-"}</td>
@@ -1537,54 +1643,28 @@
       updatePaymentConfigDisplay();
       initCategoryPills();
 
-      modalInstanceAuth = new bootstrap.Modal(
-        document.getElementById("authModal")
-      );
+      modalInstanceAuth = new bootstrap.Modal(document.getElementById("authModal"));
 
       // Auth buttons
-      document
-        .getElementById("btnOpenLogin")
-        .addEventListener("click", () => modalInstanceAuth.show());
-      document
-        .getElementById("btnBuyerLoginHeader")
-        .addEventListener("click", () => modalInstanceAuth.show());
-      document
-        .getElementById("btnBuyerLogoutHeader")
-        .addEventListener("click", handleLogout);
+      document.getElementById("btnOpenLogin").addEventListener("click", () => modalInstanceAuth.show());
+      document.getElementById("btnBuyerLoginHeader").addEventListener("click", () => modalInstanceAuth.show());
+      document.getElementById("btnBuyerLogoutHeader").addEventListener("click", handleLogout);
 
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", handleLogin);
-      document
-        .getElementById("signupForm")
-        .addEventListener("submit", handleSignup);
+      document.getElementById("loginForm").addEventListener("submit", handleLogin);
+      document.getElementById("signupForm").addEventListener("submit", handleSignup);
 
       // Product modal events
-      document
-        .getElementById("pmAccountType")
-        .addEventListener("change", handleAccountTypeChange);
-      document
-        .getElementById("pmDuration")
-        .addEventListener("change", updateModalPriceAndSlots);
-      document
-        .getElementById("pmPlaceOrder")
-        .addEventListener("click", placeOrder);
+      document.getElementById("pmAccountType").addEventListener("change", handleAccountTypeChange);
+      document.getElementById("pmDuration").addEventListener("change", updateModalPriceAndSlots);
+      document.getElementById("pmPlaceOrder").addEventListener("click", placeOrder);
 
       // Rules filters
-      document
-        .getElementById("rulesSearch")
-        .addEventListener("input", renderRulesList);
-      document
-        .getElementById("rulesProductFilter")
-        .addEventListener("change", renderRulesList);
+      document.getElementById("rulesSearch").addEventListener("input", renderRulesList);
+      document.getElementById("rulesProductFilter").addEventListener("change", renderRulesList);
 
       // Feedback + report
-      document
-        .getElementById("feedbackForm")
-        .addEventListener("submit", handleFeedbackSubmit);
-      document
-        .getElementById("reportForm")
-        .addEventListener("submit", handleReportSubmit);
+      document.getElementById("feedbackForm").addEventListener("submit", handleFeedbackSubmit);
+      document.getElementById("reportForm").addEventListener("submit", handleReportSubmit);
 
       // Initial loads
       await refreshUser();
