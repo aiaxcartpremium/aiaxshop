@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aiaxcart Premium Shop</title>
 
-  <!-- CSS / Icons / Supabase -->
+  <!-- Bootstrap / Icons / Supabase -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,8 +24,17 @@
       color: var(--dark);
     }
 
+    .navbar {
+      background-color: var(--secondary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
     .navbar-brand {
       font-weight: 700;
+      color: var(--dark);
+    }
+
+    .navbar-brand span {
       color: var(--primary);
     }
 
@@ -39,23 +48,26 @@
     }
 
     .card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-3px);
     }
 
     .category-tab {
       cursor: pointer;
-      padding: 10px 20px;
+      padding: 8px 18px;
       border-radius: 30px;
-      margin: 0 5px;
+      margin: 0 5px 8px 0;
       transition: all 0.3s;
+      font-size: 0.9rem;
       font-weight: 500;
       background: white;
+      border: 1px solid #f0c5c8;
       white-space: nowrap;
     }
 
     .category-tab.active {
       background-color: var(--primary);
       color: white;
+      border-color: transparent;
     }
 
     .product-card {
@@ -63,34 +75,30 @@
     }
 
     .product-img {
-      height: 120px;
+      height: 80px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.5rem;
+      font-size: 2rem;
       color: var(--primary);
     }
 
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
+    .toast-container {
       z-index: 9999;
-      min-width: 300px;
     }
 
     .buyer-profile-img {
-      width: 80px;
-      height: 80px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       background-color: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: bold;
-      margin: 0 auto 15px;
+      margin: 0 auto 10px;
     }
 
     .order-status {
@@ -98,6 +106,7 @@
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 600;
+      display: inline-block;
     }
 
     .status-pending {
@@ -120,1685 +129,1204 @@
       color: #721c24;
     }
 
-    .section {
-      padding: 20px 0;
+    .nav-pills .nav-link {
+      border-radius: 999px;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.9rem;
+      color: var(--dark);
+    }
+
+    .nav-pills .nav-link.active {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    .rules-list li {
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    .small-muted {
+      font-size: 0.8rem;
+      color: #8b7f7a;
+    }
+
+    .product-stock-pill {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #fff5f6;
+      color: #ad5b64;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .product-price-pill {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.95rem;
     }
 
     .hidden {
       display: none !important;
     }
 
-    .modal-content {
-      border-radius: 12px;
-      border: none;
-    }
-
-    .modal-header {
-      background-color: var(--primary);
-      color: white;
-      border-radius: 12px 12px 0 0;
-    }
-
-    .btn-primary {
-      background-color: var(--primary);
-      border-color: var(--primary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #ff9da3;
-      border-color: #ff9da3;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 0.25rem rgba(255, 176, 181, 0.25);
-    }
-
-    .feedback-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-
-    .nav-link.active {
-      background-color: var(--primary) !important;
-      color: white !important;
-      border-radius: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .category-tab {
-        padding: 8px 15px;
-        font-size: 0.9rem;
+    @media (max-width: 991px) {
+      .right-panel {
+        margin-top: 1.5rem;
       }
     }
   </style>
 </head>
+
 <body>
   <!-- Toasts -->
   <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
 
-  <!-- Buyer Site -->
-  <div id="buyerSite">
-    <!-- Nav -->
-    <nav class="navbar navbar-expand-lg navbar-light shadow-sm" style="background: #FFD3D6;">
-      <div class="container">
-        <a class="navbar-brand" href="#">
-          <i class="fas fa-shopping-cart me-2"></i>Aiaxcart Premium Shop
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="#" data-section="home">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="admin.html" target="_blank">Admin</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#" data-section="rules">Rules</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#" data-section="feedback">Feedback</a>
-            </li>
-          </ul>
-          <div class="d-flex align-items-center">
-            <div id="userAuth">
-              <button class="btn btn-outline-primary me-2" id="loginBtn" type="button">Login</button>
-              <button class="btn btn-primary" id="signupBtn" type="button">Sign Up</button>
-            </div>
-            <div id="userProfile" class="hidden">
-              <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                  <i class="fas fa-user me-1"></i> <span id="userName">User</span>
-                </button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#" data-section="profile">My Account</a></li>
-                  <li><a class="dropdown-item" href="#" data-section="orders">My Orders</a></li>
-                  <li><a class="dropdown-item" href="#" data-section="report">Report Issue</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container my-4">
-      <!-- HOME -->
-      <div id="homeSection" class="section">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2>Premium Accounts</h2>
-          <div class="d-flex overflow-auto pb-2">
-            <div class="category-tab active" data-category="all">All</div>
-            <div class="category-tab" data-category="entertainment">Entertainment</div>
-            <div class="category-tab" data-category="streaming">Streaming</div>
-            <div class="category-tab" data-category="educational">Educational</div>
-            <div class="category-tab" data-category="editing">Editing</div>
-            <div class="category-tab" data-category="ai">AI</div>
-          </div>
-        </div>
-
-        <div id="productsContainer" class="row">
-          <!-- product cards -->
-        </div>
-      </div>
-
-      <!-- RULES -->
-      <div id="rulesSection" class="section hidden">
-        <h2 class="mb-4">Shop Rules</h2>
-        <div id="rulesContainer"></div>
-      </div>
-
-      <!-- FEEDBACK -->
-      <div id="feedbackSection" class="section hidden">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2>Customer Feedback</h2>
-          <button class="btn btn-primary" id="addFeedbackBtn" type="button">
-            <i class="fas fa-plus me-1"></i> Add Feedback
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        🛒 <span>Aiaxcart Premium</span> Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" href="#">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#tab-rules-anchor">Rules</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#tab-orders-anchor">My Orders</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center">
+          <span id="userEmailLabel" class="me-2 small-muted"></span>
+          <button id="btnLoginOpen" class="btn btn-sm btn-outline-dark me-2">
+            <i class="fa fa-user"></i> Login / Sign up
           </button>
-        </div>
-
-        <div class="row">
-          <div class="col-md-8">
-            <div id="feedbackList"></div>
-          </div>
-          <div class="col-md-4">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Submit Feedback</h5>
-                <form id="feedbackForm">
-                  <div class="mb-3">
-                    <label class="form-label" for="feedbackName">Your Name</label>
-                    <input type="text" id="feedbackName" class="form-control" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label" for="feedbackText">Your Feedback</label>
-                    <textarea id="feedbackText" class="form-control" rows="4" required></textarea>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label" for="feedbackImage">Image (Optional)</label>
-                    <input type="file" id="feedbackImage" class="form-control" accept="image/*">
-                  </div>
-                  <button class="btn btn-primary w-100" type="submit">Submit Feedback (mock)</button>
-                </form>
-              </div>
-            </div>
-          </div>
+          <button id="btnLogout" class="btn btn-sm btn-outline-danger d-none">
+            <i class="fa fa-sign-out-alt"></i>
+          </button>
+          <a href="./admin.html" class="btn btn-sm btn-outline-secondary ms-2">
+            Admin
+          </a>
         </div>
       </div>
+    </div>
+  </nav>
 
-      <!-- PROFILE + ORDERS -->
-      <div id="profileSection" class="section hidden">
-        <h2 class="mb-4">My Account</h2>
-        <div class="row">
-          <div class="col-md-4">
-            <div class="card">
-              <div class="card-body text-center">
-                <div class="buyer-profile-img" id="profileAvatar">JD</div>
-                <h4 id="profileName">John Doe</h4>
-                <p class="text-muted" id="profileEmail">john@example.com</p>
-                <button class="btn btn-outline-primary btn-sm" type="button">Edit Profile</button>
+  <!-- MAIN CONTENT -->
+  <main class="py-4">
+    <div class="container">
+      <div class="row">
+        <!-- LEFT: PRODUCTS -->
+        <div class="col-lg-8">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title mb-2">Browse Premium Accounts</h5>
+              <p class="small-muted mb-2">
+                All products are visible even if currently out of stock. You must login before checking out.
+              </p>
+              <div class="d-flex flex-wrap">
+                <button class="category-tab active" data-category="all">All</button>
+                <button class="category-tab" data-category="entertainment">Entertainment</button>
+                <button class="category-tab" data-category="streaming">Streaming</button>
+                <button class="category-tab" data-category="educational">Educational</button>
+                <button class="category-tab" data-category="editing">Editing</button>
+                <button class="category-tab" data-category="ai">AI</button>
               </div>
             </div>
           </div>
-          <div class="col-md-8">
-            <ul class="nav nav-tabs" id="profileTabs">
-              <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#pendingOrders">Pending</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#deliveredAccounts">Delivered</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#orderHistory">History</a>
-              </li>
-            </ul>
 
-            <div class="tab-content mt-3">
-              <div class="tab-pane fade show active" id="pendingOrders">
-                <div id="pendingOrdersList"></div>
-              </div>
-              <div class="tab-pane fade" id="deliveredAccounts">
-                <div id="deliveredAccountsList"></div>
-              </div>
-              <div class="tab-pane fade" id="orderHistory">
-                <div id="orderHistoryList"></div>
-              </div>
-            </div>
+          <div id="productsRow" class="row">
+            <!-- JS renders product cards here -->
           </div>
         </div>
-      </div>
 
-      <!-- REPORT ISSUE -->
-      <div id="reportSection" class="section hidden">
-        <h2 class="mb-4">Report an Issue</h2>
-        <div class="row">
-          <div class="col-md-8">
-            <div class="card">
-              <div class="card-body">
-                <form id="reportForm">
-                  <div class="mb-3">
-                    <label class="form-label" for="reportOrderId">Order ID</label>
-                    <input type="text" id="reportOrderId" class="form-control" required>
+        <!-- RIGHT: PROFILE / TABS -->
+        <div class="col-lg-4 right-panel">
+          <div class="card mb-3">
+            <div class="card-body text-center">
+              <div class="buyer-profile-img" id="buyerAvatar">?</div>
+              <h6 id="buyerGreeting" class="mb-0">Welcome, Guest</h6>
+              <p class="small-muted mb-1" id="buyerStatusText">
+                Login to track your orders and delivered accounts.
+              </p>
+            </div>
+          </div>
+
+          <div class="card mb-3" id="tab-rules-anchor">
+            <div class="card-body">
+              <ul class="nav nav-pills mb-3" id="buyerTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="tab-rules" data-bs-toggle="pill" data-bs-target="#pane-rules" type="button" role="tab">
+                    Rules
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="tab-feedback" data-bs-toggle="pill" data-bs-target="#pane-feedback" type="button" role="tab">
+                    Feedback
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation" id="tab-orders-anchor">
+                  <button class="nav-link" id="tab-orders" data-bs-toggle="pill" data-bs-target="#pane-orders" type="button" role="tab">
+                    My Orders
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="tab-delivered" data-bs-toggle="pill" data-bs-target="#pane-delivered" type="button" role="tab">
+                    Delivered Accounts
+                  </button>
+                </li>
+              </ul>
+
+              <div class="tab-content" id="buyerTabsContent" style="max-height: 420px; overflow-y: auto;">
+                <!-- RULES -->
+                <div class="tab-pane fade show active" id="pane-rules" role="tabpanel" aria-labelledby="tab-rules">
+                  <div class="mb-2">
+                    <input id="rulesSearchInput" type="text" class="form-control form-control-sm" placeholder="Search rules...">
                   </div>
-                  <div class="mb-3">
-                    <label class="form-label" for="reportProduct">Product Name</label>
-                    <input type="text" id="reportProduct" class="form-control" placeholder="Optional">
+                  <div class="mb-2">
+                    <select id="rulesProductFilter" class="form-select form-select-sm">
+                      <option value="">All products</option>
+                    </select>
                   </div>
-                  <div class="mb-3">
-                    <label class="form-label" for="reportIssue">Issue Description</label>
-                    <textarea id="reportIssue" class="form-control" rows="4" required></textarea>
+                  <ul class="rules-list list-unstyled mb-0" id="rulesList">
+                    <!-- JS inserts rules -->
+                  </ul>
+                </div>
+
+                <!-- FEEDBACK -->
+                <div class="tab-pane fade" id="pane-feedback" role="tabpanel" aria-labelledby="tab-feedback">
+                  <h6 class="mb-2">What do you think about our shop?</h6>
+                  <form id="feedbackForm" class="mb-3">
+                    <div class="mb-2">
+                      <textarea id="feedbackText" class="form-control form-control-sm" rows="2" placeholder="Your feedback..." required></textarea>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small mb-1">Attach image (optional)</label>
+                      <input id="feedbackImage" type="file" accept="image/*" class="form-control form-control-sm">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                      Submit Feedback
+                    </button>
+                  </form>
+
+                  <h6 class="mb-2">Latest feedback</h6>
+                  <div id="feedbackList" class="small">
+                    <!-- JS renders feedback -->
                   </div>
-                  <div class="mb-3">
-                    <label class="form-label" for="reportScreenshot">Screenshot (Optional)</label>
-                    <input type="file" id="reportScreenshot" class="form-control" accept="image/*">
+                </div>
+
+                <!-- MY ORDERS -->
+                <div class="tab-pane fade" id="pane-orders" role="tabpanel" aria-labelledby="tab-orders">
+                  <div id="ordersGuestNotice" class="small-muted">
+                    Login to view your orders and payment status.
                   </div>
-                  <button class="btn btn-primary" type="submit">Submit Report (mock)</button>
-                </form>
+                  <div id="ordersList" class="mt-1">
+                    <!-- JS renders orders -->
+                  </div>
+                </div>
+
+                <!-- DELIVERED ACCOUNTS -->
+                <div class="tab-pane fade" id="pane-delivered" role="tabpanel" aria-labelledby="tab-delivered">
+                  <div id="deliveredGuestNotice" class="small-muted">
+                    Login to see delivered accounts (email, password, profile, pin).
+                  </div>
+                  <div id="deliveredList" class="mt-1">
+                    <!-- JS renders delivered accounts -->
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          <p class="small-muted text-center">
+            Payments are manually confirmed by admin. You'll be notified inside the site when status becomes <strong>Delivered</strong>.
+          </p>
         </div>
       </div>
+    </div>
+  </main>
 
-    </div> <!-- /container -->
-  </div> <!-- /buyerSite -->
+  <!-- LOGIN / SIGNUP MODAL -->
+  <div class="modal fade" id="authModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="authModalTitle">Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="authForm">
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input id="authEmail" type="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input id="authPassword" type="password" class="form-control" required>
+            </div>
+            <button id="authSubmitBtn" type="submit" class="btn btn-primary w-100">
+              Login
+            </button>
+          </form>
+          <p class="mt-3 small text-center">
+            <span id="authSwitchText">Don't have an account?</span>
+            <button id="authSwitchBtn" class="btn btn-link btn-sm p-0 align-baseline">Sign up</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- PRODUCT MODAL -->
+  <!-- PRODUCT / CHECKOUT MODAL -->
   <div class="modal fade" id="productModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="productModalTitle">Product Details</h5>
-          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title" id="productModalTitle">Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="row">
+          <div class="row g-3">
             <div class="col-md-6">
-              <div class="product-img mb-3">
-                <span id="productModalIcon">📺</span>
+              <h6>Choose combo</h6>
+              <div class="mb-2">
+                <label class="form-label small">Account type</label>
+                <select id="comboAccountType" class="form-select form-select-sm">
+                  <option value="">Select type</option>
+                </select>
               </div>
-              <h4 id="productModalName">Product Name</h4>
-              <p class="text-muted" id="productModalDescription"></p>
-              <div class="mb-3">
-                <label class="form-label">Available Stock</label>
-                <div class="fw-bold" id="availableStock">0</div>
+              <div class="mb-2">
+                <label class="form-label small">Duration</label>
+                <select id="comboDuration" class="form-select form-select-sm">
+                  <option value="">Select duration</option>
+                </select>
               </div>
+              <p class="mb-1">
+                <span class="small-muted">Price: </span>
+                <span class="product-price-pill" id="comboPriceLabel">₱0.00</span>
+              </p>
+              <p class="mb-0">
+                <span class="small-muted">Available slots: </span>
+                <span class="product-stock-pill" id="comboStockLabel">
+                  <i class="fa fa-circle-notch fa-spin me-1"></i>Checking...
+                </span>
+              </p>
+              <p class="small-muted mt-2 mb-0">
+                If 0 slots, you can't place an order for this combo.
+              </p>
             </div>
             <div class="col-md-6">
-              <form id="buyNowForm">
-                <div class="mb-3">
-                  <label class="form-label" for="accountType">Account Type</label>
-                  <select id="accountType" class="form-select" required>
-                    <option value="">Select account type</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label" for="duration">Duration</label>
-                  <select id="duration" class="form-select" required>
-                    <option value="">Select duration</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Price</label>
-                  <div class="fw-bold fs-4 text-primary" id="productPrice">₱0.00</div>
-                </div>
-                <div class="mb-3 hidden" id="inviteEmailField">
-                  <label class="form-label" for="gmail">Gmail Address</label>
-                  <input type="email" id="gmail" class="form-control" placeholder="Enter valid Gmail address">
-                </div>
-                <button class="btn btn-primary w-100" id="checkoutBtn" type="submit">
-                  Buy Now
-                </button>
-              </form>
+              <h6>Payment details</h6>
+              <p class="small-muted">
+                After sending payment, fill-out details and upload proof. Admin will confirm manually.
+              </p>
+              <div class="mb-2">
+                <label class="form-label small">Payment method</label>
+                <select id="payMethod" class="form-select form-select-sm">
+                  <option value="">Select</option>
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="Bank transfer">Bank transfer</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small">Reference number</label>
+                <input id="payRef" class="form-control form-control-sm" placeholder="e.g. GCash ref #">
+              </div>
+              <div class="mb-2">
+                <label class="form-label small">Proof of payment (screenshot)</label>
+                <input id="payProof" type="file" accept="image/*" class="form-control form-control-sm">
+                <div class="small-muted mt-1">Image will be stored as Base64 string.</div>
+              </div>
+              <div class="alert alert-warning py-2 px-3 small mt-2" id="productLoginNotice">
+                You must login before placing an order.
+              </div>
             </div>
           </div>
         </div>
+        <div class="modal-footer">
+          <button id="btnPlaceOrder" type="button" class="btn btn-primary">
+            Place Order
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- CHECKOUT MODAL -->
-  <div class="modal fade" id="checkoutModal" tabindex="-1">
+  <!-- REPORT ISSUE MODAL -->
+  <div class="modal fade" id="reportModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Checkout</h5>
-          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title">Report an Issue</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <form id="checkoutForm">
-            <div class="mb-3">
-              <label class="form-label" for="paymentMethod">Payment Method</label>
-              <select id="paymentMethod" class="form-select" required>
-                <option value="">Select payment method</option>
-                <option value="gcash">GCash - 09625544105 (SMM)</option>
-                <option value="maya">Maya - 09298943629 (AF)</option>
-              </select>
+          <form id="reportForm">
+            <input type="hidden" id="reportOrderId">
+            <div class="mb-2">
+              <label class="form-label small">Order ID</label>
+              <input id="reportOrderDisplay" class="form-control form-control-sm" readonly>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="referenceNumber">Reference Number (optional)</label>
-              <input type="text" id="referenceNumber" class="form-control" placeholder="Enter reference number (optional)">
+              <label class="form-label small">Issue / concern</label>
+              <textarea id="reportText" class="form-control" rows="3" required></textarea>
             </div>
-            <div class="mb-3">
-              <label class="form-label" for="proofImage">Proof of Payment (Screenshot) <span class="text-danger">*</span></label>
-              <input type="file" id="proofImage" class="form-control" accept="image/*" required>
-            </div>
-            <div class="alert alert-info">
-              <small>After submitting, your order will be processed and you'll receive a delivered account once payment is confirmed.</small>
-            </div>
-            <button class="btn btn-primary w-100" type="submit">Submit Order</button>
+            <button type="submit" class="btn btn-primary w-100">
+              Submit Report
+            </button>
           </form>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- LOGIN MODAL -->
-  <div class="modal fade" id="loginModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Login</h5>
-          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="loginForm">
-            <div class="mb-3">
-              <label class="form-label" for="loginEmail">Email</label>
-              <input type="email" id="loginEmail" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="loginPassword">Password</label>
-              <input type="password" id="loginPassword" class="form-control" required>
-            </div>
-            <button class="btn btn-primary w-100" type="submit">Login</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SIGNUP MODAL -->
-  <div class="modal fade" id="signupModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Sign Up</h5>
-          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="signupForm">
-            <div class="mb-3">
-              <label class="form-label" for="signupName">Full Name</label>
-              <input type="text" id="signupName" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="signupEmail">Email</label>
-              <input type="email" id="signupEmail" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="signupPassword">Password</label>
-              <input type="password" id="signupPassword" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="confirmPassword">Confirm Password</label>
-              <input type="password" id="confirmPassword" class="form-control" required>
-            </div>
-            <button class="btn btn-primary w-100" type="submit">Create Account</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCRIPTS -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    // ==============================
-    // SUPABASE CONFIG
-    // ==============================
-    const SUPABASE_URL = 'https://hnymqvkfmythdxtjqeam.supabase.co';
+    // ========= CONFIG =========
+    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
     const SUPABASE_ANON_KEY =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI';
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUser = null;
-    let currentProduct = null;
-    let currentOrderDetails = null;
-    let PRODUCT_STOCK_COUNTS = {};     // per product_id
-    let COMBO_STOCK_COUNTS = {};       // key: product_id|account_type|duration
+    // Optional Telegram (fill if you want real notifs)
+    const TELEGRAM_BOT_TOKEN = "";
+    const TELEGRAM_CHAT_ID = "";
 
-    // ==============================
-    // DURATION MAP
-    // ==============================
-    const durationMap = {
-      '7d': '7 Days',
-      '14d': '14 Days',
-      '1m': '1 Month',
-      '2m': '2 Months',
-      '3m': '3 Months',
-      '4m': '4 Months',
-      '5m': '5 Months',
-      '6m': '6 Months',
-      '8m': '8 Months',
-      '10m': '10 Months',
-      '12m': '12 Months',
-      '24m': '24 Months',
-      'nw': 'No Warranty',
-      '3m w': '3 Months Warranty',
-      '6m w': '6 Months Warranty',
-      '12m w': '12 Months Warranty'
-    };
+    let CURRENT_USER = null;
+    let ALL_PRODUCTS = [];
+    let ALL_STOCKS = [];
+    let PRICE_ROWS = [];
+    let CURRENT_PRODUCT = null;
+    let CURRENT_COMBO = null;
+    let CURRENT_PROOF_BASE64 = null;
+    let AUTH_MODE = "login"; // or "signup"
 
-    // ==============================
-    // STATIC PRODUCTS DATA (ALWAYS SHOWN)
-    // ==============================
-    const PRODUCTS_DATA = [
-      // Entertainment
-      {
-        id: 'netflix',
-        name: 'Netflix Premium',
-        category: 'entertainment',
-        icon: '📺',
-        pricing: {
-          'solo profile': { '1m': 160, '2m': 280, '3m': 435, '4m': 565, '6m': 850, '8m': 1090, '12m': 1500 },
-          'shared profile': { '1m': 80, '2m': 145, '3m': 205, '4m': 270, '6m': 410, '8m': 520, '12m': 800 }
-        }
-      },
-      {
-        id: 'viu',
-        name: 'Viu Premium',
-        category: 'entertainment',
-        icon: '🎬',
-        pricing: {
-          'solo account': { '1m': 70, '2m': 105, '3m': 145, '4m': 170, '6m': 205, '10m': 280, '12m': 310 },
-          'shared account': { '1m': 30, '2m': 55, '3m': 75, '4m': 90, '6m': 120, '10m': 190, '12m': 220 }
-        }
-      },
-      {
-        id: 'viva-max',
-        name: 'VIVAMAX VIVAONE',
-        category: 'entertainment',
-        icon: '🎭',
-        pricing: {
-          'solo account': { '1m': 110, '2m': 145, '3m': 170 },
-          'shared account': { '1m': 65, '2m': 90, '3m': 120 }
-        }
-      },
-      {
-        id: 'wetv',
-        name: 'WeTV',
-        category: 'entertainment',
-        icon: '📱',
-        pricing: {
-          'solo account': { '1m': 150 },
-          'shared account': { '1m': 55, '2m': 95, '3m': 135 }
-        }
-      },
-      {
-        id: 'iwant-tfc',
-        name: 'IWANT TFC',
-        category: 'entertainment',
-        icon: '📺',
-        pricing: {
-          'solo account': { '1m': 145 },
-          'shared account': { '1m': 50, '2m': 90, '3m': 125 }
-        }
-      },
-      {
-        id: 'crunchyroll',
-        name: 'Crunchyroll',
-        category: 'entertainment',
-        icon: '🎮',
-        pricing: {
-          'solo profile': { '1m': 75, '2m': 115, '3m': 160, '4m': 195 },
-          'shared profile': { '1m': 35, '2m': 60, '3m': 90, '4m': 115 }
-        }
-      },
-      {
-        id: 'disney-plus',
-        name: 'Disney+',
-        category: 'entertainment',
-        icon: '🦁',
-        pricing: {
-          'solo account': { '1m': 390 },
-          'solo profile': { '1m': 160, '2m': 315, '4m': 630, '10m': 1480, '12m': 1700 },
-          'shared profile': { '1m': 85, '2m': 165, '4m': 330, '10m': 720, '12m': 880 }
-        }
-      },
-      {
-        id: 'bilibili',
-        name: 'Bilibili',
-        category: 'entertainment',
-        icon: '📺',
-        pricing: {
-          'shared account': { '1m': 45, '2m': 75, '3m': 105 }
-        }
-      },
-      {
-        id: 'loklok',
-        name: 'Loklok',
-        category: 'entertainment',
-        icon: '📱',
-        pricing: {
-          'solo account': { '1m': 150 },
-          'shared account': { '1m': 65, '2m': 115, '3m': 170 }
-        }
-      },
-      {
-        id: 'iqiyi',
-        name: 'iQiyi',
-        category: 'entertainment',
-        icon: '📺',
-        pricing: {
-          'shared account': { '1m': 50, '2m': 90, '3m': 135 }
-        }
-      },
-      {
-        id: 'hbo-max',
-        name: 'HBO Max',
-        category: 'entertainment',
-        icon: '📹',
-        pricing: {
-          'solo account': { '1m': 240, '2m': 360, '3m': 480 },
-          'solo profile': { '1m': 135, '2m': 240, '3m': 350 },
-          'shared profile': { '1m': 70, '2m': 120, '3m': 170 }
-        }
-      },
-      {
-        id: 'amazon-prime',
-        name: 'Amazon Prime',
-        category: 'entertainment',
-        icon: '🛒',
-        pricing: {
-          'solo account': { '1m': 80, '2m': 110, '3m': 135, '4m': 160, '5m': 185, '6m': 210 },
-          'solo profile': { '1m': 50, '2m': 80, '3m': 110, '4m': 135, '5m': 150, '6m': 170 },
-          'shared profile': { '1m': 30, '2m': 50, '3m': 70, '4m': 80, '5m': 90, '6m': 100 }
-        }
-      },
-      {
-        id: 'youku',
-        name: 'Youku',
-        category: 'entertainment',
-        icon: '📺',
-        pricing: {
-          'solo account': { '1m': 125 },
-          'shared account': { '1m': 50, '2m': 90, '3m': 125 }
-        }
-      },
-      {
-        id: 'nba-league-pass',
-        name: 'NBA League Pass Premium',
-        category: 'entertainment',
-        icon: '🏀',
-        pricing: {
-          'solo account': { '1m': 150 },
-          'shared account': { '1m': 75 }
-        }
-      },
+    // ========= UTILS =========
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
 
-      // Streaming
-      {
-        id: 'youtube',
-        name: 'YouTube Premium',
-        category: 'streaming',
-        icon: '📹',
-        pricing: {
-          'famhead': { '1m': 70, '2m': 90, '3m': 125, '4m': 150, '5m': 175, '6m': 200 },
-          'solo': { '1m': 45, '2m': 60, '3m': 85, '4m': 105, '5m': 125, '6m': 145 },
-          'invite': { '1m': 20, '2m': 35, '3m': 50, '4m': 60, '5m': 70, '6m': 80 }
-        }
-      },
-      {
-        id: 'spotify',
-        name: 'Spotify Premium',
-        category: 'streaming',
-        icon: '🎵',
-        pricing: {
-          'solo fw': { '1m': 60, '2m': 110, '3m': 150, '4m': 200 },
-          'solo nw': { '1m': 45, '2m': 80, '3m': 120, '4m': 150 }
-        }
-      },
-      {
-        id: 'apple-music',
-        name: 'Apple Music',
-        category: 'streaming',
-        icon: '🎧',
-        pricing: {
-          'solo account': { '1m': 49, '2m': 89, '3m': 129, '4m': 159 }
-        }
-      },
+      const wrapper = document.createElement("div");
+      const bsType =
+        type === "success"
+          ? "success"
+          : type === "danger" || type === "error"
+          ? "danger"
+          : type === "warning"
+          ? "warning"
+          : "secondary";
 
-      // AI
-      {
-        id: 'chatgpt',
-        name: 'ChatGPT Plus',
-        category: 'ai',
-        icon: '🧠',
-        pricing: {
-          'solo account': { '1m': 600, '2m': 1050, '3m': 1500 },
-          'shared account': { '1m': 120, '2m': 200, '3m': 290 }
-        }
-      },
-      {
-        id: 'blackbox-ai',
-        name: 'Blackbox AI',
-        category: 'ai',
-        icon: '🤖',
-        pricing: {
-          'solo account': { '1m': 90, '2m': 170, '3m': 250 }
-        }
-      },
-      {
-        id: 'perplexity',
-        name: 'Perplexity AI',
-        category: 'ai',
-        icon: '🔍',
-        pricing: {
-          'solo account': { '1m': 120, '4m': 200, '6m': 250, '12m': 300, '24m': 450 },
-          'shared account': { '1m': 55, '4m': 140, '6m': 190, '12m': 230, '24m': 350 }
-        }
-      },
-      {
-        id: 'google-one',
-        name: 'Google One + Gemini AI',
-        category: 'ai',
-        icon: '☁️',
-        pricing: {
-          'solo account': { '1m': 50, '2m': 85, '3m': 120, '12m': 280 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 80, '12m': 150 }
-        }
-      },
-
-      // Educational
-      {
-        id: 'quizlet',
-        name: 'Quizlet+',
-        category: 'educational',
-        icon: '📚',
-        pricing: {
-          'solo account': { '1m': 45, '2m': 65, '3m': 100 },
-          'shared account': { '1m': 20, '2m': 35, '3m': 50 }
-        }
-      },
-      {
-        id: 'scribd',
-        name: 'Scribd Premium',
-        category: 'educational',
-        icon: '📖',
-        pricing: {
-          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 80 }
-        }
-      },
-      {
-        id: 'studocu',
-        name: 'Studocu Premium',
-        category: 'educational',
-        icon: '🎓',
-        pricing: {
-          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 80 }
-        }
-      },
-      {
-        id: 'duolingo',
-        name: 'Duolingo Super',
-        category: 'educational',
-        icon: '🧑‍🎓',
-        pricing: {
-          'solo account': { '1m': 80, '2m': 130, '3m': 170 }
-        }
-      },
-      {
-        id: 'turnitin-student',
-        name: 'Turnitin Student',
-        category: 'educational',
-        icon: '📝',
-        pricing: {
-          'solo account': { '7d': 35, '14d': 50, '1m': 80, '2m': 140, '3m': 160, '6m': 330, '12m': 580 }
-        }
-      },
-      {
-        id: 'turnitin-instructor',
-        name: 'Turnitin Instructor',
-        category: 'educational',
-        icon: '👨‍🏫',
-        pricing: {
-          'solo account': { '1m': 520 },
-          'shared account': { '7d': 120, '14d': 175, '1m': 280 }
-        }
-      },
-
-      // Editing / Mixed
-      {
-        id: 'canva',
-        name: 'Canva Pro',
-        category: 'editing',
-        icon: '🎨',
-        pricing: {
-          'edu lifetime': { 'nw': 19, '3m w': 39, '6m w': 49, '12m w': 69 },
-          'teamhead': { '1m': 45, '2m': 55, '3m': 65, '4m': 75, '5m': 85, '6m': 95 },
-          'solo': { '1m': 25, '2m': 35, '3m': 45, '4m': 55, '5m': 65, '6m': 75 },
-          'invite': { '1m': 10, '2m': 15, '3m': 20, '4m': 25, '5m': 30, '6m': 35 }
-        }
-      },
-      {
-        id: 'picsart',
-        name: 'Picsart Gold',
-        category: 'editing',
-        icon: '👏',
-        pricing: {
-          'teamhead account': { '1m': 70, '2m': 115, '3m': 150 },
-          'solo account': { '1m': 50, '2m': 85, '3m': 120 },
-          'shared account': { '1m': 25, '2m': 45, '3m': 70 }
-        }
-      },
-      {
-        id: 'capcut',
-        name: 'CapCut Pro',
-        category: 'editing',
-        icon: '📝',
-        pricing: {
-          'solo account': { '7d': 50, '1m': 130, '2m': 190, '3m': 240 },
-          'shared account': { '1m': 70, '2m': 120, '3m': 155 }
-        }
-      },
-      {
-        id: 'alight-motion',
-        name: 'Alight Motion Pro',
-        category: 'editing',
-        icon: '📱',
-        pricing: {
-          'solo account': { '1m': 90, '12m': 149 },
-          'shared account': { '1m': 35, '12m': 69 }
-        }
-      },
-      {
-        id: 'remini',
-        name: 'Remini Web',
-        category: 'editing',
-        icon: '✨',
-        pricing: {
-          'solo account': { '7d': 30, '1m': 50 },
-          'shared account': { '7d': 15, '1m': 25 }
-        }
-      },
-      {
-        id: 'grammarly',
-        name: 'Grammarly Premium',
-        category: 'educational',
-        icon: '✍️',
-        pricing: {
-          'solo account': { '1m': 85 },
-          'shared account': { '1m': 35, '2m': 65, '3m': 95 }
-        }
-      },
-      {
-        id: 'quillbot',
-        name: 'Quillbot Premium',
-        category: 'educational',
-        icon: '📝',
-        pricing: {
-          'solo account': { '1m': 100 },
-          'shared account': { '1m': 45, '2m': 75, '3m': 110 }
-        }
-      },
-      {
-        id: 'ms-365',
-        name: 'Microsoft 365',
-        category: 'educational',
-        icon: '💻',
-        pricing: {
-          'solo account': { '1m': 55, '2m': 90, '3m': 120 },
-          'shared account': { '1m': 25, '2m': 45, '3m': 65 }
-        }
-      },
-      {
-        id: 'cams-canner',
-        name: 'CamScanner Pro',
-        category: 'editing',
-        icon: '📁',
-        pricing: {
-          'solo account': { '1m': 100, '2m': 180, '3m': 250 },
-          'shared account': { '1m': 50, '2m': 90, '3m': 120 }
-        }
-      },
-      {
-        id: 'small-pdf',
-        name: 'Small PDF Pro',
-        category: 'editing',
-        icon: '📁',
-        pricing: {
-          'solo account': { '1m': 55, '2m': 95, '3m': 130 },
-          'shared account': { '1m': 30, '2m': 50, '3m': 70 }
-        }
-      },
-      {
-        id: 'zoom',
-        name: 'Zoom Pro',
-        category: 'educational',
-        icon: '📽️',
-        pricing: {
-          'solo account': { '14d': 45, '1m': 70, '2m': 120, '3m': 160 }
-        }
-      }
-    ];
-
-    // ==============================
-    // UTILITIES
-    // ==============================
-    function showToast(message, type = 'info') {
-      const toast = document.createElement('div');
-      const bsType = type === 'error' ? 'danger' : type;
-      toast.className = `toast align-items-center text-bg-${bsType} border-0`;
-      toast.setAttribute('role', 'alert');
-      toast.innerHTML = `
+      wrapper.className = `toast align-items-center text-bg-${bsType} border-0`;
+      wrapper.role = "alert";
+      wrapper.innerHTML = `
         <div class="d-flex">
           <div class="toast-body">${message}</div>
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
       `;
-      document.getElementById('toastContainer').appendChild(toast);
-      const bsToast = new bootstrap.Toast(toast);
-      bsToast.show();
-      toast.addEventListener('hidden.bs.toast', () => toast.remove());
+      container.appendChild(wrapper);
+      const t = new bootstrap.Toast(wrapper);
+      t.show();
+      wrapper.addEventListener("hidden.bs.toast", () => wrapper.remove());
     }
 
-    function getInitials(name) {
-      return name
-        .split(' ')
-        .filter(Boolean)
-        .map(part => part[0])
-        .join('')
-        .toUpperCase();
+    function safeNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
     }
 
-    function formatDate(dateString) {
-      const d = new Date(dateString);
-      if (isNaN(d.getTime())) return dateString || '-';
-      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    function initialsFromEmail(email) {
+      if (!email) return "?";
+      const name = email.split("@")[0] || "";
+      if (!name) return "?";
+      return name[0].toUpperCase();
     }
 
-    function isValidGmail(email) {
-      return /^[a-zA-Z0-9.]+@gmail\.com$/.test(email);
-    }
-
-    function generateOrderCode() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
-      const rand = Math.floor(1000 + Math.random() * 9000);
-      return `AXP-${y}${m}${d}-${rand}`;
-    }
-
-    // ==============================
-    // SUPABASE HELPERS
-    // ==============================
-    async function saveBuyerToSupabase(buyer) {
-      try {
-        const { data, error } = await supabase
-          .from('buyers')
-          .insert({
-            name: buyer.name,
-            email: buyer.email.toLowerCase()
-          });
-
-        if (error) {
-          console.error('Error saving buyer:', error.message, error.details, error.hint);
-          showToast('Error saving buyer to database', 'error');
-          return null;
-        }
-        return data;
-      } catch (err) {
-        console.error('saveBuyerToSupabase error:', err);
-        showToast('Error saving buyer to database', 'error');
-        return null;
-      }
-    }
-
-    async function saveOrderToSupabase(order) {
-      const { data, error } = await supabase
-        .from('orders')
-        .insert(order)
-        .select();
-
-      if (error) {
-        console.error('Error saving order:', error.message, error.details, error.hint);
-        showToast('Error saving order to database', 'error');
-        return null;
-      }
-      return data;
+    async function fileToBase64(file) {
+      if (!file) return null;
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
     async function sendTelegramNotification(order) {
-      const message = `
-🛒 NEW ORDER RECEIVED!
-Order ID: ${order.id || order.order_code}
-Buyer: ${order.buyer_email}
-Product: ${order.product_name}
-Account Type: ${order.account_type}
-Duration: ${order.duration}
-Price: ₱${order.price}
-Payment Method: ${order.payment_method}
-      `;
-      console.log('[Telegram mock]', message);
-    }
-
-    // ==============================
-    // STOCK COUNTS FROM SUPABASE
-    // ==============================
-    async function loadStockCountsFromSupabase() {
-      PRODUCT_STOCK_COUNTS = {};
-      COMBO_STOCK_COUNTS = {};
-
+      if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
       try {
-        const { data, error } = await supabase
-          .from('stocks')
-          .select('product_id, account_type, duration, status');
-
-        if (error) {
-          console.error('Error loading stocks:', error);
-          showToast('Error loading stocks from database', 'error');
-          return;
-        }
-
-        (data || []).forEach(row => {
-          const status = (row.status || '').toLowerCase();
-          if (status !== 'available') return;
-
-          const pid = row.product_id;
-          if (!pid) return;
-
-          PRODUCT_STOCK_COUNTS[pid] = (PRODUCT_STOCK_COUNTS[pid] || 0) + 1;
-
-          const type = (row.account_type || '').toLowerCase();
-          const duration = (row.duration || '').toLowerCase();
-          if (type && duration) {
-            const key = `${pid}|${type}|${duration}`;
-            COMBO_STOCK_COUNTS[key] = (COMBO_STOCK_COUNTS[key] || 0) + 1;
-          }
+        const text =
+          `🛒 New order #${order.id}\n` +
+          `Buyer: ${order.buyer_email || order.buyer_id}\n` +
+          `Product: ${order.product_id} (${order.account_type} / ${order.duration})\n` +
+          `Price: ₱${safeNumber(order.price).toFixed(2)}\n` +
+          `Payment: ${order.payment_method} | Ref: ${order.reference_number || "-"}`;
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text,
+          }),
         });
       } catch (err) {
-        console.error('loadStockCountsFromSupabase error:', err);
-        showToast('Error loading stocks', 'error');
+        console.warn("Telegram notify failed:", err);
       }
     }
 
-    function getProductStockCount(productId) {
-      return PRODUCT_STOCK_COUNTS[productId] || 0;
+    // ========= AUTH =========
+    async function refreshUser() {
+      const { data } = await supabase.auth.getUser();
+      CURRENT_USER = data.user || null;
+
+      const emailLabel = document.getElementById("userEmailLabel");
+      const btnLoginOpen = document.getElementById("btnLoginOpen");
+      const btnLogout = document.getElementById("btnLogout");
+      const buyerAvatar = document.getElementById("buyerAvatar");
+      const buyerGreeting = document.getElementById("buyerGreeting");
+      const buyerStatusText = document.getElementById("buyerStatusText");
+
+      if (CURRENT_USER) {
+        const email = CURRENT_USER.email;
+        emailLabel.textContent = email;
+        btnLoginOpen.classList.add("d-none");
+        btnLogout.classList.remove("d-none");
+        buyerAvatar.textContent = initialsFromEmail(email);
+        buyerGreeting.textContent = "Hi, " + (email.split("@")[0] || "User");
+        buyerStatusText.textContent = "You can now place orders and view your accounts.";
+        document.getElementById("ordersGuestNotice").classList.add("d-none");
+        document.getElementById("deliveredGuestNotice").classList.add("d-none");
+        loadMyOrders();
+        loadDeliveredAccounts();
+      } else {
+        emailLabel.textContent = "";
+        btnLoginOpen.classList.remove("d-none");
+        btnLogout.classList.add("d-none");
+        buyerAvatar.textContent = "?";
+        buyerGreeting.textContent = "Welcome, Guest";
+        buyerStatusText.textContent = "Login to track your orders and delivered accounts.";
+        document.getElementById("ordersGuestNotice").classList.remove("d-none");
+        document.getElementById("deliveredGuestNotice").classList.remove("d-none");
+        document.getElementById("ordersList").innerHTML = "";
+        document.getElementById("deliveredList").innerHTML = "";
+      }
     }
 
-    function getComboStockCount(productId, accountType, duration) {
-      const key = `${productId}|${(accountType || '').toLowerCase()}|${(duration || '').toLowerCase()}`;
-      return COMBO_STOCK_COUNTS[key] || 0;
-    }
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
 
-    // ==============================
-    // SECTIONS / NAV
-    // ==============================
-    function showSection(sectionKey) {
-      const id = sectionKey.endsWith('Section') ? sectionKey : `${sectionKey}Section`;
-      document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
-      const target = document.getElementById(id);
-      if (target) target.classList.remove('hidden');
-
-      document.querySelectorAll('.nav-link[data-section]').forEach(a => a.classList.remove('active'));
-      const nav = document.querySelector(`.nav-link[data-section="${sectionKey.replace('Section', '')}"]`);
-      if (nav) nav.classList.add('active');
-    }
-
-    function showUserAuth() {
-      document.getElementById('userAuth').classList.remove('hidden');
-      document.getElementById('userProfile').classList.add('hidden');
-    }
-
-    function showUserProfile() {
-      document.getElementById('userAuth').classList.add('hidden');
-      document.getElementById('userProfile').classList.remove('hidden');
-      document.getElementById('userName').textContent = currentUser.name;
-      document.getElementById('profileName').textContent = currentUser.name;
-      document.getElementById('profileEmail').textContent = currentUser.email;
-      document.getElementById('profileAvatar').textContent = getInitials(currentUser.name);
-
-      loadUserOrders();
-      loadDeliveredAccounts();
-    }
-
-    // ==============================
-    // PRODUCTS DISPLAY
-    // ==============================
-    function computeMinPrice(product) {
-      let minPrice = Infinity;
-      Object.values(product.pricing || {}).forEach(tier => {
-        Object.values(tier || {}).forEach(price => {
-          if (typeof price === 'number' && price < minPrice) {
-            minPrice = price;
-          }
-        });
-      });
-      if (!Number.isFinite(minPrice)) return 0;
-      return minPrice;
-    }
-
-    function displayProducts(products) {
-      const container = document.getElementById('productsContainer');
-      container.innerHTML = '';
-
-      products.forEach(product => {
-        const minPrice = computeMinPrice(product);
-        const stockCount = getProductStockCount(product.id);
-        const outOfStock = stockCount <= 0;
-
-        const col = document.createElement('div');
-        col.className = 'col-6 col-md-4 col-lg-3 mb-4';
-        col.innerHTML = `
-          <div class="card product-card" data-product-id="${product.id}" data-category="${product.category}">
-            <div class="card-body text-center">
-              <div class="product-img mb-3">
-                <span style="font-size: 2.5rem;">${product.icon}</span>
-              </div>
-              <h6 class="card-title mb-1">${product.name}</h6>
-              <p class="card-text text-muted small mb-2 text-capitalize">${product.category}</p>
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="badge bg-secondary text-capitalize">${product.category}</span>
-                <span class="text-primary fw-bold small">From ₱${minPrice}</span>
-              </div>
-              <small class="text-muted d-block mb-2">
-                Stock: ${stockCount} ${outOfStock ? '(Out of stock)' : ''}
-              </small>
-              <button class="btn btn-primary btn-sm w-100 view-product-btn"
-                ${outOfStock ? 'disabled' : ''}>
-                ${outOfStock ? 'Out of Stock' : 'View Details'}
-              </button>
-            </div>
-          </div>
-        `;
-        container.appendChild(col);
-      });
-
-      document.querySelectorAll('.view-product-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const card = btn.closest('.product-card');
-          const id = card.getAttribute('data-product-id');
-          openProductModal(id);
-        });
-      });
-    }
-
-    function filterProducts(category) {
-      const cards = document.querySelectorAll('.product-card');
-      cards.forEach(card => {
-        const c = card.getAttribute('data-category');
-        if (category === 'all' || !category) {
-          card.style.display = '';
-        } else {
-          card.style.display = c === category ? '' : 'none';
-        }
-      });
-    }
-
-    function openProductModal(productId) {
-      const product = PRODUCTS_DATA.find(p => p.id === productId);
-      if (!product) {
-        showToast('Product not found', 'error');
+      if (!email || !password) {
+        showToast("Please fill email and password.", "warning");
         return;
       }
 
-      currentProduct = product;
+      try {
+        if (AUTH_MODE === "login") {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          showToast("Logged in successfully.", "success");
+        } else {
+          const { error } = await supabase.auth.signUp({ email, password });
+          if (error) throw error;
+          showToast("Account created and logged in.", "success");
+        }
+        await refreshUser();
+        bootstrap.Modal.getInstance(document.getElementById("authModal")).hide();
+      } catch (err) {
+        console.error("[auth] error:", err);
+        showToast(err.message || "Authentication failed.", "danger");
+      }
+    }
 
-      const totalStock = getProductStockCount(product.id);
+    async function handleLogout() {
+      try {
+        await supabase.auth.signOut();
+        showToast("Logged out.", "success");
+        await refreshUser();
+      } catch (err) {
+        console.error("[logout] error:", err);
+      }
+    }
 
-      document.getElementById('productModalTitle').textContent = product.name;
-      document.getElementById('productModalIcon').textContent = product.icon;
-      document.getElementById('productModalName').textContent = product.name;
-      document.getElementById('productModalDescription').textContent =
-        `${product.category}`;
-      document.getElementById('availableStock').textContent = totalStock;
-      document.getElementById('productPrice').textContent = '₱0.00';
-      document.getElementById('buyNowForm').reset();
+    function openAuthModal(mode = "login") {
+      AUTH_MODE = mode;
+      const title = document.getElementById("authModalTitle");
+      const submitBtn = document.getElementById("authSubmitBtn");
+      const switchText = document.getElementById("authSwitchText");
+      const switchBtn = document.getElementById("authSwitchBtn");
+      document.getElementById("authForm").reset();
 
-      const inviteField = document.getElementById('inviteEmailField');
-      inviteField.classList.add('hidden');
+      if (mode === "login") {
+        title.textContent = "Login";
+        submitBtn.textContent = "Login";
+        switchText.textContent = "Don't have an account?";
+        switchBtn.textContent = "Sign up";
+      } else {
+        title.textContent = "Sign up";
+        submitBtn.textContent = "Sign up";
+        switchText.textContent = "Already have an account?";
+        switchBtn.textContent = "Login";
+      }
 
-      const accountTypeSelect = document.getElementById('accountType');
-      const durationSelect = document.getElementById('duration');
-      accountTypeSelect.innerHTML = '<option value="">Select account type</option>';
-      durationSelect.innerHTML = '<option value="">Select duration</option>';
+      const modal = new bootstrap.Modal(document.getElementById("authModal"));
+      modal.show();
+    }
 
-      Object.keys(product.pricing).forEach(typeKey => {
-        const opt = document.createElement('option');
-        opt.value = typeKey;
-        opt.textContent = typeKey;
+    // ========= PRODUCTS / STOCKS / PRICES =========
+    async function loadInitialData() {
+      try {
+        const [
+          { data: products, error: prodErr },
+          { data: stocks, error: stockErr },
+        ] = await Promise.all([
+          supabase.from("products").select("id, name, category, icon").order("name", { ascending: true }),
+          supabase.from("stocks").select("product_id, account_type, duration, status, quantity"),
+        ]);
+
+        if (prodErr) throw prodErr;
+        if (stockErr) throw stockErr;
+
+        ALL_PRODUCTS = products || [];
+        ALL_STOCKS = stocks || [];
+
+        // fetch pricing from product_prices if exists
+        try {
+          const { data: prices, error: priceErr } = await supabase
+            .from("product_prices")
+            .select("product_id, account_type, duration, price");
+          if (!priceErr) {
+            PRICE_ROWS = prices || [];
+          } else {
+            PRICE_ROWS = [];
+          }
+        } catch (e) {
+          PRICE_ROWS = [];
+        }
+
+        renderProducts();
+        populateRulesProductFilter();
+        loadRules();
+      } catch (err) {
+        console.error("[loadInitialData] error:", err);
+        showToast("Failed to load products.", "danger");
+      }
+    }
+
+    function stockCountByProduct(productId) {
+      let total = 0;
+      (ALL_STOCKS || []).forEach((s) => {
+        if (
+          s.product_id === productId &&
+          (s.status || "").toLowerCase() === "available" &&
+          safeNumber(s.quantity) > 0
+        ) {
+          total += safeNumber(s.quantity);
+        }
+      });
+      return total;
+    }
+
+    function stockCountByCombo(productId, accountType, duration) {
+      let total = 0;
+      (ALL_STOCKS || []).forEach((s) => {
+        if (
+          s.product_id === productId &&
+          s.account_type === accountType &&
+          s.duration === duration &&
+          (s.status || "").toLowerCase() === "available" &&
+          safeNumber(s.quantity) > 0
+        ) {
+          total += safeNumber(s.quantity);
+        }
+      });
+      return total;
+    }
+
+    function renderProducts(categoryFilter = "all") {
+      const row = document.getElementById("productsRow");
+      row.innerHTML = "";
+
+      if (!ALL_PRODUCTS.length) {
+        row.innerHTML = `<div class="col-12"><div class="alert alert-light">No products yet.</div></div>`;
+        return;
+      }
+
+      ALL_PRODUCTS.forEach((p) => {
+        const category = (p.category || "").toLowerCase();
+        if (categoryFilter !== "all" && category !== categoryFilter) return;
+
+        const col = document.createElement("div");
+        col.className = "col-6 col-md-4 mb-3";
+
+        const stock = stockCountByProduct(p.id);
+        const icon = p.icon || "⭐";
+
+        col.innerHTML = `
+          <div class="card product-card h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="product-img mb-2">${icon}</div>
+              <h6 class="card-title mb-1">${p.name}</h6>
+              <p class="small-muted mb-2 text-capitalize">${p.category || "-"}</p>
+              <p class="mb-2">
+                <span class="product-stock-pill">
+                  <i class="fa fa-database"></i>
+                  ${stock} slot(s)
+                </span>
+              </p>
+              <div class="mt-auto">
+                <button class="btn btn-sm btn-primary w-100 btn-open-product" data-id="${p.id}">
+                  View combos / Buy
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        row.appendChild(col);
+      });
+
+      // Attach handlers
+      document.querySelectorAll(".btn-open-product").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const productId = btn.getAttribute("data-id");
+          const product = ALL_PRODUCTS.find((x) => x.id === productId);
+          if (!product) return;
+          openProductModal(product);
+        });
+      });
+    }
+
+    function populateRulesProductFilter() {
+      const select = document.getElementById("rulesProductFilter");
+      if (!select) return;
+      select.innerHTML = `<option value="">All products</option>`;
+      ALL_PRODUCTS.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function openProductModal(product) {
+      CURRENT_PRODUCT = product;
+      CURRENT_COMBO = null;
+      CURRENT_PROOF_BASE64 = null;
+      document.getElementById("productModalTitle").textContent = product.name;
+
+      const accountTypeSelect = document.getElementById("comboAccountType");
+      const durationSelect = document.getElementById("comboDuration");
+      const priceLabel = document.getElementById("comboPriceLabel");
+      const stockLabel = document.getElementById("comboStockLabel");
+
+      accountTypeSelect.innerHTML = `<option value="">Select type</option>`;
+      durationSelect.innerHTML = `<option value="">Select duration</option>`;
+      priceLabel.textContent = "₱0.00";
+      stockLabel.innerHTML = `<i class="fa fa-circle-notch fa-spin me-1"></i>Checking...`;
+
+      // filter price rows for this product
+      const combos = (PRICE_ROWS || []).filter((row) => row.product_id === product.id);
+
+      const typeSet = new Set();
+      combos.forEach((c) => {
+        if (c.account_type) typeSet.add(c.account_type);
+      });
+
+      if (!combos.length) {
+        stockLabel.textContent = "0 (no pricing rows)";
+      }
+
+      typeSet.forEach((t) => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
         accountTypeSelect.appendChild(opt);
       });
 
-      accountTypeSelect.onchange = () => {
-        const type = accountTypeSelect.value;
-        durationSelect.innerHTML = '<option value="">Select duration</option>';
-        if (type && product.pricing[type]) {
-          Object.keys(product.pricing[type]).forEach(dKey => {
-            const opt = document.createElement('option');
-            opt.value = dKey;
-            opt.textContent = durationMap[dKey] || dKey;
-            durationSelect.appendChild(opt);
-          });
-        }
-        updateInviteField();
-        updatePrice();
-      };
+      durationSelect.disabled = true;
 
-      durationSelect.onchange = () => {
-        updatePrice();
-      };
-
-      document.getElementById('buyNowForm').onsubmit = (e) => {
-        e.preventDefault();
-        handleBuyNow();
-      };
-
-      const productModal = new bootstrap.Modal(document.getElementById('productModal'));
-      productModal.show();
-    }
-
-    function updateInviteField() {
-      const type = (document.getElementById('accountType').value || '').toLowerCase();
-      const inviteField = document.getElementById('inviteEmailField');
-      if (type.includes('invite')) {
-        inviteField.classList.remove('hidden');
+      if (CURRENT_USER) {
+        document.getElementById("productLoginNotice").classList.add("d-none");
       } else {
-        inviteField.classList.add('hidden');
-      }
-    }
-
-    function updatePrice() {
-      const type = document.getElementById('accountType').value;
-      const duration = document.getElementById('duration').value;
-      if (currentProduct && type && duration && currentProduct.pricing[type]) {
-        const price = currentProduct.pricing[type][duration];
-        if (price != null) {
-          document.getElementById('productPrice').textContent = `₱${price}`;
-          return;
-        }
-      }
-      document.getElementById('productPrice').textContent = '₱0.00';
-    }
-
-    async function handleBuyNow() {
-      if (!currentUser) {
-        showToast('Please login to continue', 'warning');
-        const modal = new bootstrap.Modal(document.getElementById('loginModal'));
-        modal.show();
-        return;
+        document.getElementById("productLoginNotice").classList.remove("d-none");
       }
 
-      const type = document.getElementById('accountType').value;
-      const duration = document.getElementById('duration').value;
-      if (!type || !duration) {
-        showToast('Please select account type and duration', 'warning');
-        return;
-      }
+      // on type change
+      accountTypeSelect.onchange = () => {
+        const atype = accountTypeSelect.value;
+        durationSelect.innerHTML = `<option value="">Select duration</option>`;
+        durationSelect.disabled = true;
+        priceLabel.textContent = "₱0.00";
+        stockLabel.textContent = "Select duration";
 
-      let inviteEmail = null;
-      if (type.toLowerCase().includes('invite')) {
-        inviteEmail = document.getElementById('gmail').value.trim();
-        if (!inviteEmail || !isValidGmail(inviteEmail)) {
-          showToast('Please enter a valid Gmail address', 'warning');
-          return;
-        }
-      }
-
-      // CHECK STOCK FOR THIS SPECIFIC COMBO BEFORE ALLOWING CHECKOUT
-      const comboStock = getComboStockCount(currentProduct.id, type, duration);
-      if (comboStock <= 0) {
-        showToast('This account type & duration is currently out of stock.', 'error');
-        return;
-      }
-
-      const priceText = document.getElementById('productPrice').textContent;
-      const price = Number(priceText.replace('₱', '')) || 0;
-
-      currentOrderDetails = {
-        productId: currentProduct.id,
-        productName: currentProduct.name,
-        accountType: type,
-        duration,
-        price,
-        inviteEmail
+        if (!atype) return;
+        const filtered = combos.filter((c) => c.account_type === atype);
+        const durationSet = new Set();
+        filtered.forEach((c) => {
+          if (c.duration) durationSet.add(c.duration);
+        });
+        durationSet.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d;
+          opt.textContent = d;
+          durationSelect.appendChild(opt);
+        });
+        durationSelect.disabled = false;
       };
 
-      bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-      const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-      checkoutModal.show();
+      // on duration change
+      durationSelect.onchange = () => {
+        const atype = accountTypeSelect.value;
+        const dur = durationSelect.value;
+        if (!atype || !dur) {
+          priceLabel.textContent = "₱0.00";
+          stockLabel.textContent = "Select combo";
+          CURRENT_COMBO = null;
+          return;
+        }
+        const combo = (PRICE_ROWS || []).find(
+          (c) =>
+            c.product_id === product.id &&
+            c.account_type === atype &&
+            c.duration === dur
+        );
+        CURRENT_COMBO = combo || null;
+        const priceVal = combo?.price || 0;
+        priceLabel.textContent = "₱" + safeNumber(priceVal).toFixed(2);
+        const available = stockCountByCombo(product.id, atype, dur);
+        stockLabel.textContent = `${available} slot(s)`;
+      };
+
+      // proof file
+      document.getElementById("payProof").value = "";
+      CURRENT_PROOF_BASE64 = null;
+
+      const modal = new bootstrap.Modal(document.getElementById("productModal"));
+      modal.show();
     }
 
-    // ==============================
-    // RULES & FEEDBACK (STATIC / MOCK)
-    // ==============================
-    function loadRules() {
-      const rules = [
-        { id: 1, rule_text: 'All accounts are guaranteed for the duration purchased.' },
-        { id: 2, rule_text: 'Refunds only if the account does not work within 24 hours.' },
-        { id: 3, rule_text: 'Sharing account details with others may result in suspension.' }
-      ];
-      const container = document.getElementById('rulesContainer');
-      container.innerHTML = `
-        <div class="card">
-          <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">General Rules</h5>
-          </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush">
-              ${rules.map(r => `<li class="list-group-item">${r.rule_text}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
-      `;
-    }
-
-    function loadFeedback() {
-      const feedback = [
-        { id: 1, buyer_name: 'John D.', feedback_text: 'Great service! My account works perfectly.', photo_url: null, created_at: '2023-05-15T10:30:00Z' },
-        { id: 2, buyer_name: 'Sarah M.', feedback_text: 'Fast delivery and good support.', photo_url: null, created_at: '2023-05-10T14:22:00Z' },
-        { id: 3, buyer_name: 'Mike T.', feedback_text: 'Had an issue but support fixed it quickly.', photo_url: null, created_at: '2023-05-05T09:15:00Z' }
-      ];
-      const container = document.getElementById('feedbackList');
-      container.innerHTML = '';
-      feedback.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'card mb-3';
-        card.innerHTML = `
-          <div class="card-body">
-            <div class="d-flex">
-              <div class="feedback-avatar me-3">${getInitials(item.buyer_name)}</div>
-              <div class="flex-grow-1">
-                <h6 class="mb-1">${item.buyer_name}</h6>
-                <p class="mb-2">${item.feedback_text}</p>
-                ${item.photo_url ? `<img src="${item.photo_url}" class="img-fluid rounded mb-2" style="max-height:200px;">` : ''}
-                <small class="text-muted">${formatDate(item.created_at)}</small>
-              </div>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function submitFeedback(e) {
-      e.preventDefault();
-      const name = document.getElementById('feedbackName').value.trim();
-      const text = document.getElementById('feedbackText').value.trim();
-      if (!name || !text) {
-        showToast('Please fill in all required fields', 'warning');
+    async function handlePlaceOrder() {
+      if (!CURRENT_USER) {
+        showToast("Please login first before placing an order.", "warning");
+        openAuthModal("login");
         return;
       }
-      showToast('Feedback submitted! (mock only)', 'success');
-      document.getElementById('feedbackForm').reset();
-      loadFeedback();
-    }
+      if (!CURRENT_PRODUCT) {
+        showToast("No product is selected.", "warning");
+        return;
+      }
 
-    // ==============================
-    // LOAD USER ORDERS (REAL)
-    // ==============================
-    async function loadUserOrders() {
-      if (!currentUser) return;
+      const accountType = document.getElementById("comboAccountType").value;
+      const duration = document.getElementById("comboDuration").value;
+      const payMethod = document.getElementById("payMethod").value;
+      const payRef = document.getElementById("payRef").value.trim();
+
+      if (!accountType || !duration) {
+        showToast("Please choose account type and duration.", "warning");
+        return;
+      }
+
+      const available = stockCountByCombo(CURRENT_PRODUCT.id, accountType, duration);
+      if (available <= 0) {
+        showToast("No available slots for this combo.", "warning");
+        return;
+      }
+
+      if (!payMethod) {
+        showToast("Please select payment method.", "warning");
+        return;
+      }
+
+      const priceVal = CURRENT_COMBO?.price || 0;
+
+      // read proof if not yet
+      if (!CURRENT_PROOF_BASE64) {
+        const fileInput = document.getElementById("payProof");
+        if (fileInput.files && fileInput.files[0]) {
+          try {
+            CURRENT_PROOF_BASE64 = await fileToBase64(fileInput.files[0]);
+          } catch (err) {
+            console.warn("Base64 failed:", err);
+          }
+        }
+      }
 
       try {
-        const { data: orderRows, error } = await supabase
-          .from('orders')
-          .select('id, product_id, product_name, account_type, duration, price, status, created_at, buyer_email, order_code')
-          .eq('buyer_email', currentUser.email.toLowerCase())
-          .order('created_at', { ascending: false });
+        const payload = {
+          buyer_id: CURRENT_USER.id,
+          buyer_email: CURRENT_USER.email,
+          product_id: CURRENT_PRODUCT.id,
+          account_type: accountType,
+          duration,
+          price: priceVal,
+          status: "pending",
+          payment_method: payMethod,
+          reference_number: payRef || null,
+          proof_image_url: CURRENT_PROOF_BASE64 || null,
+          created_at: new Date().toISOString(),
+        };
+        const { data, error } = await supabase.from("orders").insert(payload).select("id").single();
+        if (error) throw error;
 
-        if (error) {
-          console.error('Error loading user orders:', error);
-          showToast('Error loading your orders', 'error');
-          return;
-        }
+        showToast("Order placed. Wait for admin to confirm payment.", "success");
+        bootstrap.Modal.getInstance(document.getElementById("productModal")).hide();
+        document.getElementById("payMethod").value = "";
+        document.getElementById("payRef").value = "";
+        document.getElementById("payProof").value = "";
 
-        if (!orderRows || !orderRows.length) {
-          displayUserOrders([]);
-          return;
-        }
-
-        const orders = orderRows.map(o => ({
-          id: o.id,
-          product_name: o.product_name || o.product_id,
-          account_type: o.account_type,
-          duration: o.duration,
-          price: o.price,
-          status: (o.status || 'pending').toLowerCase(),
-          created_at: o.created_at
-        }));
-
-        displayUserOrders(orders);
+        await loadMyOrders();
+        await sendTelegramNotification({ ...payload, id: data.id });
       } catch (err) {
-        console.error('loadUserOrders error:', err);
-        showToast('Error loading your orders', 'error');
+        console.error("[placeOrder] error:", err);
+        showToast("Failed to place order: " + (err.message || ""), "danger");
       }
     }
 
-    function displayUserOrders(orders) {
-      const pending = document.getElementById('pendingOrdersList');
-      const delivered = document.getElementById('deliveredAccountsList');
-      const history = document.getElementById('orderHistoryList');
-
-      pending.innerHTML = '';
-      delivered.innerHTML = '';
-      history.innerHTML = '';
-
-      orders.forEach(order => {
-        const card = document.createElement('div');
-        card.className = 'card mb-3';
-        card.innerHTML = `
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <h6 class="mb-1">${order.product_name}</h6>
-                <p class="mb-1 small">Order ID: ${order.id}</p>
-                <p class="mb-1 small">Account Type: ${order.account_type} • Duration: ${order.duration}</p>
-                <p class="mb-0 fw-bold">₱${order.price}</p>
-              </div>
-              <div class="text-end">
-                <span class="order-status status-${order.status} text-capitalize">${order.status}</span>
-                <div class="mt-2">
-                  <small class="text-muted">${formatDate(order.created_at)}</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-
-        if (order.status === 'pending' || order.status === 'confirmed') {
-          pending.appendChild(card.cloneNode(true));
-        }
-        if (order.status === 'delivered') {
-          delivered.appendChild(card.cloneNode(true));
-        }
-        history.appendChild(card);
-      });
-
-      if (!orders.length) {
-        pending.innerHTML = '<p class="text-muted">No pending/confirmed orders.</p>';
-        delivered.innerHTML = '<p class="text-muted">No delivered accounts yet.</p>';
-        history.innerHTML = '<p class="text-muted">No order history yet.</p>';
-      }
-    }
-
-    // ==============================
-    // LOAD DELIVERED ACCOUNTS (records)
-    // ==============================
-    async function loadDeliveredAccounts() {
-      if (!currentUser) return;
-
-      const container = document.getElementById('deliveredAccountsList');
-      if (!container) return;
-
-      container.innerHTML = '<p class="text-muted">Loading delivered accounts...</p>';
+    // ========= RULES =========
+    async function loadRules() {
+      const list = document.getElementById("rulesList");
+      list.innerHTML = `<li class="small-muted">Loading rules...</li>`;
 
       try {
         const { data, error } = await supabase
-          .from('records')
-          .select('id, order_id, product_name, account_type, duration, price, purchase_date, email, password, profile, pin, buyer_email')
-          .eq('buyer_email', currentUser.email.toLowerCase())
-          .order('purchase_date', { ascending: false });
+          .from("rules")
+          .select("id, rule_text, product_id")
+          .order("id", { ascending: true });
+        if (error) throw error;
 
-        if (error) {
-          console.error('Error loading delivered accounts:', error);
-          showToast('Error loading delivered accounts', 'error');
-          container.innerHTML = '<p class="text-muted">Failed to load delivered accounts.</p>';
-          return;
-        }
-
+        list.innerHTML = "";
         if (!data || !data.length) {
-          container.innerHTML = '<p class="text-muted">No delivered accounts yet.</p>';
+          list.innerHTML = `<li class="small-muted">No rules set yet.</li>`;
           return;
         }
 
-        container.innerHTML = '';
-        data.forEach(rec => {
-          const card = document.createElement('div');
-          card.className = 'card mb-3';
-          card.innerHTML = `
-            <div class="card-body">
-              <h6 class="mb-1">${rec.product_name || 'Delivered Account'}</h6>
-              <p class="mb-1 small">Order ID: ${rec.order_id || rec.id}</p>
-              <p class="mb-1 small">Account Type: ${rec.account_type || '-'} • Duration: ${rec.duration || '-'}</p>
-              <p class="mb-1 small">Account Email: <strong>${rec.email || '-'}</strong></p>
-              <p class="mb-1 small">Password: <strong>${rec.password || '-'}</strong></p>
-              ${rec.profile ? `<p class="mb-1 small">Profile: <strong>${rec.profile}</strong></p>` : ''}
-              ${rec.pin ? `<p class="mb-1 small">PIN: <strong>${rec.pin}</strong></p>` : ''}
-              <p class="mb-1 small">Purchase Date: ${rec.purchase_date ? formatDate(rec.purchase_date) : '-'}</p>
-              <p class="mb-0 fw-bold">₱${rec.price ?? 0}</p>
-            </div>
+        const searchTerm = (document.getElementById("rulesSearchInput").value || "").toLowerCase();
+        const productFilter = document.getElementById("rulesProductFilter").value;
+
+        data.forEach((r) => {
+          if (productFilter && r.product_id !== productFilter) return;
+          if (searchTerm && !r.rule_text.toLowerCase().includes(searchTerm)) return;
+
+          const li = document.createElement("li");
+          li.innerHTML = `
+            ${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${r.rule_text}
           `;
-          container.appendChild(card);
+          list.appendChild(li);
+        });
+
+        if (!list.children.length) {
+          list.innerHTML = `<li class="small-muted">No matching rules.</li>`;
+        }
+      } catch (err) {
+        console.error("[loadRules] error:", err);
+        list.innerHTML = `<li class="small text-danger">Failed to load rules.</li>`;
+      }
+    }
+
+    // ========= FEEDBACK =========
+    async function loadFeedback() {
+      const container = document.getElementById("feedbackList");
+      container.innerHTML = `<div class="small-muted">Loading...</div>`;
+      try {
+        const { data, error } = await supabase
+          .from("feedback")
+          .select("id, buyer_id, buyer_email, message, image_url, created_at")
+          .order("created_at", { ascending: false })
+          .limit(15);
+        if (error) throw error;
+
+        container.innerHTML = "";
+        if (!data || !data.length) {
+          container.innerHTML = `<div class="small-muted">No feedback yet.</div>`;
+          return;
+        }
+
+        data.forEach((f) => {
+          const div = document.createElement("div");
+          div.className = "mb-2 pb-2 border-bottom";
+          const email = f.buyer_email || "Guest";
+          div.innerHTML = `
+            <div class="fw-semibold small">${email}</div>
+            <div>${f.message}</div>
+            ${
+              f.image_url
+                ? `<div class="mt-1"><a href="${f.image_url}" target="_blank" class="small">View image</a></div>`
+                : ""
+            }
+            <div class="small-muted mt-1">${f.created_at || ""}</div>
+          `;
+          container.appendChild(div);
         });
       } catch (err) {
-        console.error('loadDeliveredAccounts error:', err);
-        showToast('Error loading delivered accounts', 'error');
+        console.error("[loadFeedback] error:", err);
+        container.innerHTML = `<div class="small text-danger">Failed to load feedback.</div>`;
       }
     }
 
-    // ==============================
-    // REPORT (MOCK)
-    // ==============================
-    function submitReport(e) {
+    async function handleFeedbackSubmit(e) {
       e.preventDefault();
-      const orderId = document.getElementById('reportOrderId').value.trim();
-      const issue = document.getElementById('reportIssue').value.trim();
-      if (!orderId || !issue) {
-        showToast('Please fill in all required fields', 'warning');
+      const text = document.getElementById("feedbackText").value.trim();
+      const fileInput = document.getElementById("feedbackImage");
+
+      if (!text) {
+        showToast("Please write some feedback.", "warning");
         return;
       }
-      showToast('Report submitted! (mock only)', 'success');
-      document.getElementById('reportForm').reset();
-      showSection('profile');
+
+      let imageBase64 = null;
+      if (fileInput.files && fileInput.files[0]) {
+        try {
+          imageBase64 = await fileToBase64(fileInput.files[0]);
+        } catch (err) {
+          console.warn("feedback base64 failed:", err);
+        }
+      }
+
+      try {
+        const payload = {
+          buyer_id: CURRENT_USER?.id || null,
+          buyer_email: CURRENT_USER?.email || null,
+          message: text,
+          image_url: imageBase64,
+          created_at: new Date().toISOString(),
+        };
+        const { error } = await supabase.from("feedback").insert(payload);
+        if (error) throw error;
+        showToast("Thank you for your feedback!", "success");
+        document.getElementById("feedbackForm").reset();
+        await loadFeedback();
+      } catch (err) {
+        console.error("[feedbackSubmit] error:", err);
+        showToast("Failed to send feedback.", "danger");
+      }
     }
 
-    // ==============================
-    // AUTH (SIGNUP / LOGIN / LOGOUT)
-    // ==============================
-    async function handleSignup(e) {
-      e.preventDefault();
+    // ========= ORDERS =========
+    async function loadMyOrders() {
+      if (!CURRENT_USER) return;
+      const container = document.getElementById("ordersList");
+      container.innerHTML = `<div class="small-muted">Loading...</div>`;
 
-      const name = document.getElementById('signupName').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("id, product_id, account_type, duration, price, status, payment_method, reference_number, created_at")
+          .eq("buyer_id", CURRENT_USER.id)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
 
-      if (!name || !email) {
-        showToast('Please fill in name and email', 'warning');
-        return;
+        container.innerHTML = "";
+        if (!data || !data.length) {
+          container.innerHTML = `<div class="small-muted">You have no orders yet.</div>`;
+          return;
+        }
+
+        data.forEach((o) => {
+          const div = document.createElement("div");
+          div.className = "border rounded p-2 mb-2";
+
+          const statusClass =
+            (o.status || "").toLowerCase() === "pending"
+              ? "status-pending"
+              : (o.status || "").toLowerCase() === "delivered"
+              ? "status-delivered"
+              : (o.status || "").toLowerCase() === "confirmed"
+              ? "status-confirmed"
+              : "status-cancelled";
+
+          div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="small fw-semibold">Order #${o.id}</div>
+              <span class="order-status ${statusClass}">${o.status || "?"}</span>
+            </div>
+            <div class="small">
+              ${o.product_id} – ${o.account_type || "?"} / ${o.duration || "?"}
+            </div>
+            <div class="small-muted">
+              Price: ₱${safeNumber(o.price).toFixed(2)}<br>
+              Payment: ${o.payment_method || "-"} | Ref: ${o.reference_number || "-"}
+            </div>
+            <div class="small-muted mt-1">${o.created_at || ""}</div>
+            <div class="mt-2 d-flex justify-content-end gap-2">
+              <button class="btn btn-xs btn-sm btn-outline-secondary btn-report-order" data-id="${o.id}">
+                Report issue
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+
+        container.querySelectorAll(".btn-report-order").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const orderId = btn.getAttribute("data-id");
+            openReportModal(orderId);
+          });
+        });
+      } catch (err) {
+        console.error("[loadMyOrders] error:", err);
+        container.innerHTML = `<div class="small text-danger">Failed to load orders.</div>`;
       }
-      if (password !== confirmPassword) {
-        showToast('Passwords do not match', 'error');
-        return;
-      }
-
-      const normalizedEmail = email.toLowerCase();
-
-      const user = {
-        name: name,
-        email: normalizedEmail
-      };
-
-      await saveBuyerToSupabase(user);
-
-      currentUser = user;
-      localStorage.setItem('aiaxcart_user', JSON.stringify(user));
-
-      showUserProfile();
-      await loadUserOrders();
-      await loadDeliveredAccounts();
-
-      bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
-      showToast('Account created successfully!', 'success');
     }
 
-    async function handleLogin(e) {
-      e.preventDefault();
+    // ========= DELIVERED ACCOUNTS =========
+    async function loadDeliveredAccounts() {
+      if (!CURRENT_USER) return;
+      const container = document.getElementById("deliveredList");
+      container.innerHTML = `<div class="small-muted">Loading...</div>`;
 
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value; // not used yet
+      try {
+        const { data, error } = await supabase
+          .from("records")
+          .select("id, order_id, product_id, account_type, duration, purchase_date, account_email, account_password, profile, pin")
+          .eq("buyer", CURRENT_USER.email)
+          .order("purchase_date", { ascending: false });
+        if (error) throw error;
 
-      if (!email) {
-        showToast('Please enter your email', 'warning');
-        return;
+        container.innerHTML = "";
+        if (!data || !data.length) {
+          container.innerHTML = `<div class="small-muted">No delivered accounts yet.</div>`;
+          return;
+        }
+
+        data.forEach((r) => {
+          const div = document.createElement("div");
+          div.className = "border rounded p-2 mb-2 small";
+          div.innerHTML = `
+            <div class="d-flex justify-content-between mb-1">
+              <div><strong>${r.product_id}</strong> – ${r.account_type || "?"} / ${r.duration || "?"}</div>
+              <div class="small-muted">Order #${r.order_id || "-"}</div>
+            </div>
+            <div>
+              <div>Email: <code>${r.account_email || "-"}</code></div>
+              <div>Password: <code>${r.account_password || "-"}</code></div>
+              <div>Profile: <code>${r.profile || "-"}</code></div>
+              <div>PIN: <code>${r.pin || "-"}</code></div>
+            </div>
+            <div class="small-muted mt-1">Delivered: ${r.purchase_date || ""}</div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error("[loadDeliveredAccounts] error:", err);
+        container.innerHTML = `<div class="small text-danger">Failed to load delivered accounts.</div>`;
       }
-
-      const normalizedEmail = email.toLowerCase();
-      const name = normalizedEmail.split('@')[0];
-
-      const user = {
-        name: name,
-        email: normalizedEmail
-      };
-
-      currentUser = user;
-      localStorage.setItem('aiaxcart_user', JSON.stringify(user));
-
-      showUserProfile();
-      await loadUserOrders();
-      await loadDeliveredAccounts();
-
-      bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-      showToast('Login successful!', 'success');
     }
 
-    function handleLogout(e) {
-      e.preventDefault();
-      currentUser = null;
-      localStorage.removeItem('aiaxcart_user');
-      showUserAuth();
-      showSection('home');
-      showToast('Logged out.', 'success');
+    // ========= REPORT ISSUE =========
+    function openReportModal(orderId) {
+      if (!CURRENT_USER) {
+        showToast("Please login first.", "warning");
+        openAuthModal("login");
+        return;
+      }
+      document.getElementById("reportOrderId").value = orderId;
+      document.getElementById("reportOrderDisplay").value = orderId;
+      document.getElementById("reportText").value = "";
+      const m = new bootstrap.Modal(document.getElementById("reportModal"));
+      m.show();
     }
 
-    // ==============================
-    // CHECKOUT (REAL ORDER)
-    // ==============================
-    async function handleCheckout(e) {
+    async function handleReportSubmit(e) {
       e.preventDefault();
-
-      if (!currentUser) {
-        showToast('Please login first', 'warning');
+      if (!CURRENT_USER) {
+        showToast("Please login first.", "warning");
         return;
       }
-
-      const paymentMethod = document.getElementById('paymentMethod').value;
-      const referenceNumber = document.getElementById('referenceNumber').value;
-      const proofFile = document.getElementById('proofImage').files[0];
-
-      if (!paymentMethod) {
-        showToast('Please select a payment method', 'warning');
-        return;
-      }
-      if (!proofFile) {
-        showToast('Please upload your proof of payment screenshot', 'warning');
-        return;
-      }
-      if (!currentOrderDetails) {
-        showToast('No product selected', 'error');
+      const orderId = document.getElementById("reportOrderId").value;
+      const text = document.getElementById("reportText").value.trim();
+      if (!text) {
+        showToast("Please describe the issue.", "warning");
         return;
       }
 
       try {
-        const orderCode = generateOrderCode();
-
-        const order = {
-          buyer_email: currentUser.email.toLowerCase(),
-          product_id: currentOrderDetails.productId,
-          product_name: currentOrderDetails.productName,
-          account_type: currentOrderDetails.accountType,
-          duration: currentOrderDetails.duration,
-          price: currentOrderDetails.price,
-          payment_method: paymentMethod,
-          reference_number: referenceNumber || null,
-          invite_email: currentOrderDetails.inviteEmail,
-          status: 'pending',
+        const payload = {
+          order_id: orderId,
+          buyer_id: CURRENT_USER.id,
+          issue_description: text,
+          status: "open",
           created_at: new Date().toISOString(),
-          order_code: orderCode
         };
-
-        const saved = await saveOrderToSupabase(order);
-        if (!saved || !saved.length) return;
-
-        const newOrder = saved[0];
-
-        await sendTelegramNotification({
-          ...order,
-          id: newOrder.id
-        });
-
-        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
-        showToast(
-          `Order submitted successfully! Your order ID is ${newOrder.id}`,
-          'success'
-        );
-
-        document.getElementById('checkoutForm').reset();
-        await loadUserOrders();
+        const { error } = await supabase.from("reports").insert(payload);
+        if (error) throw error;
+        showToast("Report submitted. We will review it.", "success");
+        bootstrap.Modal.getInstance(document.getElementById("reportModal")).hide();
       } catch (err) {
-        console.error('Checkout error:', err);
-        showToast('Error submitting order', 'error');
+        console.error("[reportSubmit] error:", err);
+        showToast("Failed to submit report.", "danger");
       }
     }
 
-    // ==============================
-    // INIT & EVENTS
-    // ==============================
-    function setupEventListeners() {
-      // Nav sections
-      document.querySelectorAll('[data-section]').forEach(link => {
-        link.addEventListener('click', e => {
-          const section = link.getAttribute('data-section');
-          if (!section) return;
-          e.preventDefault();
-          if (section === 'profile') {
-            showSection('profile');
-          } else if (section === 'rules') {
-            showSection('rules');
-          } else if (section === 'feedback') {
-            showSection('feedback');
-          } else if (section === 'report') {
-            showSection('report');
-          } else if (section === 'home') {
-            showSection('home');
-          }
+    // ========= CATEGORY TABS =========
+    function initCategoryTabs() {
+      document.querySelectorAll(".category-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const cat = tab.getAttribute("data-category");
+          document.querySelectorAll(".category-tab").forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          renderProducts(cat);
         });
       });
+    }
 
-      // Category tabs
-      document.querySelectorAll('.category-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          const cat = tab.getAttribute('data-category');
-          filterProducts(cat);
-        });
-      });
+    // ========= INIT =========
+    document.addEventListener("DOMContentLoaded", async () => {
+      initCategoryTabs();
 
       // Auth buttons
-      document.getElementById('loginBtn').addEventListener('click', () => {
-        const modal = new bootstrap.Modal(document.getElementById('loginModal'));
-        modal.show();
+      document.getElementById("btnLoginOpen").addEventListener("click", () => openAuthModal("login"));
+      document.getElementById("btnLogout").addEventListener("click", handleLogout);
+      document.getElementById("authForm").addEventListener("submit", handleAuthSubmit);
+      document.getElementById("authSwitchBtn").addEventListener("click", () => {
+        openAuthModal(AUTH_MODE === "login" ? "signup" : "login");
       });
-      document.getElementById('signupBtn').addEventListener('click', () => {
-        const modal = new bootstrap.Modal(document.getElementById('signupModal'));
-        modal.show();
-      });
-      document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
-      // Forms
-      document.getElementById('loginForm').addEventListener('submit', handleLogin);
-      document.getElementById('signupForm').addEventListener('submit', handleSignup);
-      document.getElementById('checkoutForm').addEventListener('submit', handleCheckout);
-      document.getElementById('feedbackForm').addEventListener('submit', submitFeedback);
-      document.getElementById('reportForm').addEventListener('submit', submitReport);
-    }
-
-    async function initializeApp() {
-      const stored = localStorage.getItem('aiaxcart_user');
-      if (stored) {
-        try {
-          currentUser = JSON.parse(stored);
-          showUserProfile();
-        } catch {
-          showUserAuth();
+      // Product / checkout
+      document.getElementById("btnPlaceOrder").addEventListener("click", handlePlaceOrder);
+      document.getElementById("payProof").addEventListener("change", async (e) => {
+        if (e.target.files && e.target.files[0]) {
+          try {
+            CURRENT_PROOF_BASE64 = await fileToBase64(e.target.files[0]);
+          } catch (err) {
+            console.warn("Proof base64 failed:", err);
+          }
         }
-      } else {
-        showUserAuth();
-      }
+      });
 
-      showSection('home');
-      await loadStockCountsFromSupabase();  // load stocks from Supabase
-      displayProducts(PRODUCTS_DATA);       // then render product list
-      loadRules();
-      loadFeedback();
-    }
+      // Rules events
+      document.getElementById("rulesSearchInput").addEventListener("input", loadRules);
+      document.getElementById("rulesProductFilter").addEventListener("change", loadRules);
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initializeApp();
-      setupEventListeners();
+      // Feedback
+      document.getElementById("feedbackForm").addEventListener("submit", handleFeedbackSubmit);
+
+      // Report
+      document.getElementById("reportForm").addEventListener("submit", handleReportSubmit);
+
+      // Auth state
+      supabase.auth.onAuthStateChange(async () => {
+        await refreshUser();
+      });
+
+      await refreshUser();
+      await loadInitialData();
+      await loadFeedback();
     });
   </script>
 </body>
