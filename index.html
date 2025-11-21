@@ -43,13 +43,26 @@
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
     .logo{ display:flex; align-items:center; gap:.5rem; font-weight:800; font-size:1.2rem; }
-    .top-nav a{ text-decoration:none; display:inline-block; padding:.35rem .9rem; border-radius:999px; color:var(--text); background:#fff; margin-left:.5rem; font-weight:600; font-size:.92rem; box-shadow:0 2px 6px rgba(0,0,0,0.03); }
-    .top-nav a.active, .top-nav a:hover{ background:var(--primary); color:#fff; box-shadow:0 6px 22px rgba(255,107,107,0.12); transform:translateY(-2px); }
+    .top-nav a{
+      text-decoration:none; display:inline-block; padding:.35rem .9rem;
+      border-radius:999px; color:var(--text); background:#fff; margin-left:.5rem;
+      font-weight:600; font-size:.92rem; box-shadow:0 2px 6px rgba(0,0,0,0.03);
+      transition:all .15s ease-out;
+    }
+    .top-nav a.active, .top-nav a:hover{
+      background:var(--primary); color:#fff;
+      box-shadow:0 6px 22px rgba(255,107,107,0.12);
+      transform:translateY(-2px);
+    }
 
     main{ max-width:1150px; margin:1.25rem auto 2.5rem; padding:0 1.25rem; }
 
     /* hero */
-    .hero{ background:var(--card); border-radius:var(--radius); padding:1.3rem; display:flex; gap:1rem; align-items:center; justify-content:space-between; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    .hero{
+      background:var(--card); border-radius:var(--radius); padding:1.3rem;
+      display:flex; gap:1rem; align-items:center; justify-content:space-between;
+      box-shadow:0 6px 18px rgba(0,0,0,0.04);
+    }
     .hero h1{ margin:0; font-size:1.35rem; }
     .hero p{ margin:0; color:var(--muted); font-size:.95rem; }
 
@@ -57,9 +70,22 @@
     .hero-right .btn{ border-radius:999px; }
 
     /* categories */
-    .category-row{ display:flex; gap:.6rem; overflow-x:auto; padding:.5rem 0; margin:.9rem 0 1rem; }
-    .category-pill{ white-space:nowrap; padding:.45rem .9rem; border-radius:999px; background:var(--card); border:1px solid rgba(0,0,0,0.04); color:var(--muted); cursor:pointer; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.02); }
-    .category-pill.active{ background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#fff; transform:translateY(-3px); box-shadow:0 10px 28px rgba(255,107,107,0.12); }
+    .category-row{
+      display:flex; gap:.6rem; overflow-x:auto;
+      padding:.5rem 0; margin:.9rem 0 1rem;
+    }
+    .category-pill{
+      white-space:nowrap; padding:.45rem .9rem; border-radius:999px;
+      background:var(--card); border:1px solid rgba(0,0,0,0.04);
+      color:var(--muted); cursor:pointer; font-weight:600;
+      box-shadow:0 2px 6px rgba(0,0,0,0.02);
+      transition:all .15s ease-out;
+    }
+    .category-pill.active{
+      background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#fff;
+      transform:translateY(-3px);
+      box-shadow:0 10px 28px rgba(255,107,107,0.12);
+    }
 
     /* controls row */
     .controls-row{ display:flex; gap:.6rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center; }
@@ -69,35 +95,92 @@
     @media (max-width:900px){ .products-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:640px){ .products-grid{ grid-template-columns:1fr; } }
 
-    .product-card{ background:var(--card); border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:.6rem; box-shadow:0 6px 18px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.03); min-height:120px; }
+    .product-card{
+      background:var(--card); border-radius:12px; padding:0.9rem;
+      display:flex; flex-direction:column; gap:.6rem;
+      box-shadow:0 6px 18px rgba(0,0,0,0.04);
+      border:1px solid rgba(0,0,0,0.03); min-height:120px;
+      position:relative; overflow:hidden;
+      transition:transform .12s ease-out, box-shadow .12s ease-out;
+    }
+    .product-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 10px 26px rgba(0,0,0,0.06);
+    }
+
+    .product-card.sold-out::after{
+      content:"Sold out";
+      position:absolute; top:8px; right:-42px;
+      background:#f8d7da; color:#721c24;
+      font-size:.7rem; font-weight:700;
+      padding:.2rem 2.2rem;
+      transform:rotate(35deg);
+      box-shadow:0 4px 12px rgba(0,0,0,0.07);
+    }
+
     .product-top{ display:flex; gap:.6rem; align-items:center; }
-    .product-icon{ width:46px;height:46px;border-radius:10px;background:linear-gradient(180deg,#fff,#fff); display:flex;align-items:center;justify-content:center;font-size:1.3rem; box-shadow:0 6px 14px rgba(0,0,0,0.03); }
+    .product-icon{
+      width:46px;height:46px;border-radius:10px;
+      background:linear-gradient(180deg,#fff,#fff);
+      display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+      box-shadow:0 6px 14px rgba(0,0,0,0.03);
+    }
     .product-title{ font-weight:700; font-size:1rem; }
     .product-cat{ font-size:.82rem; color:var(--muted); margin-top:.15rem; }
-    .product-slots{ margin-top:.2rem; color:var(--primary); font-weight:700; font-size:.92rem; }
+    .product-slots{ margin-top:.2rem; font-weight:700; font-size:.92rem; }
+    .product-slots.ok{ color:var(--primary); }
+    .product-slots.zero{ color:#b0a4a0; }
 
     .product-footer{ margin-top:auto; display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
-    .btn-ghost{ background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--text); border-radius:10px; padding:.4rem .7rem; }
-    .btn-primary{ background: linear-gradient(90deg,var(--primary),var(--primary-2)); border:none; color:#fff; border-radius:10px; padding:.4rem .9rem; font-weight:700; }
+    .btn-ghost{
+      background:transparent; border:1px solid rgba(0,0,0,0.06);
+      color:var(--text); border-radius:10px; padding:.4rem .7rem;
+    }
+    .btn-primary{
+      background: linear-gradient(90deg,var(--primary),var(--primary-2));
+      border:none; color:#fff; border-radius:10px;
+      padding:.4rem .9rem; font-weight:700;
+    }
 
     /* buyer panel */
-    .buyer-panel{ background:var(--card); border-radius:var(--radius); padding:1.1rem; box-shadow:0 6px 18px rgba(0,0,0,0.04); margin-top:1rem; }
+    .buyer-panel{
+      background:var(--card); border-radius:var(--radius); padding:1.1rem;
+      box-shadow:0 6px 18px rgba(0,0,0,0.04); margin-top:1rem;
+    }
     .buyer-header{ display:flex; gap:1rem; align-items:center; }
-    .buyer-avatar{ width:56px;height:56px;border-radius:50%; background:linear-gradient(90deg,var(--secondary),#fff); display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem; color:var(--text); box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    .buyer-avatar{
+      width:56px;height:56px;border-radius:50%;
+      background:linear-gradient(90deg,var(--secondary),#fff);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;font-size:1.3rem; color:var(--text);
+      box-shadow:0 6px 18px rgba(0,0,0,0.04);
+    }
     .buyer-meta{ line-height:1; }
     .buyer-meta small{ color:var(--muted) }
 
-    .buyer-tabs .nav-link{ border-radius:999px; font-size:.92rem; padding:.32rem .75rem; color:var(--muted); }
-    .buyer-tabs .nav-link.active{ background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:0 8px 24px rgba(255,107,107,0.08); }
+    .buyer-tabs .nav-link{
+      border-radius:999px; font-size:.92rem;
+      padding:.32rem .75rem; color:var(--muted);
+    }
+    .buyer-tabs .nav-link.active{
+      background:linear-gradient(90deg,var(--primary),var(--primary-2));
+      color:#fff; box-shadow:0 8px 24px rgba(255,107,107,0.08);
+    }
 
     .small-muted{ color:var(--muted); font-size:.9rem; }
 
     /* modal tweaks */
     .modal .price-highlight{ color:var(--primary); font-weight:800; font-size:1.05rem; }
-    .slots-pill{ background: #fff6f6; color:var(--primary); border-radius:999px; padding:4px 8px; font-weight:700; }
+    .slots-pill{
+      background: #fff6f6; color:var(--primary);
+      border-radius:999px; padding:4px 8px; font-weight:700;
+    }
 
     /* status pills */
-    .order-status-pill{ padding:.18rem .6rem; border-radius:999px; font-weight:700; font-size:.8rem; text-transform:lowercase; }
+    .order-status-pill{
+      padding:.18rem .6rem; border-radius:999px;
+      font-weight:700; font-size:.8rem; text-transform:lowercase;
+    }
     .os-pending{ background:#fff3cd; color:#856404; }
     .os-delivered{ background:#d4edda; color:#155724; }
     .os-cancelled{ background:#f8d7da; color:#721c24; }
@@ -105,7 +188,11 @@
     /* tiny helpers */
     .text-muted-2{ color:var(--muted); font-size:.9rem; }
     .hidden{ display:none !important; }
-    .file-preview{ max-width:160px; max-height:120px; object-fit:cover; border-radius:8px; border:1px solid rgba(0,0,0,0.06); }
+    .file-preview{
+      max-width:160px; max-height:120px;
+      object-fit:cover; border-radius:8px;
+      border:1px solid rgba(0,0,0,0.06);
+    }
     .muted-note{ font-size:.86rem; color:var(--muted); }
   </style>
 </head>
@@ -130,10 +217,12 @@
       <div>
         <h1>Premium accounts, hassle-free.</h1>
         <p>Choose your app, send payment, upload proof — admin confirms and delivers accounts inside this site.</p>
-        <div class="muted-note mt-2">Tip: Use the <strong>View combos / Buy</strong> button on any product card.</div>
+        <div class="muted-note mt-2">Tip: Use the <strong>View Plans / Buy</strong> button on any product card.</div>
       </div>
       <div class="hero-right">
-        <button id="btnOpenLogin" class="btn btn-outline-dark btn-sm"><i class="fa fa-user me-1"></i> Login / Sign up</button>
+        <button id="btnOpenLogin" class="btn btn-outline-dark btn-sm">
+          <i class="fa fa-user me-1"></i> Login / Sign up
+        </button>
       </div>
     </section>
 
@@ -154,7 +243,9 @@
         </div>
       </div>
       <div style="display:flex; gap:.5rem;">
-        <button id="btnRefreshProducts" class="btn btn-ghost btn-sm"><i class="fa fa-sync me-1"></i> Refresh</button>
+        <button id="btnRefreshProducts" class="btn btn-ghost btn-sm">
+          <i class="fa fa-sync me-1"></i> Refresh
+        </button>
       </div>
     </div>
 
@@ -237,7 +328,9 @@
               <form id="feedbackForm" class="small">
                 <div class="mb-2">
                   <label class="form-label small">Product (optional)</label>
-                  <select id="feedbackProduct" class="form-select form-select-sm"><option value="">General</option></select>
+                  <select id="feedbackProduct" class="form-select form-select-sm">
+                    <option value="">General</option>
+                  </select>
                 </div>
                 <div class="mb-2">
                   <label class="form-label small">Message</label>
@@ -277,15 +370,24 @@
               <tbody id="ordersTableBody"></tbody>
             </table>
           </div>
-          <div class="small-muted mt-2">Payments are manually confirmed by admin. You'll be notified here when status becomes <strong>Delivered</strong>.</div>
+          <div class="small-muted mt-2">
+            Payments are manually confirmed by admin. You'll be notified here when status becomes <strong>Delivered</strong>.
+          </div>
         </div>
 
         <!-- DELIVERED -->
         <div class="tab-pane fade" id="pane-delivered">
-          <div id="deliveredGuestNote" class="small-muted mb-2">Login to see delivered accounts (email, password, profile, pin).</div>
+          <div id="deliveredGuestNote" class="small-muted mb-2">
+            Login to see delivered accounts (email, password, profile, pin).
+          </div>
           <div class="table-responsive">
             <table class="table table-sm align-middle mb-0">
-              <thead class="table-light"><tr><th>Product</th><th>Combo</th><th>Purchase date</th><th>Account email</th><th>Password</th><th>Profile</th><th>PIN</th></tr></thead>
+              <thead class="table-light">
+                <tr>
+                  <th>Product</th><th>Combo</th><th>Purchase date</th>
+                  <th>Account email</th><th>Password</th><th>Profile</th><th>PIN</th>
+                </tr>
+              </thead>
               <tbody id="deliveredTableBody"></tbody>
             </table>
           </div>
@@ -308,17 +410,28 @@
               <h6 class="mb-2">Choose combo</h6>
               <div class="mb-2">
                 <label class="form-label small">Account type</label>
-                <select id="pmAccountType" class="form-select form-select-sm"><option value="">Select type</option></select>
+                <select id="pmAccountType" class="form-select form-select-sm">
+                  <option value="">Select type</option>
+                </select>
               </div>
               <div class="mb-2">
                 <label class="form-label small">Duration</label>
-                <select id="pmDuration" class="form-select form-select-sm" disabled><option value="">Select duration</option></select>
+                <select id="pmDuration" class="form-select form-select-sm" disabled>
+                  <option value="">Select duration</option>
+                </select>
               </div>
               <div class="mb-3 small">
                 <div>Price: <span id="pmPrice" class="price-highlight">₱0.00</span></div>
-                <div class="mt-1">Available slots: <span id="pmSlots" class="slots-pill">0 <span class="ms-1" style="font-weight:600;color:var(--muted)">(no pricing rows)</span></span></div>
+                <div class="mt-1">
+                  Available slots:
+                  <span id="pmSlots" class="slots-pill">
+                    0 <span class="ms-1" style="font-weight:600;color:var(--muted)">(no pricing rows)</span>
+                  </span>
+                </div>
               </div>
-              <div class="small-muted">If slots are <strong>0</strong> you can't place an order for this combo.</div>
+              <div class="small-muted">
+                If slots are <strong>0</strong> you can't place an order for this combo.
+              </div>
             </div>
 
             <div class="col-md-5">
@@ -326,12 +439,15 @@
               <div class="border rounded p-2 mb-2 small">
                 <div><strong>GCash:</strong> <span id="cfgGcash">09XXXXXXXXX</span></div>
                 <div><strong>Maya:</strong> <span id="cfgMaya">09XXXXXXXXX</span></div>
-                <div class="small-muted mt-1">(Edit numbers directly in the HTML config.)</div>
+                <div class="small-muted mt-1">(Configured by owner; numbers are read-only here.)</div>
               </div>
 
               <div class="mb-2">
                 <label class="form-label small">Payment method</label>
-                <select id="pmPaymentMethod" class="form-select form-select-sm"><option value="gcash">GCash</option><option value="maya">Maya</option></select>
+                <select id="pmPaymentMethod" class="form-select form-select-sm">
+                  <option value="gcash">GCash</option>
+                  <option value="maya">Maya</option>
+                </select>
               </div>
               <div class="mb-2">
                 <label class="form-label small">Reference number</label>
@@ -341,10 +457,14 @@
                 <label class="form-label small">Proof of payment (screenshot)</label>
                 <input id="pmProof" type="file" accept="image/*" class="form-control form-control-sm" />
                 <div class="mt-2"><img id="pmProofPreview" class="file-preview hidden" alt="proof preview" /></div>
-                <div class="small-muted mt-1">Image will be stored as Base64 string (or you may change to Supabase Storage later).</div>
+                <div class="small-muted mt-1">
+                  Image will be stored as Base64 string (or you may change to Supabase Storage later).
+                </div>
               </div>
 
-              <div id="pmLoginWarning" class="alert alert-warning small py-1 px-2 mt-2">You must login before placing an order.</div>
+              <div id="pmLoginWarning" class="alert alert-warning small py-1 px-2 mt-2">
+                You must login before placing an order.
+              </div>
             </div>
           </div>
         </div>
@@ -367,21 +487,41 @@
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs small mb-3" id="authTabs" role="tablist">
-            <li class="nav-item"><button class="nav-link active" id="auth-login-tab" data-bs-toggle="tab" data-bs-target="#auth-login-pane" type="button">Login</button></li>
-            <li class="nav-item"><button class="nav-link" id="auth-signup-tab" data-bs-toggle="tab" data-bs-target="#auth-signup-pane" type="button">Sign up</button></li>
+            <li class="nav-item">
+              <button class="nav-link active" id="auth-login-tab" data-bs-toggle="tab" data-bs-target="#auth-login-pane" type="button">
+                Login
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="auth-signup-tab" data-bs-toggle="tab" data-bs-target="#auth-signup-pane" type="button">
+                Sign up
+              </button>
+            </li>
           </ul>
           <div class="tab-content small">
             <div class="tab-pane fade show active" id="auth-login-pane">
               <form id="loginForm">
-                <div class="mb-2"><label class="form-label small">Email</label><input id="loginEmail" type="email" class="form-control form-control-sm" placeholder="you@example.com" required /></div>
-                <div class="mb-2"><label class="form-label small">Password</label><input id="loginPassword" type="password" class="form-control form-control-sm" required /></div>
+                <div class="mb-2">
+                  <label class="form-label small">Email</label>
+                  <input id="loginEmail" type="email" class="form-control form-control-sm" placeholder="you@example.com" required />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small">Password</label>
+                  <input id="loginPassword" type="password" class="form-control form-control-sm" required />
+                </div>
                 <button class="btn btn-primary btn-sm" type="submit">Login</button>
               </form>
             </div>
             <div class="tab-pane fade" id="auth-signup-pane">
               <form id="signupForm">
-                <div class="mb-2"><label class="form-label small">Email</label><input id="signupEmail" type="email" class="form-control form-control-sm" placeholder="you@example.com" required /></div>
-                <div class="mb-2"><label class="form-label small">Password</label><input id="signupPassword" type="password" class="form-control form-control-sm" minlength="6" required /></div>
+                <div class="mb-2">
+                  <label class="form-label small">Email</label>
+                  <input id="signupEmail" type="email" class="form-control form-control-sm" placeholder="you@example.com" required />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small">Password</label>
+                  <input id="signupPassword" type="password" class="form-control form-control-sm" minlength="6" required />
+                </div>
                 <button class="btn btn-primary btn-sm" type="submit">Create account</button>
                 <div class="small-muted mt-1">No forced <code>@gmail.com</code> — use any valid email.</div>
               </form>
@@ -396,11 +536,17 @@
   <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Report issue</h5><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header">
+          <h5 class="modal-title">Report issue</h5>
+          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+        </div>
         <div class="modal-body small">
           <form id="reportForm">
             <input type="hidden" id="reportOrderId" />
-            <div class="mb-2"><label class="form-label small">Issue</label><textarea id="reportIssue" class="form-control form-control-sm" rows="3" required></textarea></div>
+            <div class="mb-2">
+              <label class="form-label small">Issue</label>
+              <textarea id="reportIssue" class="form-control form-control-sm" rows="3" required></textarea>
+            </div>
             <button class="btn btn-primary btn-sm" type="submit">Submit report</button>
           </form>
         </div>
@@ -416,8 +562,11 @@
     const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
-    // Replace payment numbers as needed
-    const PAYMENT_CONFIG = { gcash_number: "09XXXXXXXXX", maya_number: "09XXXXXXXXX" };
+    // Your real payment numbers
+    const PAYMENT_CONFIG = {
+      gcash_number: "09625544105 SMM",
+      maya_number: "09298943629 SMM"
+    };
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -435,10 +584,21 @@
     function showToast(msg, type = "info", timeout = 4500) {
       const container = document.getElementById("toastContainer");
       const wrapper = document.createElement("div");
-      const bsType = type === "success" ? "success" : type === "danger" || type === "error" ? "danger" : type === "warning" ? "warning" : "secondary";
+      const bsType =
+        type === "success"
+          ? "success"
+          : type === "danger" || type === "error"
+          ? "danger"
+          : type === "warning"
+          ? "warning"
+          : "secondary";
       wrapper.className = `toast align-items-center text-bg-${bsType} border-0 mb-2`;
       wrapper.role = "alert";
-      wrapper.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+      wrapper.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${msg}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>`;
       container.appendChild(wrapper);
       const t = new bootstrap.Toast(wrapper);
       t.show();
@@ -465,7 +625,6 @@
       try {
         const { data, error } = await supabase.auth.getUser();
         if (error) {
-          // non-fatal: some errors are thrown when not logged in
           currentUser = null;
         } else {
           currentUser = data.user || null;
@@ -493,6 +652,7 @@
       const guestOrdersNote = document.getElementById("ordersGuestNote");
       const guestDeliveredNote = document.getElementById("deliveredGuestNote");
       const pmLoginWarning = document.getElementById("pmLoginWarning");
+      const heroLoginBtn = document.getElementById("btnOpenLogin");
 
       if (currentUser) {
         const email = currentUser.email || "User";
@@ -504,6 +664,7 @@
         guestOrdersNote.textContent = "";
         guestDeliveredNote.textContent = "";
         pmLoginWarning.classList.add("hidden");
+        if (heroLoginBtn) heroLoginBtn.classList.add("hidden");
       } else {
         avatar.textContent = "?";
         welcome.textContent = "Welcome, Guest";
@@ -513,6 +674,7 @@
         guestOrdersNote.textContent = "Login to see your orders.";
         guestDeliveredNote.textContent = "Login to see delivered accounts (email, password, profile, pin).";
         pmLoginWarning.classList.remove("hidden");
+        if (heroLoginBtn) heroLoginBtn.classList.remove("hidden");
       }
     }
 
@@ -540,9 +702,11 @@
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
 
-        // optional: create buyer profile row
         if (data && data.user && data.user.id) {
-          await supabase.from("buyers").upsert({ id: data.user.id, email: data.user.email }, { onConflict: "id" }).catch(()=>{});
+          await supabase
+            .from("buyers")
+            .upsert({ id: data.user.id, email: data.user.email }, { onConflict: "id" })
+            .catch(() => {});
         }
 
         showToast("Account created. You are now logged in.", "success");
@@ -557,7 +721,9 @@
     async function handleLogout() {
       try {
         await supabase.auth.signOut();
-      } catch (err) { console.error("[logout]", err); }
+      } catch (err) {
+        console.error("[logout]", err);
+      }
       currentUser = null;
       updateBuyerUI();
       showToast("Logged out.", "info");
@@ -566,11 +732,13 @@
     // ====== PRODUCTS / PRICES / STOCKS ======
     async function loadProductsAndCombos() {
       try {
-        // parallel fetch
         const [prodRes, priceRes, stocksRes] = await Promise.all([
           supabase.from("products").select("id,name,category,icon").order("name"),
-          supabase.from("product_prices").select("product_id,account_type,duration,price,is_active").eq("is_active", true),
-          supabase.from("stocks").select("product_id,account_type,duration,status,quantity").in("status", ["available"])
+          supabase.from("product_prices").select("product_id,account_type,duration,price"),
+          supabase
+            .from("stocks")
+            .select("product_id,account_type,duration,status,quantity")
+            .eq("status", "available")
         ]);
 
         if (prodRes.error) throw prodRes.error;
@@ -579,7 +747,7 @@
 
         allProducts = prodRes.data || [];
 
-        // build combos
+        // build combos from product_prices
         productCombos = {};
         (priceRes.data || []).forEach(row => {
           if (!productCombos[row.product_id]) productCombos[row.product_id] = {};
@@ -617,10 +785,8 @@
         document.getElementById("noProducts").classList.add("hidden");
       }
 
-      // prepare product cards list
       let list = allProducts.slice();
 
-      // apply category + search filters
       list = list.filter(p => {
         if (activeCategory !== "all" && (p.category || "").toLowerCase() !== activeCategory) return false;
         if (search) {
@@ -630,7 +796,6 @@
         return true;
       });
 
-      // compute slots for sorting
       list = list.map(p => {
         let totalSlots = 0;
         const combos = productCombos[p.id] || {};
@@ -643,16 +808,15 @@
         return { p, totalSlots };
       });
 
-      // sort
-      if (sort === "slots_desc") list.sort((a,b) => b.totalSlots - a.totalSlots);
-      else if (sort === "slots_asc") list.sort((a,b) => a.totalSlots - b.totalSlots);
-      else if (sort === "name_asc") list.sort((a,b) => (a.p.name||"").localeCompare(b.p.name||""));
-      else if (sort === "name_desc") list.sort((a,b) => (b.p.name||"").localeCompare(a.p.name||""));
+      if (sort === "slots_desc") list.sort((a, b) => b.totalSlots - a.totalSlots);
+      else if (sort === "slots_asc") list.sort((a, b) => a.totalSlots - b.totalSlots);
+      else if (sort === "name_asc") list.sort((a, b) => (a.p.name || "").localeCompare(b.p.name || ""));
+      else if (sort === "name_desc") list.sort((a, b) => (b.p.name || "").localeCompare(a.p.name || ""));
 
-      // render
-      list.forEach(({p,totalSlots}) => {
+      list.forEach(({ p, totalSlots }) => {
         const card = document.createElement("div");
-        card.className = "product-card";
+        card.className = "product-card" + (totalSlots <= 0 ? " sold-out" : "");
+        const slotsClass = totalSlots > 0 ? "ok" : "zero";
         card.innerHTML = `
           <div class="product-top">
             <div class="product-icon">${p.icon || "🎬"}</div>
@@ -661,20 +825,23 @@
               <div class="product-cat">${p.category || "-"}</div>
             </div>
           </div>
-          <div><div class="product-slots">${totalSlots > 0 ? totalSlots + " slot(s) available" : "0 slot(s)"}</div></div>
+          <div>
+            <div class="product-slots ${slotsClass}">
+              ${totalSlots > 0 ? totalSlots + " slot(s) available" : "0 slot(s)"}
+            </div>
+          </div>
         `;
         const footer = document.createElement("div");
         footer.className = "product-footer";
         const viewBtn = document.createElement("button");
         viewBtn.className = "btn btn-primary btn-sm";
-        viewBtn.textContent = "View combos / Buy";
-        viewBtn.addEventListener("click", ()=> openProductModal(p.id));
+        viewBtn.textContent = "View Plans / Buy";
+        viewBtn.addEventListener("click", () => openProductModal(p.id));
         footer.appendChild(viewBtn);
         card.appendChild(footer);
         grid.appendChild(card);
       });
 
-      // if nothing after filters
       if (!list.length) {
         grid.innerHTML = `<div class="muted-note">No products match your filters/search.</div>`;
       }
@@ -707,7 +874,6 @@
       }
       document.getElementById("pmTitle").textContent = p.name || p.id;
 
-      // populate account types
       const selType = document.getElementById("pmAccountType");
       const selDur = document.getElementById("pmDuration");
       selType.innerHTML = '<option value="">Select type</option>';
@@ -720,12 +886,16 @@
         selType.innerHTML = '<option value="">(No combos configured)</option>';
       } else {
         types.forEach(t => {
-          const opt = document.createElement("option"); opt.value = t; opt.textContent = t; selType.appendChild(opt);
+          const opt = document.createElement("option");
+          opt.value = t;
+          opt.textContent = t;
+          selType.appendChild(opt);
         });
       }
 
       document.getElementById("pmPrice").textContent = "₱0.00";
-      document.getElementById("pmSlots").innerHTML = '0 <span style="font-weight:600;color:var(--muted)">(no pricing rows)</span>';
+      document.getElementById("pmSlots").innerHTML =
+        '0 <span style="font-weight:600;color:var(--muted)">(no pricing rows)</span>';
       document.getElementById("pmRefNumber").value = "";
       document.getElementById("pmPaymentMethod").value = "gcash";
       document.getElementById("pmProof").value = "";
@@ -735,7 +905,8 @@
       if (currentUser) pmLoginWarning.classList.add("hidden");
       else pmLoginWarning.classList.remove("hidden");
 
-      modalInstanceProduct = modalInstanceProduct || new bootstrap.Modal(document.getElementById("productModal"));
+      modalInstanceProduct =
+        modalInstanceProduct || new bootstrap.Modal(document.getElementById("productModal"));
       modalInstanceProduct.show();
     }
 
@@ -750,13 +921,17 @@
       if (!typeVal) {
         selDur.disabled = true;
         document.getElementById("pmPrice").textContent = "₱0.00";
-        document.getElementById("pmSlots").innerHTML = '0 <span style="color:var(--muted)">(select combo)</span>';
+        document.getElementById("pmSlots").innerHTML =
+          '0 <span style="color:var(--muted)">(select combo)</span>';
         return;
       }
 
       const combos = productCombos[productId]?.[typeVal] || {};
       Object.keys(combos).forEach(dur => {
-        const opt = document.createElement("option"); opt.value = dur; opt.textContent = dur; selDur.appendChild(opt);
+        const opt = document.createElement("option");
+        opt.value = dur;
+        opt.textContent = dur;
+        selDur.appendChild(opt);
       });
       selDur.disabled = false;
       updateModalPriceAndSlots();
@@ -772,41 +947,62 @@
 
       const key = `${productId}||${typeVal}||${durVal}`;
       const slots = productStocksSummary[key] || 0;
-      document.getElementById("pmSlots").innerHTML = `${slots} ${slots>0 ? '<span style="font-weight:600;color:var(--muted)">slot(s)</span>' : '<span style="font-weight:600;color:var(--muted)">(no stock)</span>'}`;
+      document.getElementById("pmSlots").innerHTML =
+        `${slots} ${
+          slots > 0
+            ? '<span style="font-weight:600;color:var(--muted)">slot(s)</span>'
+            : '<span style="font-weight:600;color:var(--muted)">(no stock)</span>'
+        }`;
     }
 
-    // preview payment file
-    document.getElementById("pmProof")?.addEventListener("change", (e) => {
+    document.getElementById("pmProof")?.addEventListener("change", e => {
       const f = e.target.files[0];
       const img = document.getElementById("pmProofPreview");
-      if (!f) { img.classList.add("hidden"); img.src = ""; return; }
+      if (!f) {
+        img.classList.add("hidden");
+        img.src = "";
+        return;
+      }
       const url = URL.createObjectURL(f);
-      img.src = url; img.classList.remove("hidden");
-      setTimeout(() => { URL.revokeObjectURL(url); }, 60000);
+      img.src = url;
+      img.classList.remove("hidden");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
     });
 
     async function placeOrder() {
-      if (!currentUser) { showToast("Please login first.", "warning"); return; }
+      if (!currentUser) {
+        showToast("Please login first.", "warning");
+        return;
+      }
       const productId = currentProductForModal;
       if (!productId) return;
 
       const account_type = (document.getElementById("pmAccountType").value || "").trim();
       const duration = (document.getElementById("pmDuration").value || "").trim();
       const payment_method = (document.getElementById("pmPaymentMethod").value || "gcash");
-      const reference_number = (document.getElementById("pmRefNumber").value || "").trim() || null;
+      const reference_number =
+        (document.getElementById("pmRefNumber").value || "").trim() || null;
       const proofFile = document.getElementById("pmProof").files[0] || null;
 
-      if (!account_type || !duration) { showToast("Select account type and duration.", "warning"); return; }
+      if (!account_type || !duration) {
+        showToast("Select account type and duration.", "warning");
+        return;
+      }
 
       const price = productCombos[productId]?.[account_type]?.[duration] || 0;
       const key = `${productId}||${account_type}||${duration}`;
       const slots = productStocksSummary[key] || 0;
-      if (slots <= 0) { showToast("No available slot for this combo.", "warning"); return; }
+      if (slots <= 0) {
+        showToast("No available slot for this combo.", "warning");
+        return;
+      }
 
       let proof_image_url = null;
       try {
         proof_image_url = await toBase64(proofFile);
-      } catch (err) { console.error("[base64]", err); }
+      } catch (err) {
+        console.error("[base64]", err);
+      }
 
       try {
         const { error } = await supabase.from("orders").insert({
@@ -835,7 +1031,10 @@
     // ====== RULES / FEEDBACK ======
     async function loadRules() {
       try {
-        const { data, error } = await supabase.from("rules").select("id,body,rule_text,product_id,created_at").order("created_at", { ascending:false });
+        const { data, error } = await supabase
+          .from("rules")
+          .select("id,body,rule_text,product_id,created_at")
+          .order("created_at", { ascending: false });
         if (error) throw error;
         window._allRules = data || [];
         renderRulesList();
@@ -849,8 +1048,24 @@
       if (!sel) return;
       sel.innerHTML = '<option value="">All products</option>';
       const seen = new Set();
-      allProducts.forEach(p => { if (p.id) { seen.add(p.id); const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.name || p.id; sel.appendChild(opt); } });
-      (window._allRules || []).forEach(r => { if (r.product_id && !seen.has(r.product_id)) { seen.add(r.product_id); const opt = document.createElement("option"); opt.value = r.product_id; opt.textContent = r.product_id; sel.appendChild(opt); } });
+      allProducts.forEach(p => {
+        if (p.id) {
+          seen.add(p.id);
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name || p.id;
+          sel.appendChild(opt);
+        }
+      });
+      (window._allRules || []).forEach(r => {
+        if (r.product_id && !seen.has(r.product_id)) {
+          seen.add(r.product_id);
+          const opt = document.createElement("option");
+          opt.value = r.product_id;
+          opt.textContent = r.product_id;
+          sel.appendChild(opt);
+        }
+      });
     }
 
     function renderRulesList() {
@@ -859,7 +1074,8 @@
       const prodFilter = (document.getElementById("rulesProductFilter").value || "").trim();
       ul.innerHTML = "";
       const rows = (window._allRules || []).filter(r => {
-        if (prodFilter && (r.product_id||"").toLowerCase() !== prodFilter.toLowerCase()) return false;
+        if (prodFilter && (r.product_id || "").toLowerCase() !== prodFilter.toLowerCase())
+          return false;
         const text = (r.body || r.rule_text || "").toLowerCase();
         if (search && !text.includes(search)) return false;
         return true;
@@ -871,63 +1087,109 @@
       rows.forEach(r => {
         const li = document.createElement("li");
         li.className = "list-group-item small";
-        li.innerHTML = `${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${(r.body || r.rule_text || "")}`;
+        li.innerHTML = `${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${
+          r.body || r.rule_text || ""
+        }`;
         ul.appendChild(li);
       });
     }
 
     async function loadFeedback() {
       try {
-        const { data, error } = await supabase.from("feedback").select("id,product_id,message,rating,image_url,created_at").order("created_at",{ ascending:false }).limit(20);
+        const { data, error } = await supabase
+          .from("feedback")
+          .select("id,product_id,message,rating,image_url,created_at")
+          .order("created_at", { ascending: false })
+          .limit(20);
         if (error) throw error;
         const ul = document.getElementById("feedbackList");
         ul.innerHTML = "";
-        if (!data || !data.length) { ul.innerHTML = '<li class="list-group-item small">No feedback yet.</li>'; return; }
+        if (!data || !data.length) {
+          ul.innerHTML = '<li class="list-group-item small">No feedback yet.</li>';
+          return;
+        }
         data.forEach(f => {
           const li = document.createElement("li");
           li.className = "list-group-item small";
           const stars = "⭐".repeat(safeNumber(f.rating));
-          li.innerHTML = `<div>${f.product_id ? `<strong>[${f.product_id}]</strong> ` : ""}${f.message}</div><div class="d-flex justify-content-between mt-1"><span>${stars}</span><span class="text-muted">${new Date(f.created_at).toLocaleString()}</span></div>`;
+          li.innerHTML = `
+            <div>${f.product_id ? `<strong>[${f.product_id}]</strong> ` : ""}${f.message}</div>
+            <div class="d-flex justify-content-between mt-1">
+              <span>${stars}</span>
+              <span class="text-muted">${new Date(f.created_at).toLocaleString()}</span>
+            </div>`;
           ul.appendChild(li);
         });
-      } catch (err) { console.error("[loadFeedback]", err); }
+      } catch (err) {
+        console.error("[loadFeedback]", err);
+      }
     }
 
     function populateFeedbackProducts() {
       const sel = document.getElementById("feedbackProduct");
       if (!sel) return;
       sel.innerHTML = '<option value="">General</option>';
-      allProducts.forEach(p => { const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.name; sel.appendChild(opt); });
+      allProducts.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
     }
 
     async function handleFeedbackSubmit(e) {
       e.preventDefault();
       const message = (document.getElementById("feedbackMessage").value || "").trim();
       const rating = safeNumber(document.getElementById("feedbackRating").value);
-      const product_id = (document.getElementById("feedbackProduct").value || "").trim() || null;
+      const product_id =
+        (document.getElementById("feedbackProduct").value || "").trim() || null;
       const file = document.getElementById("feedbackImage").files[0] || null;
-      if (!message || !rating) { showToast("Fill message and rating.", "warning"); return; }
+      if (!message || !rating) {
+        showToast("Fill message and rating.", "warning");
+        return;
+      }
       let image_base64 = null;
-      try { image_base64 = await toBase64(file); } catch(e){ console.error("[fb base64]", e); }
       try {
-        const { error } = await supabase.from("feedback").insert({ buyer_id: currentUser ? currentUser.id : null, product_id, message, rating, image_url: image_base64, created_at: new Date().toISOString() });
+        image_base64 = await toBase64(file);
+      } catch (e) {
+        console.error("[fb base64]", e);
+      }
+      try {
+        const { error } = await supabase.from("feedback").insert({
+          buyer_id: currentUser ? currentUser.id : null,
+          product_id,
+          message,
+          rating,
+          image_url: image_base64,
+          created_at: new Date().toISOString()
+        });
         if (error) throw error;
         showToast("Feedback submitted. Thank you!", "success");
         document.getElementById("feedbackForm").reset();
         await loadFeedback();
-      } catch (err) { console.error("[feedback]", err); showToast("Failed to submit feedback.", "danger"); }
+      } catch (err) {
+        console.error("[feedback]", err);
+        showToast("Failed to submit feedback.", "danger");
+      }
     }
 
     // ====== ORDERS / DELIVERED / REPORTS ======
     async function loadMyOrders() {
       if (!currentUser) return;
       try {
-        const { data, error } = await supabase.from("orders").select("id,product_id,account_type,duration,price,status,payment_method,reference_number,created_at").eq("buyer_id", currentUser.id).order("created_at",{ ascending:false });
+        const { data, error } = await supabase
+          .from("orders")
+          .select(
+            "id,product_id,account_type,duration,price,status,payment_method,reference_number,created_at"
+          )
+          .eq("buyer_id", currentUser.id)
+          .order("created_at", { ascending: false });
         if (error) throw error;
         const tbody = document.getElementById("ordersTableBody");
         tbody.innerHTML = "";
         if (!data || !data.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="small text-muted">No orders yet.</td></tr>';
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="small text-muted">No orders yet.</td></tr>';
           return;
         }
         data.forEach(o => {
@@ -936,101 +1198,190 @@
           if (statusLower === "delivered") statusClass = "os-delivered";
           else if (statusLower === "cancelled") statusClass = "os-cancelled";
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${o.product_id}</td><td>${o.account_type || "-"} / ${o.duration || "-"}</td><td>₱${safeNumber(o.price).toFixed(2)}</td><td><span class="order-status-pill ${statusClass}">${o.status || "pending"}</span></td><td class="small">${o.payment_method || "-"}<br><span class="text-muted">Ref: ${o.reference_number || "-"}</span></td><td><button class="btn btn-sm btn-outline-danger" data-order-id="${o.id}">Report</button></td>`;
+          tr.innerHTML = `
+            <td>${o.product_id}</td>
+            <td>${o.account_type || "-"} / ${o.duration || "-"}</td>
+            <td>₱${safeNumber(o.price).toFixed(2)}</td>
+            <td><span class="order-status-pill ${statusClass}">${o.status || "pending"}</span></td>
+            <td class="small">
+              ${o.payment_method || "-"}<br>
+              <span class="text-muted">Ref: ${o.reference_number || "-"}</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" data-order-id="${o.id}">Report</button>
+            </td>`;
           tbody.appendChild(tr);
         });
-        // bind report buttons
-        tbody.querySelectorAll("button[data-order-id]").forEach(btn => btn.addEventListener("click", ()=> openReportModal(btn.getAttribute("data-order-id"))));
-      } catch (err) { console.error("[loadMyOrders]", err); }
+        tbody.querySelectorAll("button[data-order-id]").forEach(btn =>
+          btn.addEventListener("click", () =>
+            openReportModal(btn.getAttribute("data-order-id"))
+          )
+        );
+      } catch (err) {
+        console.error("[loadMyOrders]", err);
+      }
     }
 
     async function loadDelivered() {
       if (!currentUser) return;
       try {
-        const { data, error } = await supabase.from("records").select("id,product_id,account_type,duration,purchase_date,account_email,account_password,profile,pin,buyer").eq("buyer", currentUser.email).order("purchase_date",{ ascending:false });
+        const { data, error } = await supabase
+          .from("records")
+          .select(
+            "id,product_id,account_type,duration,purchase_date,account_email,account_password,profile,pin,buyer"
+          )
+          .eq("buyer", currentUser.email)
+          .order("purchase_date", { ascending: false });
         if (error) throw error;
         const tbody = document.getElementById("deliveredTableBody");
         tbody.innerHTML = "";
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="7" class="small text-muted">No delivered accounts yet.</td></tr>'; return; }
+        if (!data || !data.length) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="small text-muted">No delivered accounts yet.</td></tr>';
+          return;
+        }
         data.forEach(r => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${r.product_id || "-"}</td><td>${r.account_type || "-"} / ${r.duration || "-"}</td><td>${r.purchase_date ? new Date(r.purchase_date).toLocaleString() : "-"}</td><td>${r.account_email || "-"}</td><td>${r.account_password || "-"}</td><td>${r.profile || "-"}</td><td>${r.pin || "-"}</td>`;
+          tr.innerHTML = `
+            <td>${r.product_id || "-"}</td>
+            <td>${r.account_type || "-"} / ${r.duration || "-"}</td>
+            <td>${r.purchase_date ? new Date(r.purchase_date).toLocaleString() : "-"}</td>
+            <td>${r.account_email || "-"}</td>
+            <td>${r.account_password || "-"}</td>
+            <td>${r.profile || "-"}</td>
+            <td>${r.pin || "-"}</td>`;
           tbody.appendChild(tr);
         });
-      } catch (err) { console.error("[loadDelivered]", err); }
+      } catch (err) {
+        console.error("[loadDelivered]", err);
+      }
     }
 
     function openReportModal(orderId) {
       document.getElementById("reportOrderId").value = orderId;
       document.getElementById("reportIssue").value = "";
-      modalInstanceReport = modalInstanceReport || new bootstrap.Modal(document.getElementById("reportModal"));
+      modalInstanceReport =
+        modalInstanceReport || new bootstrap.Modal(document.getElementById("reportModal"));
       modalInstanceReport.show();
     }
 
     async function handleReportSubmit(e) {
       e.preventDefault();
-      if (!currentUser) { showToast("Login first before reporting.", "warning"); return; }
+      if (!currentUser) {
+        showToast("Login first before reporting.", "warning");
+        return;
+      }
       const order_id = document.getElementById("reportOrderId").value;
       const issue_description = (document.getElementById("reportIssue").value || "").trim();
-      if (!issue_description) { showToast("Describe the issue.", "warning"); return; }
+      if (!issue_description) {
+        showToast("Describe the issue.", "warning");
+        return;
+      }
       try {
-        const { error } = await supabase.from("reports").insert({ order_id, buyer_id: currentUser.id, issue_description, status: "open", created_at: new Date().toISOString() });
+        const { error } = await supabase.from("reports").insert({
+          order_id,
+          buyer_id: currentUser.id,
+          issue_description,
+          status: "open",
+          created_at: new Date().toISOString()
+        });
         if (error) throw error;
         showToast("Report submitted.", "success");
         if (modalInstanceReport) modalInstanceReport.hide();
       } catch (err) {
-        console.error("[report]", err); showToast("Failed to submit report.", "danger");
+        console.error("[report]", err);
+        showToast("Failed to submit report.", "danger");
       }
     }
 
     // ====== INIT ======
     document.addEventListener("DOMContentLoaded", async () => {
-      // UI init
       updatePaymentConfigDisplay();
       initCategoryPills();
 
-      modalInstanceAuth = modalInstanceAuth || new bootstrap.Modal(document.getElementById("authModal"));
+      modalInstanceAuth =
+        modalInstanceAuth || new bootstrap.Modal(document.getElementById("authModal"));
 
-      document.getElementById("btnOpenLogin").addEventListener("click", ()=> modalInstanceAuth.show());
-      document.getElementById("btnBuyerLoginHeader").addEventListener("click", ()=> modalInstanceAuth.show());
-      document.getElementById("btnBuyerLogoutHeader").addEventListener("click", handleLogout);
+      document
+        .getElementById("btnOpenLogin")
+        .addEventListener("click", () => modalInstanceAuth.show());
+      document
+        .getElementById("btnBuyerLoginHeader")
+        .addEventListener("click", () => modalInstanceAuth.show());
+      document
+        .getElementById("btnBuyerLogoutHeader")
+        .addEventListener("click", handleLogout);
 
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("signupForm").addEventListener("submit", handleSignup);
 
-      document.getElementById("pmAccountType").addEventListener("change", handleAccountTypeChange);
-      document.getElementById("pmDuration").addEventListener("change", updateModalPriceAndSlots);
-      document.getElementById("pmPlaceOrder").addEventListener("click", placeOrder);
+      document
+        .getElementById("pmAccountType")
+        .addEventListener("change", handleAccountTypeChange);
+      document
+        .getElementById("pmDuration")
+        .addEventListener("change", updateModalPriceAndSlots);
+      document
+        .getElementById("pmPlaceOrder")
+        .addEventListener("click", placeOrder);
 
-      document.getElementById("rulesSearch").addEventListener("input", renderRulesList);
-      document.getElementById("rulesProductFilter").addEventListener("change", renderRulesList);
+      document
+        .getElementById("rulesSearch")
+        .addEventListener("input", renderRulesList);
+      document
+        .getElementById("rulesProductFilter")
+        .addEventListener("change", renderRulesList);
 
-      document.getElementById("feedbackForm").addEventListener("submit", handleFeedbackSubmit);
-      document.getElementById("reportForm").addEventListener("submit", handleReportSubmit);
+      document
+        .getElementById("feedbackForm")
+        .addEventListener("submit", handleFeedbackSubmit);
+      document
+        .getElementById("reportForm")
+        .addEventListener("submit", handleReportSubmit);
 
-      document.getElementById("productSearch").addEventListener("input", () => renderProductsGrid(document.querySelector(".category-pill.active")?.getAttribute("data-cat") || "all"));
-      document.getElementById("sortSelect").addEventListener("change", () => renderProductsGrid(document.querySelector(".category-pill.active")?.getAttribute("data-cat") || "all"));
-      document.getElementById("btnRefreshProducts").addEventListener("click", async () => { showToast("Refreshing...", "info"); await loadProductsAndCombos(); });
+      document
+        .getElementById("productSearch")
+        .addEventListener("input", () =>
+          renderProductsGrid(
+            document.querySelector(".category-pill.active")?.getAttribute("data-cat") ||
+              "all"
+          )
+        );
+      document
+        .getElementById("sortSelect")
+        .addEventListener("change", () =>
+          renderProductsGrid(
+            document.querySelector(".category-pill.active")?.getAttribute("data-cat") ||
+              "all"
+          )
+        );
+      document
+        .getElementById("btnRefreshProducts")
+        .addEventListener("click", async () => {
+          showToast("Refreshing...", "info");
+          await loadProductsAndCombos();
+        });
 
-      // product modal file preview already bound above
-      document.getElementById("pmProof")?.addEventListener("change", (e) => {
+      document.getElementById("pmProof")?.addEventListener("change", e => {
         const f = e.target.files[0];
         const img = document.getElementById("pmProofPreview");
-        if (!f) { img.classList.add("hidden"); img.src = ""; return; }
+        if (!f) {
+          img.classList.add("hidden");
+          img.src = "";
+          return;
+        }
         const url = URL.createObjectURL(f);
-        img.src = url; img.classList.remove("hidden");
-        setTimeout(()=> URL.revokeObjectURL(url), 60000);
+        img.src = url;
+        img.classList.remove("hidden");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
       });
 
-      // initial loads
       await refreshUser();
       await loadProductsAndCombos();
       await loadRules();
       await loadFeedback();
 
-      // subscribe to auth state changes (keeps currentUser in sync)
-      supabase.auth.onAuthStateChange((event, session) => {
-        // small debounce
+      supabase.auth.onAuthStateChange(() => {
         setTimeout(() => refreshUser(), 50);
       });
     });
