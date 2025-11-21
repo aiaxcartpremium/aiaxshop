@@ -1,1115 +1,592 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Aiaxcart Premium Shop</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMM Subscription Store</title>
 
-  <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- GOOGLE FONTS -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --primary: #ff6b6b;
-      --primary-2: #ff8e8e;
-      --secondary: #ffdfe2;
-      --accent: #f9dcc0;
-      --bg: #fefaf7;
-      --card: #ffffff;
-      --muted: #7a6963;
-      --text: #382f2c;
-      --radius: 14px;
+<style>
+/* ===========================================================
+   GLOBAL RESET + BASE STYLES
+=========================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+}
+
+body {
+    background: #111;
+    color: #fff;
+}
+
+/* ===========================================================
+   HEADER + HAMBURGER
+=========================================================== */
+
+header {
+    width: 100%;
+    padding: 14px 18px;
+    background: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #222;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hamburger {
+    font-size: 26px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: 0.2s ease;
+}
+.hamburger:hover {
+    background: #222;
+}
+
+header h1 {
+    font-size: 19px;
+    font-weight: 600;
+}
+
+/* ===========================================================
+   SLIDE-IN DRAWER (BUYER DASHBOARD)
+=========================================================== */
+
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    display: none;
+    z-index: 99;
+}
+
+.drawer {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100%;
+    background: #141414;
+    padding: 22px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: left 0.25s ease;
+    z-index: 100;
+    border-right: 1px solid #222;
+}
+
+.drawer.open {
+    left: 0;
+}
+
+.drawer h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.drawer-item {
+    padding: 10px 12px;
+    background: #1c1c1c;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.drawer-item:hover {
+    background: #292929;
+}
+
+/* ===========================================================
+   CONTENT WRAPPER
+=========================================================== */
+
+.container {
+    padding: 20px 15px;
+}
+
+/* ===========================================================
+   CATEGORY FILTER TABS
+=========================================================== */
+
+.category-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 18px;
+    padding-bottom: 6px;
+}
+
+.category-tab {
+    white-space: nowrap;
+    padding: 8px 14px;
+    background: #1b1b1b;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid #222;
+}
+.category-tab.active {
+    background: #ff006a;
+    border-color: #ff006a;
+}
+
+/* ===========================================================
+   PRODUCT GRID + CARDS
+=========================================================== */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 14px;
+}
+
+.product-card {
+    background: #181818;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #222;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.product-card:hover {
+    background: #202020;
+}
+
+.product-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.product-name {
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 36px;
+}
+
+.stock-text {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* ===========================================================
+   PRODUCT MODAL
+=========================================================== */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.modal {
+    width: 92%;
+    max-width: 380px;
+    background: #141414;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #222;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-close {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-section {
+    margin-top: 14px;
+}
+
+.section-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+    opacity: 0.8;
+}
+
+.select-box {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    background: #111;
+    border: 1px solid #333;
+    color: white;
+    margin-bottom: 10px;
+}
+
+/* ===========================================================
+   CHECKOUT BUTTON
+=========================================================== */
+
+.buy-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: #ff006a;
+    color: white;
+    transition: 0.2s;
+}
+.buy-btn:disabled {
+    background: #444;
+    cursor: not-allowed;
+}
+
+/* ===========================================================
+    TOAST NOTIFICATIONS
+=========================================================== */
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff006a;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+    z-index: 500;
+}
+
+/* ===========================================================
+   RESPONSIVE FIXES
+=========================================================== */
+
+@media (min-width: 820px) {
+    .drawer {
+        width: 260px;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
-      background: linear-gradient(180deg, var(--bg) 0%, #fff 100%);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
+}
+</style>
 
-    header{
-      position:sticky; top:0; z-index:60;
-      background: linear-gradient(90deg,var(--secondary), #fff);
-      border-bottom: 1px solid rgba(0,0,0,0.03);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
-    }
-    .header-inner{
-      max-width:1150px; margin:0 auto; padding:0.9rem 1.25rem;
-      display:flex; align-items:center; justify-content:space-between; gap:1rem;
-    }
-    .logo{ display:flex; align-items:center; gap:.5rem; font-weight:800; font-size:1.2rem; }
-    .top-nav a{ text-decoration:none; display:inline-block; padding:.35rem .9rem; border-radius:999px; color:var(--text); background:#fff; margin-left:.5rem; font-weight:600; font-size:.92rem; box-shadow:0 2px 6px rgba(0,0,0,0.03); }
-    .top-nav a.active, .top-nav a:hover{ background:var(--primary); color:#fff; box-shadow:0 6px 22px rgba(255,107,107,0.12); transform:translateY(-2px); }
-
-    main{ max-width:1150px; margin:1.25rem auto 2.5rem; padding:0 1.25rem; }
-
-    /* hero */
-    .hero{ background:var(--card); border-radius:var(--radius); padding:1.3rem; display:flex; gap:1rem; align-items:center; justify-content:space-between; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
-    .hero h1{ margin:0; font-size:1.35rem; }
-    .hero p{ margin:0; color:var(--muted); font-size:.95rem; }
-
-    .hero-right{ display:flex; align-items:center; gap:.6rem; }
-    .hero-right .btn{ border-radius:999px; }
-
-    /* categories */
-    .category-row{ display:flex; gap:.6rem; overflow-x:auto; padding:.5rem 0; margin:.9rem 0 1rem; }
-    .category-pill{ white-space:nowrap; padding:.45rem .9rem; border-radius:999px; background:var(--card); border:1px solid rgba(0,0,0,0.04); color:var(--muted); cursor:pointer; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.02); }
-    .category-pill.active{ background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#fff; transform:translateY(-3px); box-shadow:0 10px 28px rgba(255,107,107,0.12); }
-
-    /* controls row */
-    .controls-row{ display:flex; gap:.6rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center; }
-
-    /* products grid */
-    .products-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
-    @media (max-width:900px){ .products-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width:640px){ .products-grid{ grid-template-columns:1fr; } }
-
-    .product-card{
-      background:var(--card);
-      border-radius:12px;
-      padding:0.9rem;
-      display:flex;
-      flex-direction:column;
-      gap:.6rem;
-      box-shadow:0 6px 18px rgba(0,0,0,0.04);
-      border:1px solid rgba(0,0,0,0.03);
-      min-height:120px;
-      border-top:3px solid rgba(255,107,107,0.35);
-    }
-    .product-top{ display:flex; gap:.6rem; align-items:center; }
-    .product-icon{
-      width:46px;height:46px;border-radius:10px;
-      background:linear-gradient(180deg,#fff,#fff);
-      display:flex;align-items:center;justify-content:center;
-      font-size:1.3rem;
-      box-shadow:0 6px 14px rgba(0,0,0,0.03);
-    }
-    .product-title{ font-weight:700; font-size:1rem; }
-    .product-cat{ font-size:.82rem; color:var(--muted); margin-top:.15rem; }
-    .product-slots{ margin-top:.2rem; color:var(--primary); font-weight:700; font-size:.92rem; }
-
-    .product-footer{ margin-top:auto; display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
-    .btn-ghost{ background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--text); border-radius:10px; padding:.4rem .7rem; }
-    .btn-primary{ background: linear-gradient(90deg,var(--primary),var(--primary-2)); border:none; color:#fff; border-radius:10px; padding:.4rem .9rem; font-weight:700; }
-
-    /* buyer panel */
-    .buyer-panel{ background:var(--card); border-radius:var(--radius); padding:1.1rem; box-shadow:0 6px 18px rgba(0,0,0,0.04); margin-top:1rem; }
-    .buyer-header{ display:flex; gap:1rem; align-items:center; }
-    .buyer-avatar{ width:56px;height:56px;border-radius:50%; background:linear-gradient(90deg,var(--secondary),#fff); display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem; color:var(--text); box-shadow:0 6px 18px rgba(0,0,0,0.04); }
-    .buyer-meta{ line-height:1; }
-    .buyer-meta small{ color:var(--muted) }
-
-    .buyer-tabs .nav-link{ border-radius:999px; font-size:.92rem; padding:.32rem .75rem; color:var(--muted); }
-    .buyer-tabs .nav-link.active{ background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:0 8px 24px rgba(255,107,107,0.08); }
-
-    .small-muted{ color:var(--muted); font-size:.9rem; }
-
-    /* modal tweaks */
-    .modal .price-highlight{ color:var(--primary); font-weight:800; font-size:1.05rem; }
-    .slots-pill{ background: #fff6f6; color:var(--primary); border-radius:999px; padding:4px 8px; font-weight:700; }
-
-    /* status pills */
-    .order-status-pill{ padding:.18rem .6rem; border-radius:999px; font-weight:700; font-size:.8rem; text-transform:lowercase; }
-    .os-pending{ background:#fff3cd; color:#856404; }
-    .os-delivered{ background:#d4edda; color:#155724; }
-    .os-cancelled{ background:#f8d7da; color:#721c24; }
-
-    /* tiny helpers */
-    .text-muted-2{ color:var(--muted); font-size:.9rem; }
-    .hidden{ display:none !important; }
-    .file-preview{ max-width:160px; max-height:120px; object-fit:cover; border-radius:8px; border:1px solid rgba(0,0,0,0.06); }
-    .muted-note{ font-size:.86rem; color:var(--muted); }
-  </style>
 </head>
+
 <body>
-  <!-- toasts -->
-  <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1050"></div>
 
-  <!-- header -->
-  <header>
-    <div class="header-inner">
-      <div class="logo"><span style="font-size:1.25rem">🛒</span><span>Aiaxcart Premium Shop</span></div>
-      <nav class="top-nav">
-        <a href="./index.html" class="active">Home</a>
-        <a href="./admin.html">Admin</a>
-      </nav>
+<!-- Header -->
+<header>
+    <div class="header-left">
+        <div class="hamburger" onclick="openDrawer()">☰</div>
+        <h1>SMM Subscription Store</h1>
     </div>
-  </header>
+</header>
 
-  <main>
-    <!-- hero -->
-    <section class="hero">
-      <div>
-        <h1>Premium accounts, hassle-free.</h1>
-        <p>Choose your app, send payment, upload proof — admin confirms and delivers accounts inside this site.</p>
-        <div class="muted-note mt-2">Tip: Use the <strong>View Plans / Buy</strong> button on any product card.</div>
-      </div>
-      <div class="hero-right">
-        <button id="btnOpenLogin" class="btn btn-outline-dark btn-sm"><i class="fa fa-user me-1"></i> Login / Sign up</button>
-      </div>
-    </section>
+<!-- Drawer Sidebar -->
+<div class="drawer-overlay" onclick="closeDrawer()"></div>
 
-    <!-- categories + controls -->
-    <div class="controls-row" style="margin-top:.8rem;">
-      <div style="flex:1 1 280px; display:flex; gap:.6rem; align-items:center;">
-        <div style="min-width:180px">
-          <input id="productSearch" class="form-control form-control-sm" placeholder="Search products..." />
-        </div>
-        <div>
-          <select id="sortSelect" class="form-select form-select-sm">
-            <option value="popular">Sort: Default</option>
-            <option value="slots_desc">Slots (high → low)</option>
-            <option value="slots_asc">Slots (low → high)</option>
-            <option value="name_asc">Name A → Z</option>
-            <option value="name_desc">Name Z → A</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex; gap:.5rem;">
-        <button id="btnRefreshProducts" class="btn btn-ghost btn-sm"><i class="fa fa-sync me-1"></i> Refresh</button>
-      </div>
-    </div>
+<div class="drawer" id="drawer">
+    <h2>Dashboard</h2>
+    <div class="drawer-item" onclick="showRules()">Rules</div>
+    <div class="drawer-item" onclick="showFeedback()">Feedback</div>
+    <div class="drawer-item" onclick="showOrders()">My Orders</div>
+    <div class="drawer-item" onclick="showDelivered()">Delivered</div>
+</div>
 
-    <div class="category-row" id="categoryRow" aria-label="product categories">
-      <button class="category-pill active" data-cat="all">All</button>
-      <button class="category-pill" data-cat="entertainment">Entertainment</button>
-      <button class="category-pill" data-cat="streaming">Streaming</button>
-      <button class="category-pill" data-cat="educational">Educational</button>
-      <button class="category-pill" data-cat="editing">Editing</button>
-      <button class="category-pill" data-cat="ai">AI</button>
-    </div>
+<!-- Main Content -->
+<div class="container">
 
-    <!-- products -->
-    <section id="productsSection">
-      <div id="productsGrid" class="products-grid">
-        <!-- cards injected by JS -->
-      </div>
-      <div id="noProducts" class="mt-3 muted-note hidden">No products available.</div>
-    </section>
+    <!-- Category Tabs -->
+    <div class="category-tabs" id="categoryTabs"></div>
 
-    <!-- buyer panel -->
-    <section class="buyer-panel">
-      <div class="buyer-header">
-        <div class="buyer-avatar" id="buyerAvatar">?</div>
-        <div class="buyer-meta">
-          <div id="buyerWelcome">Welcome, Guest</div>
-          <small id="buyerSubtext">Login to track your orders and delivered accounts.</small>
-        </div>
+    <!-- Product Grid -->
+    <div class="product-grid" id="productGrid"></div>
+</div>
 
-        <div class="ms-auto d-flex gap-2">
-          <button id="btnBuyerLoginHeader" class="btn btn-sm btn-outline-dark">Login</button>
-          <button id="btnBuyerLogoutHeader" class="btn btn-sm btn-outline-secondary hidden">Logout</button>
-        </div>
-      </div>
+<div class="toast" id="toast"></div>
 
-      <!-- tabs -->
-      <ul class="nav nav-pills buyer-tabs mt-3" id="buyerTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-rules" data-bs-toggle="pill" data-bs-target="#pane-rules" type="button">Rules</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-feedback" data-bs-toggle="pill" data-bs-target="#pane-feedback" type="button">Feedback</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-orders" data-bs-toggle="pill" data-bs-target="#pane-orders" type="button">My Orders</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-delivered" data-bs-toggle="pill" data-bs-target="#pane-delivered" type="button">Delivered Accounts</button>
-        </li>
-      </ul>
-
-      <div class="tab-content buyer-tab-pane mt-3">
-        <!-- RULES -->
-        <div class="tab-pane fade show active" id="pane-rules">
-          <div class="row g-2 mb-2">
-            <div class="col-md-4">
-              <input id="rulesSearch" class="form-control form-control-sm" placeholder="Search rule text..." />
-            </div>
-            <div class="col-md-4">
-              <select id="rulesProductFilter" class="form-select form-select-sm">
-                <option value="">All products</option>
-              </select>
-            </div>
-          </div>
-          <ul id="rulesList" class="list-group list-group-flush small">
-            <!-- rules injected -->
-          </ul>
-          <div class="small-muted mt-2">Rules come from the admin — read before purchasing.</div>
-        </div>
-
-        <!-- FEEDBACK -->
-        <div class="tab-pane fade" id="pane-feedback">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <h6 class="mb-2">Recent feedback</h6>
-              <ul id="feedbackList" class="list-group list-group-flush small mb-2"></ul>
-            </div>
-            <div class="col-md-6">
-              <h6 class="mb-2">Send feedback</h6>
-              <form id="feedbackForm" class="small">
-                <div class="mb-2">
-                  <label class="form-label small">Product (optional)</label>
-                  <select id="feedbackProduct" class="form-select form-select-sm"><option value="">General</option></select>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small">Message</label>
-                  <textarea id="feedbackMessage" class="form-control form-control-sm" rows="3" required></textarea>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small">Rating</label>
-                  <select id="feedbackRating" class="form-select form-select-sm" required>
-                    <option value="">Choose...</option>
-                    <option value="5">⭐⭐⭐⭐⭐</option>
-                    <option value="4">⭐⭐⭐⭐</option>
-                    <option value="3">⭐⭐⭐</option>
-                    <option value="2">⭐⭐</option>
-                    <option value="1">⭐</option>
-                  </select>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small">Screenshot (optional)</label>
-                  <input id="feedbackImage" type="file" accept="image/*" class="form-control form-control-sm" />
-                  <div class="small-muted">Upload an optional screenshot of your experience.</div>
-                </div>
-                <button class="btn btn-primary btn-sm" type="submit">Submit feedback</button>
-                <div class="small-muted mt-1">Login to tag feedback to your account.</div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <!-- ORDERS -->
-        <div class="tab-pane fade" id="pane-orders">
-          <div id="ordersGuestNote" class="small-muted mb-2">Login to see your orders.</div>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-              <thead class="table-light">
-                <tr><th>Product</th><th>Combo</th><th>Price</th><th>Status</th><th>Payment</th><th></th></tr>
-              </thead>
-              <tbody id="ordersTableBody"></tbody>
-            </table>
-          </div>
-          <div class="small-muted mt-2">Payments are manually confirmed by admin. You'll be notified here when status becomes <strong>Delivered</strong>.</div>
-        </div>
-
-        <!-- DELIVERED -->
-        <div class="tab-pane fade" id="pane-delivered">
-          <div id="deliveredGuestNote" class="small-muted mb-2">Login to see delivered accounts (email, password, profile, pin).</div>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-              <thead class="table-light"><tr><th>Product</th><th>Combo</th><th>Purchase date</th><th>Account email</th><th>Password</th><th>Profile</th><th>PIN</th></tr></thead>
-              <tbody id="deliveredTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Product modal -->
-  <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="productModal">
         <div class="modal-header">
-          <h5 id="pmTitle" class="modal-title">Product</h5>
-          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3">
-            <div class="col-md-7">
-              <h6 class="mb-2">Choose combo</h6>
-              <div class="mb-2">
-                <label class="form-label small">Account type</label>
-                <select id="pmAccountType" class="form-select form-select-sm"><option value="">Select type</option></select>
-              </div>
-              <div class="mb-2">
-                <label class="form-label small">Duration</label>
-                <select id="pmDuration" class="form-select form-select-sm" disabled><option value="">Select duration</option></select>
-              </div>
-              <div class="mb-3 small">
-                <div>Price: <span id="pmPrice" class="price-highlight">₱0.00</span></div>
-                <div class="mt-1">Available slots: <span id="pmSlots" class="slots-pill">0</span></div>
-              </div>
-              <div class="small-muted">Slots automatically follow the available stocks set by the admin.</div>
-            </div>
-
-            <div class="col-md-5">
-              <h6 class="mb-2">Payment details</h6>
-              <div class="border rounded p-2 mb-2 small">
-                <div><strong>GCash:</strong> <span id="cfgGcash">09625544105 SMM</span></div>
-                <div><strong>Maya:</strong> <span id="cfgMaya">09298943629 SMM</span></div>
-                <div class="small-muted mt-1">Send payment only to the numbers above and keep your reference number.</div>
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label small">Payment method</label>
-                <select id="pmPaymentMethod" class="form-select form-select-sm"><option value="gcash">GCash</option><option value="maya">Maya</option></select>
-              </div>
-              <div class="mb-2">
-                <label class="form-label small">Reference number</label>
-                <input id="pmRefNumber" class="form-control form-control-sm" placeholder="e.g. GCash / Maya ref #" />
-              </div>
-              <div class="mb-2">
-                <label class="form-label small">Proof of payment (screenshot)</label>
-                <input id="pmProof" type="file" accept="image/*" class="form-control form-control-sm" />
-                <div class="mt-2"><img id="pmProofPreview" class="file-preview hidden" alt="proof preview" /></div>
-                <div class="small-muted mt-1">Upload a clear screenshot of your payment.</div>
-              </div>
-
-              <div id="pmLoginWarning" class="alert alert-warning small py-1 px-2 mt-2">You must login before placing an order.</div>
-            </div>
-          </div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <span class="modal-close" onclick="closeModal()">&times;</span>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button>
-          <button id="pmPlaceOrder" class="btn btn-primary btn-sm" type="button">Place order</button>
+        <div class="modal-icon" id="modalIcon"></div>
+
+        <div class="modal-section">
+            <div class="section-title">Account Type</div>
+            <select id="accTypeSelect" class="select-box"></select>
+
+            <div class="section-title">Duration</div>
+            <select id="durationSelect" class="select-box"></select>
+
+            <div class="section-title">Price</div>
+            <div id="modalPrice" style="font-size:16px; font-weight:600; margin-top:5px;">₱0</div>
+
+            <button class="buy-btn" id="buyBtn">Checkout</button>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- auth modal -->
-  <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 id="authModalTitle" class="modal-title">Login</h5>
-          <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <ul class="nav nav-tabs small mb-3" id="authTabs" role="tablist">
-            <li class="nav-item"><button class="nav-link active" id="auth-login-tab" data-bs-toggle="tab" data-bs-target="#auth-login-pane" type="button">Login</button></li>
-            <li class="nav-item"><button class="nav-link" id="auth-signup-tab" data-bs-toggle="tab" data-bs-target="#auth-signup-pane" type="button">Sign up</button></li>
-          </ul>
-          <div class="tab-content small">
-            <div class="tab-pane fade show active" id="auth-login-pane">
-              <form id="loginForm">
-                <div class="mb-2"><label class="form-label small">Email</label><input id="loginEmail" type="email" class="form-control form-control-sm" placeholder="you@example.com" required /></div>
-                <div class="mb-2"><label class="form-label small">Password</label><input id="loginPassword" type="password" class="form-control form-control-sm" required /></div>
-                <button class="btn btn-primary btn-sm" type="submit">Login</button>
-              </form>
-            </div>
-            <div class="tab-pane fade" id="auth-signup-pane">
-              <form id="signupForm">
-                <div class="mb-2"><label class="form-label small">Email</label><input id="signupEmail" type="email" class="form-control form-control-sm" placeholder="you@example.com" required /></div>
-                <div class="mb-2"><label class="form-label small">Password</label><input id="signupPassword" type="password" class="form-control form-control-sm" minlength="6" required /></div>
-                <button class="btn btn-primary btn-sm" type="submit">Create account</button>
-                <div class="small-muted mt-1">Use any valid email address.</div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<script>
+// ===============================================================
+// PRODUCT DATA (FULL PRICING + CATEGORIES)
+// ===============================================================
+const PRODUCTS_DATA = [
+    // put EXACTLY your full PRODUCTS_DATA array here (unchanged)
+];
 
-  <!-- report modal -->
-  <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Report issue</h5><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body small">
-          <form id="reportForm">
-            <input type="hidden" id="reportOrderId" />
-            <div class="mb-2"><label class="form-label small">Issue</label><textarea id="reportIssue" class="form-control form-control-sm" rows="3" required></textarea></div>
-            <button class="btn btn-primary btn-sm" type="submit">Submit report</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+// ===============================================================
+// CONSTANTS
+// ===============================================================
+const ACC_TYPES = ["Solo Account","Shared Account","Solo Profile","Shared Profile"];
+const DURATIONS = ["7d","14d","1m","2m","3m","4m","5m","6m","7m","8m","9m","10m","11m","12m","24m","NW","3m W","6m W","12m W"];
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+// ===============================================================
+// DOM ELEMENTS
+// ===============================================================
+const categoryTabs = document.getElementById("categoryTabs");
+const productGrid = document.getElementById("productGrid");
+const modalOverlay = document.getElementById("modalOverlay");
+const modalTitle = document.getElementById("modalTitle");
+const modalIcon = document.getElementById("modalIcon");
+const accTypeSelect = document.getElementById("accTypeSelect");
+const durationSelect = document.getElementById("durationSelect");
+const modalPrice = document.getElementById("modalPrice");
+const buyBtn = document.getElementById("buyBtn");
+const toast = document.getElementById("toast");
 
-  <script>
-    // ====== CONFIG ======
-    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
+// drawer
+const drawer = document.getElementById("drawer");
+const drawerOverlay = document.querySelector(".drawer-overlay");
 
-    // Payment numbers
-    const PAYMENT_CONFIG = {
-      gcash_number: "09625544105 SMM",
-      maya_number: "09298943629 SMM"
-    };
+let selectedProduct = null;
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ===============================================================
+// SHOW TOAST
+// ===============================================================
+function showToast(msg) {
+    toast.innerText = msg;
+    toast.style.display = "block";
 
-    // Per-product and per-category styling
-    const PRODUCT_STYLES = {
-      "alight-motion": { iconBg:"#ffe3ed", accent:"#ff6b6b" },
-      "bilibili": { iconBg:"#e3f0ff", accent:"#00a0ff" },
-      "canva": { iconBg:"#dffbff", accent:"#00c4cc" },
-      "capcut": { iconBg:"#f5f5f5", accent:"#111111" },
-      "spotify": { iconBg:"#e3ffe9", accent:"#1db954" },
-      "disney-plus": { iconBg:"#e0e7ff", accent:"#113ccf" },
-      "youtube": { iconBg:"#ffe0e0", accent:"#ff0000" },
-      "duolingo": { iconBg:"#e5ffd5", accent:"#58cc02" },
-      "chatgpt": { iconBg:"#e5f5f0", accent:"#10a37f" },
-      "google-one": { iconBg:"#fff3d6", accent:"#fbbc04" },
-      "blackbox-ai": { iconBg:"#eee6ff", accent:"#7c3aed" },
-      "remini": { iconBg:"#ffe3e3", accent:"#f23d4f" }
-    };
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 2000);
+}
 
-    const CATEGORY_STYLES = {
-      entertainment: { iconBg:"#ffe5ea", accent:"#ff6b6b" },
-      streaming: { iconBg:"#e7e6ff", accent:"#7b61ff" },
-      educational: { iconBg:"#fff3d1", accent:"#ffb300" },
-      editing: { iconBg:"#e3f5ff", accent:"#00bcd4" },
-      ai: { iconBg:"#ebe6ff", accent:"#8b5cf6" }
-    };
+// ===============================================================
+// DRAWER
+// ===============================================================
+function openDrawer() {
+    drawer.classList.add("open");
+    drawerOverlay.style.display = "block";
+}
 
-    // ====== STATE ======
-    let currentUser = null;
-    let allProducts = [];
-    let productCombos = {}; // product_id -> account_type -> duration -> price
-    let productStocksSummary = {}; // "pid||type||dur" -> qty
-    let currentProductForModal = null;
-    let modalInstanceProduct = null;
-    let modalInstanceAuth = null;
-    let modalInstanceReport = null;
+function closeDrawer() {
+    drawer.classList.remove("open");
+    drawerOverlay.style.display = "none";
+}
 
-    // ====== HELPERS ======
-    function showToast(msg, type = "info", timeout = 4500) {
-      const container = document.getElementById("toastContainer");
-      const wrapper = document.createElement("div");
-      const bsType = type === "success" ? "success" : type === "danger" || type === "error" ? "danger" : type === "warning" ? "warning" : "secondary";
-      wrapper.className = `toast align-items-center text-bg-${bsType} border-0 mb-2`;
-      wrapper.role = "alert";
-      wrapper.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-      container.appendChild(wrapper);
-      const t = new bootstrap.Toast(wrapper);
-      t.show();
-      setTimeout(() => { try { wrapper.remove(); } catch(e){} }, timeout + 500);
+// dummy
+function showRules() { showToast("Rules"); }
+function showFeedback() { showToast("Feedback"); }
+function showOrders() { showToast("My Orders"); }
+function showDelivered() { showToast("Delivered"); }
+
+// ===============================================================
+// RENDER CATEGORY TABS
+// ===============================================================
+function renderCategories() {
+    const cats = [...new Set(PRODUCTS_DATA.map(p => p.category))];
+
+    categoryTabs.innerHTML = "";
+
+    const allTab = document.createElement("div");
+    allTab.className = "category-tab active";
+    allTab.innerText = "All";
+    allTab.onclick = () => filterCategory("All");
+    categoryTabs.appendChild(allTab);
+
+    cats.forEach(cat => {
+        const tab = document.createElement("div");
+        tab.className = "category-tab";
+        tab.innerText = cat.charAt(0).toUpperCase() + cat.slice(1);
+        tab.onclick = () => filterCategory(cat);
+        categoryTabs.appendChild(tab);
+    });
+}
+
+// ===============================================================
+// FILTER BY CATEGORY
+// ===============================================================
+function filterCategory(cat) {
+    document.querySelectorAll(".category-tab").forEach(t => t.classList.remove("active"));
+    [...categoryTabs.children].find(t => t.innerText.toLowerCase() === cat.toLowerCase()).classList.add("active");
+
+    if (cat === "All") {
+        renderProducts(PRODUCTS_DATA);
+    } else {
+        renderProducts(PRODUCTS_DATA.filter(p => p.category === cat));
     }
+}
 
-    function safeNumber(v) {
-      const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
-    }
+// ===============================================================
+// RENDER PRODUCT GRID
+// ===============================================================
+function renderProducts(list) {
+    productGrid.innerHTML = "";
 
-    function toBase64(file) {
-      return new Promise((resolve, reject) => {
-        if (!file) return resolve(null);
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // ====== AUTH ======
-    async function refreshUser() {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) {
-          currentUser = null;
-        } else {
-          currentUser = data.user || null;
-        }
-      } catch (err) {
-        console.error("[refreshUser]", err);
-        currentUser = null;
-      }
-      updateBuyerUI();
-      if (currentUser) {
-        await loadMyOrders();
-        await loadDelivered();
-      } else {
-        document.getElementById("ordersTableBody").innerHTML = "";
-        document.getElementById("deliveredTableBody").innerHTML = "";
-      }
-    }
-
-    function updateBuyerUI() {
-      const avatar = document.getElementById("buyerAvatar");
-      const welcome = document.getElementById("buyerWelcome");
-      const subtext = document.getElementById("buyerSubtext");
-      const btnLoginHeader = document.getElementById("btnBuyerLoginHeader");
-      const btnLogoutHeader = document.getElementById("btnBuyerLogoutHeader");
-      const guestOrdersNote = document.getElementById("ordersGuestNote");
-      const guestDeliveredNote = document.getElementById("deliveredGuestNote");
-      const pmLoginWarning = document.getElementById("pmLoginWarning");
-      const heroLoginBtn = document.getElementById("btnOpenLogin");
-
-      if (currentUser) {
-        const email = currentUser.email || "User";
-        avatar.textContent = email.charAt(0).toUpperCase();
-        welcome.textContent = "Welcome, " + email;
-        subtext.textContent = "Track your orders and delivered accounts.";
-        btnLoginHeader.classList.add("hidden");
-        btnLogoutHeader.classList.remove("hidden");
-        guestOrdersNote.textContent = "";
-        guestDeliveredNote.textContent = "";
-        pmLoginWarning.classList.add("hidden");
-        if (heroLoginBtn) heroLoginBtn.classList.add("hidden");
-      } else {
-        avatar.textContent = "?";
-        welcome.textContent = "Welcome, Guest";
-        subtext.textContent = "Login to track your orders and delivered accounts.";
-        btnLoginHeader.classList.remove("hidden");
-        btnLogoutHeader.classList.add("hidden");
-        guestOrdersNote.textContent = "Login to see your orders.";
-        guestDeliveredNote.textContent = "Login to see delivered accounts (email, password, profile, pin).";
-        pmLoginWarning.classList.remove("hidden");
-        if (heroLoginBtn) heroLoginBtn.classList.remove("hidden");
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-      try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        showToast("Logged in successfully.", "success");
-        await refreshUser();
-        if (modalInstanceAuth) modalInstanceAuth.hide();
-      } catch (err) {
-        console.error("[login]", err);
-        showToast("Login failed: " + (err.message || JSON.stringify(err)), "danger");
-      }
-    }
-
-    async function handleSignup(e) {
-      e.preventDefault();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      try {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-
-        if (data && data.user && data.user.id) {
-          await supabase.from("buyers").upsert({ id: data.user.id, email: data.user.email }, { onConflict: "id" }).catch(()=>{});
-        }
-
-        showToast("Account created. You are now logged in.", "success");
-        await refreshUser();
-        if (modalInstanceAuth) modalInstanceAuth.hide();
-      } catch (err) {
-        console.error("[signup]", err);
-        showToast("Sign up failed: " + (err.message || JSON.stringify(err)), "danger");
-      }
-    }
-
-    async function handleLogout() {
-      try {
-        await supabase.auth.signOut();
-      } catch (err) { console.error("[logout]", err); }
-      currentUser = null;
-      updateBuyerUI();
-      showToast("Logged out.", "info");
-    }
-
-    // ====== PRODUCTS / COMBOS / STOCKS ======
-    function registerCombo(product_id, account_type, duration, price) {
-      if (!product_id || !account_type || !duration) return;
-      if (!productCombos[product_id]) productCombos[product_id] = {};
-      if (!productCombos[product_id][account_type]) productCombos[product_id][account_type] = {};
-      if (productCombos[product_id][account_type][duration] == null) {
-        productCombos[product_id][account_type][duration] = safeNumber(price);
-      }
-    }
-
-    async function loadProductsAndCombos() {
-      try {
-        const [prodRes, priceRes, stocksRes] = await Promise.all([
-          supabase.from("products").select("id,name,category,icon").order("name"),
-          supabase.from("product_prices").select("product_id,account_type,duration,price,is_active").order("product_id").maybeSingle().then(res => {
-            // we will re-query below; this .maybeSingle is only to detect table existence quickly
-            return supabase.from("product_prices").select("product_id,account_type,duration,price,is_active");
-          }).catch(()=>({ data: [], error: null })),
-          supabase.from("stocks").select("product_id,account_type,duration,status,quantity,price")
-        ]);
-
-        if (prodRes.error) throw prodRes.error;
-        allProducts = prodRes.data || [];
-
-        const priceRows = (!priceRes.error && priceRes.data) ? priceRes.data : [];
-        const stockRows = (!stocksRes.error && stocksRes.data) ? stocksRes.data : [];
-
-        // Build combos: first from product_prices (if any), then from stocks (so owner can also create combos via stock only)
-        productCombos = {};
-        priceRows.forEach(row => {
-          if (row.is_active === false) return;
-          registerCombo(row.product_id, row.account_type, row.duration, row.price);
-        });
-        stockRows.forEach(row => {
-          registerCombo(row.product_id, row.account_type, row.duration, row.price);
-        });
-
-        // Build slots summary from available stocks only
-        productStocksSummary = {};
-        stockRows.forEach(row => {
-          const status = (row.status || "").toLowerCase();
-          const qty = safeNumber(row.quantity);
-          if (status === "available" && qty > 0) {
-            const key = `${row.product_id}||${row.account_type}||${row.duration}`;
-            productStocksSummary[key] = (productStocksSummary[key] || 0) + qty;
-          }
-        });
-
-        renderProductsGrid();
-        populateRulesProductFilter();
-        populateFeedbackProducts();
-      } catch (err) {
-        console.error("[loadProductsAndCombos]", err);
-        showToast("Failed to load products or combos.", "danger");
-      }
-    }
-
-    function getStyleForProduct(p) {
-      const ps = PRODUCT_STYLES[p.id] || {};
-      const cs = CATEGORY_STYLES[p.category] || {};
-      return {
-        iconBg: ps.iconBg || cs.iconBg || "linear-gradient(180deg,#fff,#fff)",
-        accent: ps.accent || cs.accent || "var(--primary)"
-      };
-    }
-
-    function renderProductsGrid(activeCategory = "all") {
-      const grid = document.getElementById("productsGrid");
-      grid.innerHTML = "";
-      const search = (document.getElementById("productSearch")?.value || "").toLowerCase();
-      const sort = document.getElementById("sortSelect")?.value || "popular";
-
-      if (!allProducts || !allProducts.length) {
-        document.getElementById("noProducts").classList.remove("hidden");
-        return;
-      } else {
-        document.getElementById("noProducts").classList.add("hidden");
-      }
-
-      let list = allProducts.slice();
-
-      // filters
-      list = list.filter(p => {
-        if (activeCategory !== "all" && (p.category || "").toLowerCase() !== activeCategory) return false;
-        if (search) {
-          const t = `${p.name || ""} ${p.id || ""} ${p.category || ""}`.toLowerCase();
-          if (!t.includes(search)) return false;
-        }
-        return true;
-      });
-
-      // compute total slots
-      list = list.map(p => {
-        let totalSlots = 0;
-        const combos = productCombos[p.id] || {};
-        Object.keys(combos).forEach(a => {
-          Object.keys(combos[a] || {}).forEach(d => {
-            const key = `${p.id}||${a}||${d}`;
-            totalSlots += productStocksSummary[key] || 0;
-          });
-        });
-        return { p, totalSlots };
-      });
-
-      // sort
-      if (sort === "slots_desc") list.sort((a,b) => b.totalSlots - a.totalSlots);
-      else if (sort === "slots_asc") list.sort((a,b) => a.totalSlots - b.totalSlots);
-      else if (sort === "name_asc") list.sort((a,b) => (a.p.name||"").localeCompare(b.p.name||""));
-      else if (sort === "name_desc") list.sort((a,b) => (b.p.name||"").localeCompare(a.p.name||""));
-
-      list.forEach(({p,totalSlots}) => {
-        const style = getStyleForProduct(p);
+    list.forEach(p => {
         const card = document.createElement("div");
         card.className = "product-card";
-        card.style.borderTop = `3px solid ${style.accent}`;
+        card.onclick = () => openModal(p);
+
         card.innerHTML = `
-          <div class="product-top">
-            <div class="product-icon" style="background:${style.iconBg};">${p.icon || "🎬"}</div>
-            <div style="flex:1">
-              <div class="product-title">${p.name || p.id}</div>
-              <div class="product-cat">${p.category || "-"}</div>
-            </div>
-          </div>
-          <div><div class="product-slots">${totalSlots > 0 ? totalSlots + " slot(s) available" : "0 slot(s)"}</div></div>
+            <div class="product-icon">${p.icon}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="stock-text">Stock: ${p.stock}</div>
         `;
-        const footer = document.createElement("div");
-        footer.className = "product-footer";
-        const viewBtn = document.createElement("button");
-        viewBtn.className = "btn btn-primary btn-sm";
-        viewBtn.textContent = "View Plans / Buy";
-        viewBtn.addEventListener("click", ()=> openProductModal(p.id));
-        footer.appendChild(viewBtn);
-        card.appendChild(footer);
-        grid.appendChild(card);
-      });
 
-      if (!list.length) {
-        grid.innerHTML = `<div class="muted-note">No products match your filters/search.</div>`;
-      }
-    }
+        productGrid.appendChild(card);
+    });
+}
 
-    function initCategoryPills() {
-      const row = document.getElementById("categoryRow");
-      row.querySelectorAll(".category-pill").forEach(pill => {
-        pill.addEventListener("click", () => {
-          const cat = pill.getAttribute("data-cat");
-          row.querySelectorAll(".category-pill").forEach(x => x.classList.remove("active"));
-          pill.classList.add("active");
-          renderProductsGrid(cat);
-        });
-      });
-    }
+// ===============================================================
+// OPEN MODAL
+// ===============================================================
+function openModal(product) {
+    selectedProduct = product;
 
-    // ====== PRODUCT MODAL ======
-    function updatePaymentConfigDisplay() {
-      document.getElementById("cfgGcash").textContent = PAYMENT_CONFIG.gcash_number;
-      document.getElementById("cfgMaya").textContent = PAYMENT_CONFIG.maya_number;
-    }
+    modalTitle.innerText = product.name;
+    modalIcon.innerHTML = product.icon;
 
-    function openProductModal(productId) {
-      currentProductForModal = productId;
-      const p = allProducts.find(x => x.id === productId);
-      if (!p) {
-        showToast("Product not found.", "danger");
-        return;
-      }
-      document.getElementById("pmTitle").textContent = p.name || p.id;
-
-      const selType = document.getElementById("pmAccountType");
-      const selDur = document.getElementById("pmDuration");
-      selType.innerHTML = '<option value="">Select type</option>';
-      selDur.innerHTML = '<option value="">Select duration</option>';
-      selDur.disabled = true;
-
-      const combos = productCombos[productId] || {};
-      const types = Object.keys(combos);
-      if (!types.length) {
-        selType.innerHTML = '<option value="">(No combos configured)</option>';
-      } else {
-        types.forEach(t => {
-          const opt = document.createElement("option"); opt.value = t; opt.textContent = t; selType.appendChild(opt);
-        });
-      }
-
-      document.getElementById("pmPrice").textContent = "₱0.00";
-      document.getElementById("pmSlots").textContent = "0";
-      document.getElementById("pmRefNumber").value = "";
-      document.getElementById("pmPaymentMethod").value = "gcash";
-      document.getElementById("pmProof").value = "";
-      document.getElementById("pmProofPreview").classList.add("hidden");
-
-      const pmLoginWarning = document.getElementById("pmLoginWarning");
-      if (currentUser) pmLoginWarning.classList.add("hidden");
-      else pmLoginWarning.classList.remove("hidden");
-
-      modalInstanceProduct = modalInstanceProduct || new bootstrap.Modal(document.getElementById("productModal"));
-      modalInstanceProduct.show();
-    }
-
-    function handleAccountTypeChange() {
-      const productId = currentProductForModal;
-      if (!productId) return;
-      const selType = document.getElementById("pmAccountType");
-      const selDur = document.getElementById("pmDuration");
-      const typeVal = selType.value;
-      selDur.innerHTML = '<option value="">Select duration</option>';
-
-      if (!typeVal) {
-        selDur.disabled = true;
-        document.getElementById("pmPrice").textContent = "₱0.00";
-        document.getElementById("pmSlots").textContent = "0";
-        return;
-      }
-
-      const combos = productCombos[productId]?.[typeVal] || {};
-      Object.keys(combos).forEach(dur => {
-        const opt = document.createElement("option"); opt.value = dur; opt.textContent = dur; selDur.appendChild(opt);
-      });
-      selDur.disabled = false;
-      updateModalPriceAndSlots();
-    }
-
-    function updateModalPriceAndSlots() {
-      const productId = currentProductForModal;
-      if (!productId) return;
-      const typeVal = document.getElementById("pmAccountType").value;
-      const durVal = document.getElementById("pmDuration").value;
-      const price = productCombos[productId]?.[typeVal]?.[durVal] || 0;
-      document.getElementById("pmPrice").textContent = "₱" + safeNumber(price).toFixed(2);
-
-      const key = `${productId}||${typeVal}||${durVal}`;
-      const slots = productStocksSummary[key] || 0;
-      document.getElementById("pmSlots").textContent = slots;
-    }
-
-    // preview payment file
-    document.getElementById("pmProof")?.addEventListener("change", (e) => {
-      const f = e.target.files[0];
-      const img = document.getElementById("pmProofPreview");
-      if (!f) { img.classList.add("hidden"); img.src = ""; return; }
-      const url = URL.createObjectURL(f);
-      img.src = url; img.classList.remove("hidden");
-      setTimeout(() => { URL.revokeObjectURL(url); }, 60000);
+    // fill account types only available for the product
+    accTypeSelect.innerHTML = "";
+    Object.keys(product.pricing).forEach(type => {
+        let opt = document.createElement("option");
+        opt.value = type;
+        opt.innerText = type;
+        accTypeSelect.appendChild(opt);
     });
 
-    async function placeOrder() {
-      if (!currentUser) { showToast("Please login first.", "warning"); return; }
-      const productId = currentProductForModal;
-      if (!productId) return;
+    // fill durations based on first acc type
+    fillDurations();
 
-      const account_type = (document.getElementById("pmAccountType").value || "").trim();
-      const duration = (document.getElementById("pmDuration").value || "").trim();
-      const payment_method = (document.getElementById("pmPaymentMethod").value || "gcash");
-      const reference_number = (document.getElementById("pmRefNumber").value || "").trim() || null;
-      const proofFile = document.getElementById("pmProof").files[0] || null;
+    // evaluate price
+    updatePrice();
 
-      if (!account_type || !duration) { showToast("Select account type and duration.", "warning"); return; }
-
-      const price = productCombos[productId]?.[account_type]?.[duration] || 0;
-      const key = `${productId}||${account_type}||${duration}`;
-      const slots = productStocksSummary[key] || 0;
-      if (slots <= 0) { showToast("No available slot for this combo.", "warning"); return; }
-
-      let proof_image_url = null;
-      try {
-        proof_image_url = await toBase64(proofFile);
-      } catch (err) { console.error("[base64]", err); }
-
-      try {
-        const { error } = await supabase.from("orders").insert({
-          buyer_id: currentUser.id,
-          buyer_email: currentUser.email,
-          product_id: productId,
-          account_type,
-          duration,
-          price,
-          status: "pending",
-          payment_method,
-          reference_number,
-          proof_image_url,
-          created_at: new Date().toISOString()
-        });
-        if (error) throw error;
-        showToast("Order placed. Please wait for admin confirmation.", "success");
-        if (modalInstanceProduct) modalInstanceProduct.hide();
-        await loadMyOrders();
-      } catch (err) {
-        console.error("[placeOrder]", err);
-        showToast("Failed to place order: " + (err.message || JSON.stringify(err)), "danger");
-      }
+    // stock check
+    if (product.stock <= 0) {
+        buyBtn.disabled = true;
+        buyBtn.innerText = "Out of Stock";
+    } else {
+        buyBtn.disabled = false;
+        buyBtn.innerText = "Checkout";
     }
 
-    // ====== RULES / FEEDBACK ======
-    async function loadRules() {
-      try {
-        const { data, error } = await supabase.from("rules").select("id,body,rule_text,product_id,created_at").order("created_at", { ascending:false });
-        if (error) throw error;
-        window._allRules = data || [];
-        renderRulesList();
-      } catch (err) {
-        console.error("[loadRules]", err);
-      }
-    }
+    modalOverlay.style.display = "flex";
+}
 
-    function populateRulesProductFilter() {
-      const sel = document.getElementById("rulesProductFilter");
-      if (!sel) return;
-      sel.innerHTML = '<option value="">All products</option>';
-      const seen = new Set();
-      allProducts.forEach(p => {
-        if (p.id) {
-          seen.add(p.id);
-          const opt = document.createElement("option");
-          opt.value = p.id;
-          opt.textContent = p.name || p.id;
-          sel.appendChild(opt);
-        }
-      });
-      (window._allRules || []).forEach(r => {
-        if (r.product_id && !seen.has(r.product_id)) {
-          seen.add(r.product_id);
-          const opt = document.createElement("option");
-          opt.value = r.product_id;
-          opt.textContent = r.product_id;
-          sel.appendChild(opt);
-        }
-      });
-    }
+// ===============================================================
+// FILL DURATION OPTIONS BASED ON SELECTED ACCOUNT TYPE
+// ===============================================================
+function fillDurations() {
+    durationSelect.innerHTML = "";
 
-    function renderRulesList() {
-      const ul = document.getElementById("rulesList");
-      const search = (document.getElementById("rulesSearch").value || "").toLowerCase();
-      const prodFilter = (document.getElementById("rulesProductFilter").value || "").trim();
-      ul.innerHTML = "";
-      const rows = (window._allRules || []).filter(r => {
-        if (prodFilter && (r.product_id||"").toLowerCase() !== prodFilter.toLowerCase()) return false;
-        const text = (r.body || r.rule_text || "").toLowerCase();
-        if (search && !text.includes(search)) return false;
-        return true;
-      });
-      if (!rows.length) {
-        ul.innerHTML = '<li class="list-group-item small">No rules found.</li>';
-        return;
-      }
-      rows.forEach(r => {
-        const li = document.createElement("li");
-        li.className = "list-group-item small";
-        li.innerHTML = `${r.product_id ? `<strong>[${r.product_id}]</strong> ` : ""}${(r.body || r.rule_text || "")}`;
-        ul.appendChild(li);
-      });
-    }
+    const accType = accTypeSelect.value;
+    const productPricing = selectedProduct.pricing[accType];
 
-    async function loadFeedback() {
-      try {
-        const { data, error } = await supabase.from("feedback").select("id,product_id,message,rating,image_url,created_at").order("created_at",{ ascending:false }).limit(20);
-        if (error) throw error;
-        const ul = document.getElementById("feedbackList");
-        ul.innerHTML = "";
-        if (!data || !data.length) { ul.innerHTML = '<li class="list-group-item small">No feedback yet.</li>'; return; }
-        data.forEach(f => {
-          const li = document.createElement("li");
-          li.className = "list-group-item small";
-          const stars = "⭐".repeat(safeNumber(f.rating));
-          li.innerHTML = `<div>${f.product_id ? `<strong>[${f.product_id}]</strong> ` : ""}${f.message}</div><div class="d-flex justify-content-between mt-1"><span>${stars}</span><span class="text-muted">${new Date(f.created_at).toLocaleString()}</span></div>`;
-          ul.appendChild(li);
-        });
-      } catch (err) { console.error("[loadFeedback]", err); }
-    }
-
-    function populateFeedbackProducts() {
-      const sel = document.getElementById("feedbackProduct");
-      if (!sel) return;
-      sel.innerHTML = '<option value="">General</option>';
-      allProducts.forEach(p => { const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.name; sel.appendChild(opt); });
-    }
-
-    async function handleFeedbackSubmit(e) {
-      e.preventDefault();
-      const message = (document.getElementById("feedbackMessage").value || "").trim();
-      const rating = safeNumber(document.getElementById("feedbackRating").value);
-      const product_id = (document.getElementById("feedbackProduct").value || "").trim() || null;
-      const file = document.getElementById("feedbackImage").files[0] || null;
-      if (!message || !rating) { showToast("Fill message and rating.", "warning"); return; }
-      let image_base64 = null;
-      try { image_base64 = await toBase64(file); } catch(e){ console.error("[fb base64]", e); }
-      try {
-        const { error } = await supabase.from("feedback").insert({
-          buyer_id: currentUser ? currentUser.id : null,
-          product_id,
-          message,
-          rating,
-          image_url: image_base64,
-          created_at: new Date().toISOString()
-        });
-        if (error) throw error;
-        showToast("Feedback submitted. Thank you!", "success");
-        document.getElementById("feedbackForm").reset();
-        await loadFeedback();
-      } catch (err) { console.error("[feedback]", err); showToast("Failed to submit feedback.", "danger"); }
-    }
-
-    // ====== ORDERS / DELIVERED / REPORTS ======
-    async function loadMyOrders() {
-      if (!currentUser) return;
-      try {
-        const { data, error } = await supabase.from("orders").select("id,product_id,account_type,duration,price,status,payment_method,reference_number,created_at").eq("buyer_id", currentUser.id).order("created_at",{ ascending:false });
-        if (error) throw error;
-        const tbody = document.getElementById("ordersTableBody");
-        tbody.innerHTML = "";
-        if (!data || !data.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="small text-muted">No orders yet.</td></tr>';
-          return;
-        }
-        data.forEach(o => {
-          const statusLower = (o.status || "").toLowerCase();
-          let statusClass = "os-pending";
-          if (statusLower === "delivered") statusClass = "os-delivered";
-          else if (statusLower === "cancelled") statusClass = "os-cancelled";
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${o.product_id}</td><td>${o.account_type || "-"} / ${o.duration || "-"}</td><td>₱${safeNumber(o.price).toFixed(2)}</td><td><span class="order-status-pill ${statusClass}">${o.status || "pending"}</span></td><td class="small">${o.payment_method || "-"}<br><span class="text-muted">Ref: ${o.reference_number || "-"}</span></td><td><button class="btn btn-sm btn-outline-danger" data-order-id="${o.id}">Report</button></td>`;
-          tbody.appendChild(tr);
-        });
-        tbody.querySelectorAll("button[data-order-id]").forEach(btn => btn.addEventListener("click", ()=> openReportModal(btn.getAttribute("data-order-id"))));
-      } catch (err) { console.error("[loadMyOrders]", err); }
-    }
-
-    async function loadDelivered() {
-      if (!currentUser) return;
-      try {
-        const { data, error } = await supabase.from("records").select("id,product_id,account_type,duration,purchase_date,account_email,account_password,profile,pin,buyer").eq("buyer", currentUser.email).order("purchase_date",{ ascending:false });
-        if (error) throw error;
-        const tbody = document.getElementById("deliveredTableBody");
-        tbody.innerHTML = "";
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="7" class="small text-muted">No delivered accounts yet.</td></tr>'; return; }
-        data.forEach(r => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${r.product_id || "-"}</td><td>${r.account_type || "-"} / ${r.duration || "-"}</td><td>${r.purchase_date ? new Date(r.purchase_date).toLocaleString() : "-"}</td><td>${r.account_email || "-"}</td><td>${r.account_password || "-"}</td><td>${r.profile || "-"}</td><td>${r.pin || "-"}</td>`;
-          tbody.appendChild(tr);
-        });
-      } catch (err) { console.error("[loadDelivered]", err); }
-    }
-
-    function openReportModal(orderId) {
-      document.getElementById("reportOrderId").value = orderId;
-      document.getElementById("reportIssue").value = "";
-      modalInstanceReport = modalInstanceReport || new bootstrap.Modal(document.getElementById("reportModal"));
-      modalInstanceReport.show();
-    }
-
-    async function handleReportSubmit(e) {
-      e.preventDefault();
-      if (!currentUser) { showToast("Login first before reporting.", "warning"); return; }
-      const order_id = document.getElementById("reportOrderId").value;
-      const issue_description = (document.getElementById("reportIssue").value || "").trim();
-      if (!issue_description) { showToast("Describe the issue.", "warning"); return; }
-      try {
-        const { error } = await supabase.from("reports").insert({ order_id, buyer_id: currentUser.id, issue_description, status: "open", created_at: new Date().toISOString() });
-        if (error) throw error;
-        showToast("Report submitted.", "success");
-        if (modalInstanceReport) modalInstanceReport.hide();
-      } catch (err) {
-        console.error("[report]", err); showToast("Failed to submit report.", "danger");
-      }
-    }
-
-    // ====== INIT ======
-    document.addEventListener("DOMContentLoaded", async () => {
-      updatePaymentConfigDisplay();
-      initCategoryPills();
-
-      modalInstanceAuth = modalInstanceAuth || new bootstrap.Modal(document.getElementById("authModal"));
-
-      document.getElementById("btnOpenLogin").addEventListener("click", ()=> modalInstanceAuth.show());
-      document.getElementById("btnBuyerLoginHeader").addEventListener("click", ()=> modalInstanceAuth.show());
-      document.getElementById("btnBuyerLogoutHeader").addEventListener("click", handleLogout);
-
-      document.getElementById("loginForm").addEventListener("submit", handleLogin);
-      document.getElementById("signupForm").addEventListener("submit", handleSignup);
-
-      document.getElementById("pmAccountType").addEventListener("change", handleAccountTypeChange);
-      document.getElementById("pmDuration").addEventListener("change", updateModalPriceAndSlots);
-      document.getElementById("pmPlaceOrder").addEventListener("click", placeOrder);
-
-      document.getElementById("rulesSearch").addEventListener("input", renderRulesList);
-      document.getElementById("rulesProductFilter").addEventListener("change", renderRulesList);
-
-      document.getElementById("feedbackForm").addEventListener("submit", handleFeedbackSubmit);
-      document.getElementById("reportForm").addEventListener("submit", handleReportSubmit);
-
-      document.getElementById("productSearch").addEventListener("input", () => renderProductsGrid(document.querySelector(".category-pill.active")?.getAttribute("data-cat") || "all"));
-      document.getElementById("sortSelect").addEventListener("change", () => renderProductsGrid(document.querySelector(".category-pill.active")?.getAttribute("data-cat") || "all"));
-      document.getElementById("btnRefreshProducts").addEventListener("click", async () => { showToast("Refreshing...", "info"); await loadProductsAndCombos(); });
-
-      await refreshUser();
-      await loadProductsAndCombos();
-      await loadRules();
-      await loadFeedback();
-
-      supabase.auth.onAuthStateChange(() => {
-        setTimeout(() => refreshUser(), 50);
-      });
+    Object.keys(productPricing).forEach(d => {
+        let opt = document.createElement("option");
+        opt.value = d;
+        opt.innerText = d;
+        durationSelect.appendChild(opt);
     });
-  </script>
+}
+
+// ===============================================================
+// UPDATE PRICE WHEN ACC/ DURATION CHANGES
+// ===============================================================
+accTypeSelect.addEventListener("change", () => {
+    fillDurations();
+    updatePrice();
+});
+
+durationSelect.addEventListener("change", updatePrice);
+
+function updatePrice() {
+    const accType = accTypeSelect.value;
+    const duration = durationSelect.value;
+
+    if (!accType || !duration) return;
+
+    const price = selectedProduct.pricing[accType][duration];
+    modalPrice.innerText = "₱" + price;
+}
+
+// ===============================================================
+// CLOSE MODAL
+// ===============================================================
+function closeModal() {
+    modalOverlay.style.display = "none";
+}
+
+// ===============================================================
+// CHECKOUT BUTTON
+// ===============================================================
+buyBtn.addEventListener("click", () => {
+    if (!selectedProduct) return;
+
+    if (selectedProduct.stock <= 0) {
+        showToast("Out of stock");
+        return;
+    }
+
+    showToast("Order Created!");
+    closeModal();
+});
+
+// ===============================================================
+// INIT
+// ===============================================================
+renderCategories();
+renderProducts(PRODUCTS_DATA);
+
+</script>
 </body>
 </html>
