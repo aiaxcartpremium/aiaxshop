@@ -1,198 +1,382 @@
-/* ================================
-   BUYER SITE ENGINE (index.js)
-================================ */
+// ===============================
+// index.js — Buyer Side Logic
+// ===============================
 
+// Supabase init
 const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
-const SUPABASE_KEY =
+const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const elProducts = document.getElementById("product-list");
-const tplProduct = document.getElementById("tpl-product-card");
-const tplPlan = document.getElementById("tpl-plan-item");
-const modalCheckout = new bootstrap.Modal(document.getElementById("modalCheckout"));
+// ===============================
+// DOM ELEMENTS
+// ===============================
 
-/* ======================================================
-   LOGIN SYSTEM
-====================================================== */
-const loginBtn = document.getElementById("btnLogin");
-const logoutBtn = document.getElementById("btnLogout");
-const loggedEmail = document.getElementById("loggedEmail");
+const sectionProducts = document.getElementById("panel-products");
+const sectionOrders = document.getElementById("panel-orders");
+const sectionDelivered = document.getElementById("panel-delivered");
+const sectionRules = document.getElementById("panel-rules");
+const sectionFeedback = document.getElementById("panel-feedback");
+const sectionLogin = document.getElementById("panel-login");
 
-function checkSession() {
-  const email = localStorage.getItem("buyer_email");
+const productsList = document.getElementById("products-list");
+const rulesBody = document.getElementById("rules-body");
+const feedbackBody = document.getElementById("feedback-body");
 
-  if (email) {
-    loggedEmail.textContent = email;
-    loginBtn.classList.add("d-none");
-    logoutBtn.classList.remove("d-none");
+const btnLogin = document.getElementById("btnLogin");
+const btnLogout = document.getElementById("btnLogout");
+
+const tabProducts = document.getElementById("tab-products");
+const tabOrders = document.getElementById("tab-orders");
+const tabDelivered = document.getElementById("tab-delivered");
+const tabRules = document.getElementById("tab-rules");
+const tabFeedback = document.getElementById("tab-feedback");
+const tabLogin = document.getElementById("tab-login");
+
+// ===============================
+// TAB SWITCHING
+// ===============================
+
+function showPanel(panel) {
+  document.querySelectorAll(".section-panel").forEach((sec) => sec.classList.remove("active"));
+  panel.classList.add("active");
+
+  document.querySelectorAll(".tabs-nav a").forEach((el) => el.classList.remove("active"));
+}
+
+tabProducts.onclick = () => {
+  showPanel(sectionProducts);
+  tabProducts.classList.add("active");
+  loadProducts();
+};
+
+tabOrders.onclick = () => {
+  showPanel(sectionOrders);
+  tabOrders.classList.add("active");
+  loadOrders();
+};
+
+tabDelivered.onclick = () => {
+  showPanel(sectionDelivered);
+  tabDelivered.classList.add("active");
+  loadDelivered();
+};
+
+tabRules.onclick = () => {
+  showPanel(sectionRules);
+  tabRules.classList.add("active");
+  loadRules();
+};
+
+tabFeedback.onclick = () => {
+  showPanel(sectionFeedback);
+  tabFeedback.classList.add("active");
+  loadFeedback();
+};
+
+tabLogin.onclick = () => {
+  showPanel(sectionLogin);
+  tabLogin.classList.add("active");
+};
+
+// ===============================
+// AUTH STATUS
+// ===============================
+
+async function checkAuth() {
+  const { data } = await sb.auth.getSession();
+  const session = data.session;
+
+  if (session?.user) {
+    btnLogout.classList.remove("d-none");
+    btnLogin.classList.add("d-none");
+    tabLogin.textContent = session.user.email;
   } else {
-    loggedEmail.textContent = "";
-    loginBtn.classList.remove("d-none");
-    logoutBtn.classList.add("d-none");
+    btnLogout.classList.add("d-none");
+    btnLogin.classList.remove("d-none");
+    tabLogin.textContent = "Login";
   }
 }
 
-loginBtn?.addEventListener("click", async () => {
-  const email = prompt("Enter your email to login:");
-  if (!email) return;
+btnLogin.onclick = async () => {
+  await sb.auth.signInWithOAuth({ provider: "google" });
+};
 
-  localStorage.setItem("buyer_email", email.trim());
-  checkSession();
-});
+btnLogout.onclick = async () => {
+  await sb.auth.signOut();
+  location.reload();
+};
 
-logoutBtn?.addEventListener("click", () => {
-  localStorage.removeItem("buyer_email");
-  checkSession();
-});
+// ===============================
+// LOAD PRODUCTS
+// ===============================
 
-/* ======================================================
-   LOAD PRODUCTS
-====================================================== */
 async function loadProducts() {
-  elProducts.innerHTML = `<p class="text-center text-muted">Loading products…</p>`;
+  productsList.innerHTML =
+    `<div class="text-center text-muted py-3">Loading products...</div>`;
 
-  const { data: products } = await sb.from("products").select("*").order("name");
+  const tplCard = document.getElementById("tpl-product-card");
+  const tplPlan = document.getElementById("tpl-plan-item");
 
-  const { data: prices } = await sb.from("product_prices").select("*");
+  const { data: products, error } = await sb
+    .from("products")
+    .select("*")
+    .order("name", { ascending: true });
 
-  elProducts.innerHTML = "";
+  if (!products || error) {
+    productsList.innerHTML =
+      `<div class="text-danger text-center py-3">Failed to load products.</div>`;
+    return;
+  }
 
-  products.forEach((p) => {
-    const card = tplProduct.content.cloneNode(true);
+  productsList.innerHTML = "";
 
+  for (const p of products) {
+    // STOCK COUNT
+    const { data: stockRows } = await sb
+      .from("stocks")
+      .select("quantity")
+      .eq("product_id", p.id)
+      .eq("status", "available");
+
+    const totalStock = stockRows?.reduce((s, v) => s + (v.quantity || 0), 0) || 0;
+
+    // PRICE PLANS
+    const { data: plans } = await sb
+      .from("product_prices")
+      .select("*")
+      .eq("product_id", p.id)
+      .order("price");
+
+    // Clone template
+    const card = tplCard.content.cloneNode(true);
     card.querySelector(".product-title").textContent = p.name;
     card.querySelector(".product-category").textContent = p.category;
+    card.querySelector(".product-stock").textContent =
+      totalStock > 0 ? `In Stock (${totalStock})` : "Out of Stock";
 
-    card.querySelector(".product-stock").textContent = "Showing available plans…";
-
-    const btnExpand = card.querySelector(".btn-expand-plans");
+    const expandBtn = card.querySelector(".btn-expand-plans");
     const plansBox = card.querySelector(".plans-box");
     const plansInner = card.querySelector(".plans-inner");
 
-    btnExpand.addEventListener("click", () => {
+    expandBtn.onclick = () => {
       plansBox.style.display = plansBox.style.display === "none" ? "block" : "none";
-    });
+    };
 
-    const prodPlans = prices.filter((x) => x.product_id === p.id);
-
-    if (!prodPlans.length) {
-      plansInner.innerHTML = `<p class="text-muted small">No pricing yet.</p>`;
+    if (!plans?.length) {
+      plansInner.innerHTML = `<div class="text-muted small">No plans yet.</div>`;
     } else {
-      prodPlans.forEach((pr) => {
-        const planEl = tplPlan.content.cloneNode(true);
-        planEl.querySelector(".plan-type").textContent = pr.account_type;
-        planEl.querySelector(".plan-duration").textContent = pr.duration;
-        planEl.querySelector(".plan-price").textContent = "₱" + pr.price.toFixed(2);
+      plansInner.innerHTML = "";
+      plans.forEach((pp) => {
+        const row = tplPlan.content.cloneNode(true);
 
-        planEl.querySelector(".plan-item").addEventListener("click", () => {
-          openCheckoutModal(p, pr);
-        });
+        row.querySelector(".plan-type").textContent = pp.account_type;
+        row.querySelector(".plan-duration").textContent = pp.duration;
+        row.querySelector(".plan-price").textContent = `₱${pp.price}`;
 
-        plansInner.appendChild(planEl);
+        const btn = row.querySelector(".plan-item");
+        btn.onclick = () => openCheckout(p, pp);
+
+        if (totalStock <= 0) btn.disabled = true;
+
+        plansInner.appendChild(row);
       });
     }
 
-    elProducts.appendChild(card);
-  });
+    productsList.appendChild(card);
+  }
 }
 
-/* ======================================================
-   CHECKOUT MODAL HANDLER
-====================================================== */
+// ===============================
+// CHECKOUT MODAL
+// ===============================
+
+const coProduct = document.getElementById("co-product");
+const coType = document.getElementById("co-type");
+const coPlan = document.getElementById("co-plan");
+const coPrice = document.getElementById("co-price");
+const coEmail = document.getElementById("co-email");
+const coProof = document.getElementById("co-proof");
+const coPreview = document.getElementById("co-proof-preview");
+
 let CURRENT_ORDER = null;
 
-function openCheckoutModal(product, plan) {
-  const buyerEmail = localStorage.getItem("buyer_email");
-
+function openCheckout(product, plan) {
   CURRENT_ORDER = { product, plan };
 
-  document.getElementById("co-product").textContent = product.name;
-  document.getElementById("co-type").textContent = plan.account_type;
-  document.getElementById("co-plan").textContent = plan.duration;
-  document.getElementById("co-price").textContent = "₱" + plan.price.toFixed(2);
+  coProduct.textContent = product.name;
+  coType.textContent = plan.account_type;
+  coPlan.textContent = plan.duration;
+  coPrice.textContent = `₱${plan.price}`;
 
-  if (buyerEmail) {
-    document.getElementById("co-email").value = buyerEmail;
-  }
+  coPreview.style.display = "none";
+  coProof.value = "";
+  coEmail.value = "";
 
-  document.getElementById("co-proof-preview").style.display = "none";
-
-  modalCheckout.show();
+  new bootstrap.Modal(document.getElementById("modalCheckout")).show();
 }
 
-/* ======================================================
-   PROOF IMAGE PREVIEW
-====================================================== */
-document.getElementById("co-proof").addEventListener("change", (e) => {
-  const file = e.target.files[0];
+coProof.onchange = () => {
+  const file = coProof.files[0];
   if (!file) return;
-
   const url = URL.createObjectURL(file);
-  const prev = document.getElementById("co-proof-preview");
+  coPreview.src = url;
+  coPreview.style.display = "block";
+};
 
-  prev.src = url;
-  prev.style.display = "block";
-});
+// ===============================
+// SUBMIT ORDER
+// ===============================
 
-/* ======================================================
-   SUBMIT ORDER
-====================================================== */
-document.getElementById("btnSubmitOrder").addEventListener("click", submitOrder);
+document.getElementById("btnSubmitOrder").onclick = async () => {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) return alert("Please log in first.");
 
-async function submitOrder() {
-  if (!CURRENT_ORDER) return;
+  const buyerEmail = data.session.user.email;
+  const file = coProof.files[0];
 
-  const email = document.getElementById("co-email").value.trim();
-  const fileInput = document.getElementById("co-proof");
-  const file = fileInput.files[0];
+  let proofUrl = null;
 
-  if (!email) return alert("Enter your email.");
-  if (!file) return alert("Upload a proof image.");
+  if (file) {
+    const fileName = `proof_${Date.now()}.jpg`;
+    const { data: uploaded, error: uploadErr } = await sb.storage
+      .from("proofs")
+      .upload(fileName, file);
 
-  // Upload Image First
-  const fileName = `proof_${Date.now()}.jpg`;
-
-  const { data: img, error: imgErr } = await sb.storage
-    .from("proofs")
-    .upload(fileName, file, { upsert: false });
-
-  if (imgErr) {
-    console.error(imgErr);
-    return alert("Upload error.");
+    if (!uploadErr) {
+      proofUrl =
+        `https://hnymqvkfmythdxtjqeam.supabase.co/storage/v1/object/public/proofs/${fileName}`;
+    }
   }
 
-  const { data: urlData } = sb.storage.from("proofs").getPublicUrl(fileName);
-  const proofUrl = urlData.publicUrl;
-
-  // Insert order
-  const { error } = await sb.from("orders").insert({
-    buyer_email: email,
-    product_id: CURRENT_ORDER.product.id,
-    account_type: CURRENT_ORDER.plan.account_type,
-    duration: CURRENT_ORDER.plan.duration,
-    price: CURRENT_ORDER.plan.price,
-    status: "pending",
-    proof_image_url: proofUrl,
-    reference_number: "N/A",
-  });
+  const { error } = await sb.from("orders").insert([
+    {
+      buyer_email: buyerEmail,
+      product_id: CURRENT_ORDER.product.id,
+      account_type: CURRENT_ORDER.plan.account_type,
+      duration: CURRENT_ORDER.plan.duration,
+      price: CURRENT_ORDER.plan.price,
+      proof_image_url: proofUrl,
+      status: "pending",
+      created_at: new Date().toISOString(),
+    },
+  ]);
 
   if (error) {
+    alert("Order failed.");
     console.error(error);
-    return alert("Order failed.");
+  } else {
+    alert("Order submitted! Wait for admin confirmation.");
+    loadOrders();
+  }
+};
+
+// ===============================
+// LOAD ORDERS
+// ===============================
+
+async function loadOrders() {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) return;
+
+  const email = data.session.user.email;
+  const list = document.getElementById("orders-list");
+
+  const { data: orders } = await sb
+    .from("orders")
+    .select("*")
+    .eq("buyer_email", email)
+    .order("created_at", { ascending: false });
+
+  if (!orders?.length) {
+    list.innerHTML = `<div class="text-muted">No orders yet.</div>`;
+    return;
   }
 
-  alert("Order submitted! Wait for admin approval.");
-
-  modalCheckout.hide();
+  list.innerHTML = orders
+    .map(
+      (o) => `
+      <div class="border rounded p-2 mb-2">
+        <div><strong>${o.product_id}</strong></div>
+        <div>${o.account_type} — ${o.duration}</div>
+        <div>₱${o.price}</div>
+        <span class="badge bg-warning">${o.status}</span>
+      </div>
+    `
+    )
+    .join("");
 }
 
-/* ======================================================
-   INIT
-====================================================== */
+// ===============================
+// LOAD DELIVERED ACCOUNTS
+// ===============================
 
-document.addEventListener("DOMContentLoaded", () => {
-  checkSession();
-  loadProducts();
-});
+async function loadDelivered() {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) return;
+
+  const email = data.session.user.email;
+  const list = document.getElementById("delivered-list");
+
+  const { data: delivered } = await sb
+    .from("records")
+    .select("*")
+    .eq("buyer", email)
+    .order("purchase_date", { ascending: false });
+
+  if (!delivered?.length) {
+    list.innerHTML = `<div class="text-muted">No delivered accounts yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = delivered
+    .map(
+      (r) => `
+      <div class="border rounded p-2 mb-2">
+        <strong>${r.product_id}</strong><br>
+        ${r.account_type} (${r.duration})<br>
+        Email: <b>${r.account_email}</b><br>
+        Pass: <b>${r.account_password}</b><br>
+        Profile: ${r.profile || "-"}<br>
+        <small class="text-muted">Purchased: ${r.purchase_date}<br>
+        Expiry: ${r.expiry_date}</small>
+      </div>
+    `
+    )
+    .join("");
+}
+
+// ===============================
+// RULES
+// ===============================
+
+async function loadRules() {
+  const { data: rules } = await sb
+    .from("rules")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  rulesBody.innerHTML =
+    rules?.map((r) => `<div class="mb-2 small">• ${r.body}</div>`).join("") ||
+    `<div class="text-muted">No rules yet.</div>`;
+}
+
+// ===============================
+// FEEDBACK (Placeholder)
+// ===============================
+
+function loadFeedback() {
+  feedbackBody.innerHTML = `
+    <div class="text-center text-muted">
+      You can send feedback on Messenger or TikTok page.
+    </div>
+  `;
+}
+
+// ===============================
+// INIT
+// ===============================
+
+checkAuth();
+loadProducts();
