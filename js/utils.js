@@ -1,99 +1,107 @@
-// ================================
-// utils.js — Shared Helper Functions
-// ================================
+/* ============================================
+   utils.js — Shared Helper Functions
+============================================ */
 
-// Format to: Jan 12, 2025 – 3:11 PM (PH Time)
-export function formatPHDate(dateInput) {
-  if (!dateInput) return "-";
-  const d = new Date(dateInput);
+/* ------------------------------
+   Format Date (PH)
+------------------------------ */
+export function formatPHDate(dateStr) {
+  if (!dateStr) return "-";
 
-  return d.toLocaleString("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-// Only Date — Jan 12, 2025
-export function formatPHDateShort(dateInput) {
-  if (!dateInput) return "-";
-  const d = new Date(dateInput);
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
 
   return d.toLocaleDateString("en-PH", {
+    year: "numeric",
     month: "short",
     day: "numeric",
-    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
   });
 }
 
-// Money (₱1,234.00)
-export function formatMoney(amount) {
-  const n = Number(amount) || 0;
-  return "₱" + n.toLocaleString("en-PH", {
+/* ------------------------------
+   Format Money (Pesos)
+------------------------------ */
+export function formatMoney(value) {
+  const num = Number(value) || 0;
+  return `₱${num.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+    maximumFractionDigits: 2
+  })}`;
 }
 
-// Remove extra spaces
-export function cleanText(s = "") {
-  return (s || "").trim();
+/* ------------------------------
+   Auto-generate UUID
+------------------------------ */
+export function uuid() {
+  return crypto.randomUUID();
 }
 
-// Convert file → base64 (for payment proof uploads)
-export function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onload = () => resolve(fr.result);
-    fr.onerror = reject;
-    fr.readAsDataURL(file);
-  });
-}
+/* ------------------------------
+   Create Element (shortcut)
+------------------------------ */
+export function el(tag, attrs = {}, content = "") {
+  const element = document.createElement(tag);
 
-// Show small alert (buyer side)
-export function smallAlert(msg, type = "info") {
-  alert(msg); // simple for now (you can replace with toast)
-}
-
-// Validate email (basic)
-export function isValidEmail(email) {
-  return /\S+@\S+\.\S+/.test(email);
-}
-
-// Compute expiry for durations: 7d, 14d, 1m, 6m, 3m W, etc.
-export function computeExpiry(durationCode, startDate = new Date()) {
-  const start = new Date(startDate);
-  const str = String(durationCode).toLowerCase();
-
-  const num = parseInt(str);
-  if (!num) return null;
-
-  let unit = "d";
-  if (str.includes("m")) unit = "m"; // month
-  if (str.includes("w")) unit = "w"; // week
-  if (str.includes("y")) unit = "y"; // year
-
-  const d = new Date(start);
-
-  switch (unit) {
-    case "d":
-      d.setDate(d.getDate() + num);
-      break;
-
-    case "w":
-      d.setDate(d.getDate() + num * 7);
-      break;
-
-    case "m":
-      d.setMonth(d.getMonth() + num);
-      break;
-
-    case "y":
-      d.setFullYear(d.getFullYear() + num);
-      break;
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key.startsWith("on") && typeof value === "function") {
+      element.addEventListener(key.substring(2), value);
+    } else {
+      element.setAttribute(key, value);
+    }
   }
 
-  return d.toISOString().split("T")[0];
+  if (content !== "" && content !== null && content !== undefined) {
+    element.innerHTML = content;
+  }
+
+  return element;
+}
+
+/* ------------------------------
+   Load image preview
+------------------------------ */
+export function previewImage(fileInput, previewEl) {
+  const file = fileInput.files?.[0];
+  if (!file) return (previewEl.style.display = "none");
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewEl.src = e.target.result;
+    previewEl.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ------------------------------
+   Quick alert box (in-page)
+------------------------------ */
+export function showToast(message, type = "info") {
+  let box = document.createElement("div");
+  box.className = `toast-message toast-${type}`;
+  box.textContent = message;
+
+  Object.assign(box.style, {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    background: type === "error" ? "#e63946" : "#1d3557",
+    color: "white",
+    padding: "10px 15px",
+    borderRadius: "6px",
+    fontSize: "14px",
+    zIndex: "9999",
+    opacity: "0",
+    transition: "0.3s"
+  });
+
+  document.body.appendChild(box);
+
+  setTimeout(() => (box.style.opacity = "1"), 50);
+
+  setTimeout(() => {
+    box.style.opacity = "0";
+    setTimeout(() => box.remove(), 300);
+  }, 2500);
 }
