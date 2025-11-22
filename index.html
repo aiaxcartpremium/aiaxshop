@@ -288,7 +288,7 @@
 
   <div class="drawer" id="drawerMenu">
     <div class="drawer-title">
-      <span>📋 Buyer Menu</span>
+      <span>ð Buyer Menu</span>
     </div>
     <div class="drawer-sub">Quick access to your dashboard, orders, rules and delivered accounts.</div>
 
@@ -326,7 +326,7 @@
     <div class="header-inner">
       <!-- LEFT: LOGO -->
       <div class="logo">
-        <span style="font-size:1.25rem">🛒</span>
+        <span style="font-size:1.25rem">ð</span>
         <span>Aiaxcart Premium Shop</span>
       </div>
 
@@ -355,7 +355,7 @@
       <div>
         <h1>Premium accounts, hassle-free.</h1>
         <p>
-          Choose your app, send payment, upload proof — admin confirms and delivers
+          Choose your app, send payment, upload proof â admin confirms and delivers
           your accounts inside this site.
         </p>
         <div class="muted-note mt-2">
@@ -373,10 +373,10 @@
         <div>
           <select id="sortSelect" class="form-select form-select-sm">
             <option value="popular">Sort: Default</option>
-            <option value="slots_desc">Slots (high → low)</option>
-            <option value="slots_asc">Slots (low → high)</option>
-            <option value="name_asc">Name A → Z</option>
-            <option value="name_desc">Name Z → A</option>
+            <option value="slots_desc">Slots (high â low)</option>
+            <option value="slots_asc">Slots (low â high)</option>
+            <option value="name_asc">Name A â Z</option>
+            <option value="name_desc">Name Z â A</option>
           </select>
         </div>
       </div>
@@ -452,7 +452,7 @@
             <!-- rules injected -->
           </ul>
           <div class="small-muted mt-2">
-            Rules come from the admin — read before purchasing.
+            Rules come from the admin â read before purchasing.
           </div>
         </div>
 
@@ -480,11 +480,11 @@
                   <label class="form-label small">Rating</label>
                   <select id="feedbackRating" class="form-select form-select-sm" required>
                     <option value="">Choose...</option>
-                    <option value="5">⭐⭐⭐⭐⭐</option>
-                    <option value="4">⭐⭐⭐⭐</option>
-                    <option value="3">⭐⭐⭐</option>
-                    <option value="2">⭐⭐</option>
-                    <option value="1">⭐</option>
+                    <option value="5">â­â­â­â­â­</option>
+                    <option value="4">â­â­â­â­</option>
+                    <option value="3">â­â­â­</option>
+                    <option value="2">â­â­</option>
+                    <option value="1">â­</option>
                   </select>
                 </div>
                 <div class="mb-2">
@@ -580,7 +580,7 @@
               </div>
 
               <div class="mb-3 small">
-                <div>Price: <span id="pmPrice" class="price-highlight">₱0.00</span></div>
+                <div>Price: <span id="pmPrice" class="price-highlight">â±0.00</span></div>
                 <div class="mt-1">Available slots: <span id="pmSlots" class="slots-pill">0</span></div>
               </div>
 
@@ -1048,7 +1048,7 @@
         card.style.borderTop = `3px solid ${style.accent}`;
         card.innerHTML = `
           <div class="product-top">
-            <div class="product-icon" style="background:${style.iconBg};">${p.icon || "🎬"}</div>
+            <div class="product-icon" style="background:${style.iconBg};">${p.icon || "ð¬"}</div>
             <div style="flex:1">
               <div class="product-title">${p.name || p.id}</div>
               <div class="product-cat">${p.category || "-"}</div>
@@ -1117,7 +1117,7 @@
         });
       }
 
-      document.getElementById("pmPrice").textContent = "₱0.00";
+      document.getElementById("pmPrice").textContent = "â±0.00";
       document.getElementById("pmSlots").textContent = "0";
       document.getElementById("pmRefNumber").value = "";
       document.getElementById("pmPaymentMethod").value = "gcash";
@@ -1142,7 +1142,7 @@
 
       if (!typeVal) {
         selDur.disabled = true;
-        document.getElementById("pmPrice").textContent = "₱0.00";
+        document.getElementById("pmPrice").textContent = "â±0.00";
         document.getElementById("pmSlots").textContent = "0";
         return;
       }
@@ -1164,7 +1164,7 @@
       const typeVal = document.getElementById("pmAccountType").value;
       const durVal = document.getElementById("pmDuration").value;
       const price = productCombos[productId]?.[typeVal]?.[durVal] || 0;
-      document.getElementById("pmPrice").textContent = "₱" + safeNumber(price).toFixed(2);
+      document.getElementById("pmPrice").textContent = "â±" + safeNumber(price).toFixed(2);
 
       const key = `${productId}||${typeVal}||${durVal}`;
       const slots = productStocksSummary[key] || 0;
@@ -1326,7 +1326,7 @@
         data.forEach(f => {
           const li = document.createElement("li");
           li.className = "list-group-item small";
-          const stars = "⭐".repeat(safeNumber(f.rating));
+          const stars = "â­".repeat(safeNumber(f.rating));
           li.innerHTML = `
             <div>${f.product_id ? `<strong>[${f.product_id}]</strong> ` : ""}${f.message}</div>
             <div class="d-flex justify-content-between mt-1">
@@ -1413,7 +1413,7 @@
           tr.innerHTML = `
             <td>${o.product_id}</td>
             <td>${o.account_type || "-"} / ${o.duration || "-"}</td>
-            <td>₱${safeNumber(o.price).toFixed(2)}</td>
+            <td>â±${safeNumber(o.price).toFixed(2)}</td>
             <td>
               <span class="order-status-pill ${statusClass}">
                 ${o.status || "pending"}
