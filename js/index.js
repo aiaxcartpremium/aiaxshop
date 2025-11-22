@@ -1,333 +1,198 @@
-// ==========================
-// index.js — Buyer Side
-// ==========================
+/* ================================
+   BUYER SITE ENGINE (index.js)
+================================ */
 
-import { sb } from "./supabase.js";
-import { formatPHDate } from "./utils.js";
+const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
+const SUPABASE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
-// DOM references
-const productListEl = document.getElementById("product-list");
-const categoryButtons = document.querySelectorAll("[data-category]");
-const loginBtn = document.getElementById("btn-login");
-const signupBtn = document.getElementById("btn-register");
-const logoutBtn = document.getElementById("btn-logout");
-const userLabel = document.getElementById("user-label");
-const ordersTab = document.getElementById("tab-orders");
-const deliveredTab = document.getElementById("tab-delivered");
-const sectionOrders = document.getElementById("section-orders");
-const sectionDelivered = document.getElementById("section-delivered");
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ==========================
-// AUTH HANDLING
-// ==========================
-async function checkAuth() {
-  const {
-    data: { session },
-  } = await sb.auth.getSession();
+const elProducts = document.getElementById("product-list");
+const tplProduct = document.getElementById("tpl-product-card");
+const tplPlan = document.getElementById("tpl-plan-item");
+const modalCheckout = new bootstrap.Modal(document.getElementById("modalCheckout"));
 
-  if (session?.user) {
-    const email = session.user.email;
-    userLabel.textContent = email;
+/* ======================================================
+   LOGIN SYSTEM
+====================================================== */
+const loginBtn = document.getElementById("btnLogin");
+const logoutBtn = document.getElementById("btnLogout");
+const loggedEmail = document.getElementById("loggedEmail");
 
+function checkSession() {
+  const email = localStorage.getItem("buyer_email");
+
+  if (email) {
+    loggedEmail.textContent = email;
     loginBtn.classList.add("d-none");
-    signupBtn.classList.add("d-none");
-
     logoutBtn.classList.remove("d-none");
   } else {
-    userLabel.textContent = "";
-    logoutBtn.classList.add("d-none");
+    loggedEmail.textContent = "";
     loginBtn.classList.remove("d-none");
-    signupBtn.classList.remove("d-none");
+    logoutBtn.classList.add("d-none");
   }
 }
 
-logoutBtn?.addEventListener("click", async () => {
-  await sb.auth.signOut();
-  location.reload();
+loginBtn?.addEventListener("click", async () => {
+  const email = prompt("Enter your email to login:");
+  if (!email) return;
+
+  localStorage.setItem("buyer_email", email.trim());
+  checkSession();
 });
 
-// ==========================
-// LOAD PRODUCTS
-// ==========================
-async function loadProducts(category = "all") {
-  productListEl.innerHTML =
-    '<div class="text-center text-muted py-3">Loading products...</div>';
+logoutBtn?.addEventListener("click", () => {
+  localStorage.removeItem("buyer_email");
+  checkSession();
+});
 
-  try {
-    const { data: products, error: productErr } = await sb
-      .from("products")
-      .select("*")
-      .order("name", { ascending: true });
+/* ======================================================
+   LOAD PRODUCTS
+====================================================== */
+async function loadProducts() {
+  elProducts.innerHTML = `<p class="text-center text-muted">Loading products…</p>`;
 
-    if (productErr) throw productErr;
+  const { data: products } = await sb.from("products").select("*").order("name");
 
-    // FILTER
-    const filtered =
-      category === "all"
-        ? products
-        : products.filter((p) => p.category === category);
+  const { data: prices } = await sb.from("product_prices").select("*");
 
-    if (!filtered.length) {
-      productListEl.innerHTML =
-        '<div class="text-center text-muted py-4">No products found.</div>';
-      return;
+  elProducts.innerHTML = "";
+
+  products.forEach((p) => {
+    const card = tplProduct.content.cloneNode(true);
+
+    card.querySelector(".product-title").textContent = p.name;
+    card.querySelector(".product-category").textContent = p.category;
+
+    card.querySelector(".product-stock").textContent = "Showing available plans…";
+
+    const btnExpand = card.querySelector(".btn-expand-plans");
+    const plansBox = card.querySelector(".plans-box");
+    const plansInner = card.querySelector(".plans-inner");
+
+    btnExpand.addEventListener("click", () => {
+      plansBox.style.display = plansBox.style.display === "none" ? "block" : "none";
+    });
+
+    const prodPlans = prices.filter((x) => x.product_id === p.id);
+
+    if (!prodPlans.length) {
+      plansInner.innerHTML = `<p class="text-muted small">No pricing yet.</p>`;
+    } else {
+      prodPlans.forEach((pr) => {
+        const planEl = tplPlan.content.cloneNode(true);
+        planEl.querySelector(".plan-type").textContent = pr.account_type;
+        planEl.querySelector(".plan-duration").textContent = pr.duration;
+        planEl.querySelector(".plan-price").textContent = "₱" + pr.price.toFixed(2);
+
+        planEl.querySelector(".plan-item").addEventListener("click", () => {
+          openCheckoutModal(p, pr);
+        });
+
+        plansInner.appendChild(planEl);
+      });
     }
 
-    let html = "";
-
-    for (const p of filtered) {
-      // Fetch price plans for each product
-      const { data: prices } = await sb
-        .from("product_prices")
-        .select("*")
-        .eq("product_id", p.id)
-        .order("price", { ascending: true });
-
-      // Decide on stock status
-      const { data: stockCount } = await sb
-        .from("stocks")
-        .select("quantity")
-        .eq("product_id", p.id)
-        .eq("status", "available");
-
-      const totalStock =
-        stockCount?.reduce((sum, x) => sum + (x.quantity || 0), 0) || 0;
-
-      html += `
-        <div class="product-card shadow-sm">
-          <div class="product-header">
-            <h3>${p.name}</h3>
-            ${
-              totalStock > 0
-                ? `<span class="badge bg-success">In Stock: ${totalStock}</span>`
-                : `<span class="badge bg-danger">Out of Stock</span>`
-            }
-          </div>
-          <div class="product-body">
-            ${
-              prices?.length
-                ? prices
-                    .map(
-                      (pp) => `
-                  <div class="plan-row">
-                    <div>
-                      <strong>${pp.account_type}</strong>
-                      <div class="text-muted small">${pp.duration}</div>
-                    </div>
-                    <div>
-                      <strong>₱${pp.price.toFixed(2)}</strong>
-                      ${
-                        totalStock > 0
-                          ? `<button class="btn btn-primary btn-buy" data-id="${p.id}" data-type="${pp.account_type}" data-duration="${pp.duration}" data-price="${pp.price}">
-                              Buy
-                            </button>`
-                          : `<button class="btn btn-secondary" disabled>Unavailable</button>`
-                      }
-                    </div>
-                  </div>
-                `
-                    )
-                    .join("")
-                : `<div class="text-muted small">No price plans yet.</div>`
-            }
-          </div>
-        </div>
-      `;
-    }
-
-    productListEl.innerHTML = html;
-  } catch (err) {
-    console.error(err);
-    productListEl.innerHTML =
-      '<div class="text-center text-danger py-3">Failed to load products.</div>';
-  }
-}
-
-// ==========================
-// CATEGORY FILTER UI
-// ==========================
-categoryButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    categoryButtons.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const cat = btn.dataset.category;
-    loadProducts(cat);
+    elProducts.appendChild(card);
   });
-});
+}
 
-// ==========================
-// BUY PRODUCT
-// ==========================
-document.body.addEventListener("click", async (e) => {
-  if (!e.target.classList.contains("btn-buy")) return;
+/* ======================================================
+   CHECKOUT MODAL HANDLER
+====================================================== */
+let CURRENT_ORDER = null;
 
-  const product_id = e.target.dataset.id;
-  const account_type = e.target.dataset.type;
-  const duration = e.target.dataset.duration;
-  const price = Number(e.target.dataset.price);
+function openCheckoutModal(product, plan) {
+  const buyerEmail = localStorage.getItem("buyer_email");
 
-  const {
-    data: { session },
-  } = await sb.auth.getSession();
-  if (!session) {
-    alert("Please log in first.");
-    return;
+  CURRENT_ORDER = { product, plan };
+
+  document.getElementById("co-product").textContent = product.name;
+  document.getElementById("co-type").textContent = plan.account_type;
+  document.getElementById("co-plan").textContent = plan.duration;
+  document.getElementById("co-price").textContent = "₱" + plan.price.toFixed(2);
+
+  if (buyerEmail) {
+    document.getElementById("co-email").value = buyerEmail;
   }
 
-  const buyerEmail = session.user.email;
+  document.getElementById("co-proof-preview").style.display = "none";
 
-  // Insert pending order
-  const { error } = await sb.from("orders").insert([
-    {
-      buyer_email: buyerEmail,
-      product_id,
-      account_type,
-      duration,
-      price,
-      status: "pending",
-      created_at: new Date().toISOString(),
-    },
-  ]);
+  modalCheckout.show();
+}
+
+/* ======================================================
+   PROOF IMAGE PREVIEW
+====================================================== */
+document.getElementById("co-proof").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  const prev = document.getElementById("co-proof-preview");
+
+  prev.src = url;
+  prev.style.display = "block";
+});
+
+/* ======================================================
+   SUBMIT ORDER
+====================================================== */
+document.getElementById("btnSubmitOrder").addEventListener("click", submitOrder);
+
+async function submitOrder() {
+  if (!CURRENT_ORDER) return;
+
+  const email = document.getElementById("co-email").value.trim();
+  const fileInput = document.getElementById("co-proof");
+  const file = fileInput.files[0];
+
+  if (!email) return alert("Enter your email.");
+  if (!file) return alert("Upload a proof image.");
+
+  // Upload Image First
+  const fileName = `proof_${Date.now()}.jpg`;
+
+  const { data: img, error: imgErr } = await sb.storage
+    .from("proofs")
+    .upload(fileName, file, { upsert: false });
+
+  if (imgErr) {
+    console.error(imgErr);
+    return alert("Upload error.");
+  }
+
+  const { data: urlData } = sb.storage.from("proofs").getPublicUrl(fileName);
+  const proofUrl = urlData.publicUrl;
+
+  // Insert order
+  const { error } = await sb.from("orders").insert({
+    buyer_email: email,
+    product_id: CURRENT_ORDER.product.id,
+    account_type: CURRENT_ORDER.plan.account_type,
+    duration: CURRENT_ORDER.plan.duration,
+    price: CURRENT_ORDER.plan.price,
+    status: "pending",
+    proof_image_url: proofUrl,
+    reference_number: "N/A",
+  });
 
   if (error) {
-    alert("Order failed.");
     console.error(error);
-  } else {
-    alert("Order placed! Please upload proof of payment.");
-    loadOrders();
-  }
-});
-
-// ==========================
-// LOAD ORDERS
-// ==========================
-async function loadOrders() {
-  const {
-    data: { session },
-  } = await sb.auth.getSession();
-  if (!session) return;
-
-  const email = session.user.email;
-
-  const list = document.getElementById("orders-list");
-  list.innerHTML =
-    '<div class="text-center text-muted py-3">Loading orders...</div>';
-
-  const { data, error } = await sb
-    .from("orders")
-    .select("*")
-    .eq("buyer_email", email)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    list.innerHTML =
-      '<div class="text-danger text-center py-3">Failed to load orders.</div>';
-    return;
+    return alert("Order failed.");
   }
 
-  if (!data.length) {
-    list.innerHTML =
-      '<div class="text-center text-muted py-3">No orders yet.</div>';
-    return;
-  }
+  alert("Order submitted! Wait for admin approval.");
 
-  let html = "";
-  data.forEach((o) => {
-    html += `
-      <div class="order-card">
-        <div><strong>${o.product_id}</strong> (${o.account_type} - ${
-      o.duration
-    })</div>
-        <div class="small">₱${o.price}</div>
-        <div>Status: <span class="badge bg-warning">${o.status}</span></div>
-        <div class="small text-muted">${formatPHDate(o.created_at)}</div>
-      </div>
-    `;
-  });
-
-  list.innerHTML = html;
+  modalCheckout.hide();
 }
 
-// ==========================
-// LOAD DELIVERED ACCOUNTS
-// ==========================
-async function loadDelivered() {
-  const {
-    data: { session },
-  } = await sb.auth.getSession();
-  if (!session) return;
+/* ======================================================
+   INIT
+====================================================== */
 
-  const email = session.user.email;
-
-  const list = document.getElementById("delivered-list");
-  list.innerHTML =
-    '<div class="text-center py-3 text-muted">Loading delivered accounts...</div>';
-
-  const { data, error } = await sb
-    .from("records")
-    .select("*")
-    .eq("buyer", email)
-    .order("purchase_date", { ascending: false });
-
-  if (error) {
-    list.innerHTML =
-      '<div class="text-danger text-center py-3">Failed to load.</div>';
-    return;
-  }
-
-  if (!data.length) {
-    list.innerHTML =
-      '<div class="text-center py-3 text-muted">No delivered accounts yet.</div>';
-    return;
-  }
-
-  let html = "";
-  data.forEach((r) => {
-    html += `
-      <div class="delivered-card">
-        <h4>${r.product_id}</h4>
-        <div>${r.account_type} (${r.duration})</div>
-        <div>Email: <strong>${r.account_email}</strong></div>
-        <div>Password: <strong>${r.account_password}</strong></div>
-        <div>Profile: ${r.profile || "-"}</div>
-
-        <div class="small text-muted mt-2">
-          Purchased: ${formatPHDate(r.purchase_date)}<br>
-          Expiry: ${formatPHDate(r.expiry_date)}
-        </div>
-      </div>
-    `;
-  });
-
-  list.innerHTML = html;
-}
-
-// ==========================
-// TAB SWITCHING
-// ==========================
-ordersTab.addEventListener("click", () => {
-  ordersTab.classList.add("active");
-  deliveredTab.classList.remove("active");
-
-  sectionOrders.classList.remove("d-none");
-  sectionDelivered.classList.add("d-none");
-
-  loadOrders();
+document.addEventListener("DOMContentLoaded", () => {
+  checkSession();
+  loadProducts();
 });
-
-deliveredTab.addEventListener("click", () => {
-  deliveredTab.classList.add("active");
-  ordersTab.classList.remove("active");
-
-  sectionDelivered.classList.remove("d-none");
-  sectionOrders.classList.add("d-none");
-
-  loadDelivered();
-});
-
-// ==========================
-// INITIAL LOAD
-// ==========================
-checkAuth();
-loadProducts("all");
