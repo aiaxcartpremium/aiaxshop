@@ -1,32 +1,41 @@
-/* ============================================
-   GLOBAL
-============================================ */
+/* ============================
+   GLOBAL BASE STYLE
+============================ */
+:root {
+  --primary: #ff6b6b;
+  --primary-dark: #e35656;
+  --light: #ffffff;
+  --gray: #f5f5f5;
+  --dark: #222;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background: #f7f7f7;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  background: #fafafa;
+  font-family: "Segoe UI", Arial, sans-serif;
   color: #333;
 }
 
-h3 {
-  font-weight: 700;
-}
-
-/* ============================================
-   HEADER + NAV TABS
-============================================ */
+/* ============================
+   HEADER
+============================ */
 header {
   background: #fff;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 50;
 }
 
 .header-inner {
+  padding: 0.8rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: .8rem 1rem;
 }
 
 .logo {
@@ -34,47 +43,56 @@ header {
   font-weight: 800;
   display: flex;
   align-items: center;
-  gap: .4rem;
+  gap: 0.35rem;
 }
 
+/* ============================
+   NAVIGATION TABS
+============================ */
 .tabs-nav a {
-  font-weight: 600;
-  color: #444;
-  text-decoration: none;
-  padding: .45rem 1rem;
+  padding: .5rem 1rem;
   border-radius: 6px;
-  transition: .15s;
+  margin-left: .4rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #444;
+  cursor: pointer;
 }
 
 .tabs-nav a:hover {
-  background: #ffe7e7;
+  background: var(--gray);
 }
 
 .tabs-nav a.active {
-  background: #ff6b6b;
+  background: var(--primary);
   color: #fff;
 }
 
-/* ============================================
-   PRODUCT LIST CARDS
-============================================ */
-#products-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
+/* ============================
+   PANELS
+============================ */
+.section-panel {
+  display: none;
 }
 
+.section-panel.active {
+  display: block;
+}
+
+/* ============================
+   PRODUCT CARDS
+============================ */
 .product-card {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 1rem;
   border: 1px solid #eee;
-  transition: .2s;
+  margin-bottom: 1rem;
+  transition: box-shadow .15s;
 }
 
 .product-card:hover {
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .product-header {
@@ -84,125 +102,125 @@ header {
 }
 
 .product-header h3 {
-  font-size: 1.1rem;
   margin: 0;
+  font-size: 1.15rem;
 }
 
 .product-body {
   margin-top: .75rem;
 }
 
+/* ============================
+   PLAN ITEM
+============================ */
 .plan-row {
-  background: #fafafa;
-  padding: .7rem .9rem;
-  border-radius: 8px;
-  border: 1px solid #e5e5e5;
-  margin-bottom: .5rem;
   display: flex;
   justify-content: space-between;
+  padding: .65rem .75rem;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  margin-bottom: .5rem;
   align-items: center;
 }
 
+.plan-row:hover {
+  background: #fff;
+  border-color: var(--primary);
+}
+
 .plan-row button {
-  margin-left: .6rem;
+  border-radius: 6px;
+  padding: .35rem .75rem;
 }
 
-/* Expandable */
-.plans-box {
-  background: #fcfcfc;
-  padding: .7rem;
-  border: 1px dashed #ddd;
-  border-radius: 8px;
-}
-
-/* ============================================
-   ORDERS & DELIVERED CARDS
-============================================ */
+/* ============================
+   ORDER CARD
+============================ */
 .order-card,
 .delivered-card {
   background: #fff;
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #eee;
-  margin-bottom: .75rem;
-  transition: .15s;
-}
-
-.order-card:hover,
-.delivered-card:hover {
-  background: #fff8f8;
+  margin-bottom: 1rem;
 }
 
 .order-card strong,
 .delivered-card strong {
-  font-weight: 700;
+  color: var(--primary-dark);
 }
 
-.badge {
-  font-size: .75rem;
-  padding: .35rem .5rem;
+/* ============================
+   DELIVERED MESSAGE BOX
+============================ */
+.delivered-card {
+  border-left: 4px solid var(--primary);
 }
 
-/* ============================================
-   CHECKOUT MODAL
-============================================ */
-#modalCheckout .modal-content {
-  border-radius: 12px;
-  border: none;
-}
-
-#modalCheckout .modal-header {
-  background: #ff6b6b;
-  color: #fff;
-  border-radius: 12px 12px 0 0;
-}
-
-#modalCheckout .form-label {
-  font-weight: 600;
-}
-
-/* Preview Image */
-#co-proof-preview {
-  border: 1px solid #ddd;
-  padding: 4px;
+/* ============================
+   RULES
+============================ */
+.rule-card {
   background: #fff;
-}
-
-/* ============================================
-   RULES + FEEDBACK
-============================================ */
-#rules-body div {
-  background: #fff;
-  padding: .7rem;
-  margin-bottom: .4rem;
-  border-radius: 6px;
-  border: 1px solid #eee;
-}
-
-#feedback-body {
-  background: #fff;
-  padding: 1rem;
+  padding: .85rem;
   border-radius: 10px;
   border: 1px solid #eee;
+  margin-bottom: .6rem;
 }
 
-/* ============================================
-   MOBILE
-============================================ */
+/* ============================
+   FEEDBACK
+============================ */
+.feedback-item {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  margin-bottom: .75rem;
+}
+
+/* ============================
+   LOGIN PANEL
+============================ */
+#panel-login button {
+  width: 100%;
+  padding: .65rem;
+  border-radius: 10px;
+}
+
+/* ============================
+   CHECKOUT MODAL
+============================ */
+#modalCheckout img {
+  border: 1px solid #ddd;
+}
+
+/* ============================
+   MOBILE RESPONSIVE
+============================ */
 @media (max-width: 600px) {
-  .tabs-nav {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: .4rem;
-    padding-bottom: .3rem;
-  }
-
   .tabs-nav a {
-    flex: 0 0 auto;
+    padding: .4rem .55rem;
+    font-size: .85rem;
   }
 
-  #products-list {
-    grid-template-columns: 1fr;
+  .header-inner {
+    flex-direction: column;
+    gap: .5rem;
+  }
+
+  .product-card {
+    padding: .85rem;
+  }
+
+  .plan-row {
+    flex-direction: column;
+    gap: .5rem;
+    text-align: center;
+  }
+
+  .plan-row button {
+    width: 100%;
   }
 }
