@@ -1,101 +1,89 @@
-// ===============================
-// index.js — Buyer Side Logic
-// ===============================
+/**************************************************
+ * Aiaxcart Buyer Script (FINAL VERSION)
+ * Fully matched with your current index.html
+ **************************************************/
 
-// Supabase init
+// ========================
+// Supabase Init
+// ========================
 const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
-const SUPABASE_ANON_KEY =
+const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ===============================
-// DOM ELEMENTS
-// ===============================
+// ========================
+// DOM Elements
+// ========================
+const panelProducts = document.getElementById("panel-products");
+const panelOrders = document.getElementById("panel-orders");
+const panelDelivered = document.getElementById("panel-delivered");
+const panelRules = document.getElementById("panel-rules");
+const panelFeedback = document.getElementById("panel-feedback");
+const panelLogin = document.getElementById("panel-login");
 
-const sectionProducts = document.getElementById("panel-products");
-const sectionOrders = document.getElementById("panel-orders");
-const sectionDelivered = document.getElementById("panel-delivered");
-const sectionRules = document.getElementById("panel-rules");
-const sectionFeedback = document.getElementById("panel-feedback");
-const sectionLogin = document.getElementById("panel-login");
-
-const productsList = document.getElementById("products-list");
+const listProducts = document.getElementById("products-list");
+const listOrders = document.getElementById("orders-list");
+const listDelivered = document.getElementById("delivered-list");
 const rulesBody = document.getElementById("rules-body");
 const feedbackBody = document.getElementById("feedback-body");
 
 const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
 
-const tabProducts = document.getElementById("tab-products");
-const tabOrders = document.getElementById("tab-orders");
-const tabDelivered = document.getElementById("tab-delivered");
-const tabRules = document.getElementById("tab-rules");
-const tabFeedback = document.getElementById("tab-feedback");
-const tabLogin = document.getElementById("tab-login");
+const tplProductCard = document.getElementById("tpl-product-card");
+const tplPlanItem = document.getElementById("tpl-plan-item");
 
-// ===============================
-// TAB SWITCHING
-// ===============================
+// Checkout modal
+const modalCheckout = new bootstrap.Modal(document.getElementById("modalCheckout"));
+const coProduct = document.getElementById("co-product");
+const coType = document.getElementById("co-type");
+const coPlan = document.getElementById("co-plan");
+const coPrice = document.getElementById("co-price");
+const coEmail = document.getElementById("co-email");
+const coProof = document.getElementById("co-proof");
+const coProofPreview = document.getElementById("co-proof-preview");
+const btnSubmitOrder = document.getElementById("btnSubmitOrder");
 
-function showPanel(panel) {
-  document.querySelectorAll(".section-panel").forEach((sec) => sec.classList.remove("active"));
-  panel.classList.add("active");
+// ========================
+// TABS HANDLER
+// ========================
+function showPanel(id) {
+  document.querySelectorAll(".section-panel").forEach((p) => p.classList.remove("active"));
+  document.querySelector(`#panel-${id}`).classList.add("active");
 
-  document.querySelectorAll(".tabs-nav a").forEach((el) => el.classList.remove("active"));
+  document.querySelectorAll(".tabs-nav a").forEach((t) => t.classList.remove("active"));
+  document.getElementById(`tab-${id}`).classList.add("active");
+
+  if (id === "products") loadProducts();
+  if (id === "orders") loadOrders();
+  if (id === "delivered") loadDelivered();
+  if (id === "rules") loadRules();
+  if (id === "feedback") loadFeedback();
 }
 
-tabProducts.onclick = () => {
-  showPanel(sectionProducts);
-  tabProducts.classList.add("active");
-  loadProducts();
-};
+document.getElementById("tab-products").onclick = () => showPanel("products");
+document.getElementById("tab-orders").onclick = () => showPanel("orders");
+document.getElementById("tab-delivered").onclick = () => showPanel("delivered");
+document.getElementById("tab-rules").onclick = () => showPanel("rules");
+document.getElementById("tab-feedback").onclick = () => showPanel("feedback");
+document.getElementById("tab-login").onclick = () => showPanel("login");
 
-tabOrders.onclick = () => {
-  showPanel(sectionOrders);
-  tabOrders.classList.add("active");
-  loadOrders();
-};
-
-tabDelivered.onclick = () => {
-  showPanel(sectionDelivered);
-  tabDelivered.classList.add("active");
-  loadDelivered();
-};
-
-tabRules.onclick = () => {
-  showPanel(sectionRules);
-  tabRules.classList.add("active");
-  loadRules();
-};
-
-tabFeedback.onclick = () => {
-  showPanel(sectionFeedback);
-  tabFeedback.classList.add("active");
-  loadFeedback();
-};
-
-tabLogin.onclick = () => {
-  showPanel(sectionLogin);
-  tabLogin.classList.add("active");
-};
-
-// ===============================
-// AUTH STATUS
-// ===============================
-
+// ========================
+// AUTH HANDLING
+// ========================
 async function checkAuth() {
   const { data } = await sb.auth.getSession();
-  const session = data.session;
+  const session = data?.session;
 
   if (session?.user) {
-    btnLogout.classList.remove("d-none");
     btnLogin.classList.add("d-none");
-    tabLogin.textContent = session.user.email;
+    btnLogout.classList.remove("d-none");
+    document.getElementById("tab-login").textContent = session.user.email;
   } else {
-    btnLogout.classList.add("d-none");
     btnLogin.classList.remove("d-none");
-    tabLogin.textContent = "Login";
+    btnLogout.classList.add("d-none");
+    document.getElementById("tab-login").textContent = "Login";
   }
 }
 
@@ -108,180 +96,175 @@ btnLogout.onclick = async () => {
   location.reload();
 };
 
-// ===============================
+// ========================
 // LOAD PRODUCTS
-// ===============================
-
+// ========================
 async function loadProducts() {
-  productsList.innerHTML =
-    `<div class="text-center text-muted py-3">Loading products...</div>`;
+  listProducts.innerHTML = `<div class="text-muted text-center p-3">Loading…</div>`;
 
-  const tplCard = document.getElementById("tpl-product-card");
-  const tplPlan = document.getElementById("tpl-plan-item");
+  const { data: products } = await sb.from("products").select("*");
 
-  const { data: products, error } = await sb
-    .from("products")
-    .select("*")
-    .order("name", { ascending: true });
-
-  if (!products || error) {
-    productsList.innerHTML =
-      `<div class="text-danger text-center py-3">Failed to load products.</div>`;
+  if (!products || !products.length) {
+    listProducts.innerHTML = `<div class="text-muted text-center p-3">No products available.</div>`;
     return;
   }
 
-  productsList.innerHTML = "";
+  listProducts.innerHTML = "";
 
-  for (const p of products) {
-    // STOCK COUNT
+  for (let p of products) {
+    const card = tplProductCard.content.cloneNode(true);
+    card.querySelector(".product-title").textContent = p.name;
+    card.querySelector(".product-category").textContent = p.category;
+
+    // STOCK CHECK
     const { data: stockRows } = await sb
       .from("stocks")
       .select("quantity")
       .eq("product_id", p.id)
       .eq("status", "available");
 
-    const totalStock = stockRows?.reduce((s, v) => s + (v.quantity || 0), 0) || 0;
+    const totalStock =
+      stockRows?.reduce((sum, s) => sum + (s.quantity || 0), 0) || 0;
 
-    // PRICE PLANS
+    card.querySelector(".product-stock").textContent =
+      totalStock > 0 ? `Stock: ${totalStock}` : `Out of Stock`;
+
+    // LOAD PLANS
     const { data: plans } = await sb
       .from("product_prices")
       .select("*")
       .eq("product_id", p.id)
-      .order("price");
+      .order("price", { ascending: true });
 
-    // Clone template
-    const card = tplCard.content.cloneNode(true);
-    card.querySelector(".product-title").textContent = p.name;
-    card.querySelector(".product-category").textContent = p.category;
-    card.querySelector(".product-stock").textContent =
-      totalStock > 0 ? `In Stock (${totalStock})` : "Out of Stock";
-
-    const expandBtn = card.querySelector(".btn-expand-plans");
     const plansBox = card.querySelector(".plans-box");
-    const plansInner = card.querySelector(".plans-inner");
+    const btnExpand = card.querySelector(".btn-expand-plans");
+    const container = card.querySelector(".plans-inner");
 
-    expandBtn.onclick = () => {
+    btnExpand.onclick = () => {
       plansBox.style.display = plansBox.style.display === "none" ? "block" : "none";
     };
 
-    if (!plans?.length) {
-      plansInner.innerHTML = `<div class="text-muted small">No plans yet.</div>`;
-    } else {
-      plansInner.innerHTML = "";
+    if (plans?.length) {
       plans.forEach((pp) => {
-        const row = tplPlan.content.cloneNode(true);
+        const item = tplPlanItem.content.cloneNode(true);
 
-        row.querySelector(".plan-type").textContent = pp.account_type;
-        row.querySelector(".plan-duration").textContent = pp.duration;
-        row.querySelector(".plan-price").textContent = `₱${pp.price}`;
+        item.querySelector(".plan-type").textContent = pp.account_type;
+        item.querySelector(".plan-duration").textContent = pp.duration;
+        item.querySelector(".plan-price").textContent = `₱${pp.price}`;
 
-        const btn = row.querySelector(".plan-item");
-        btn.onclick = () => openCheckout(p, pp);
+        item.querySelector(".plan-item").onclick = () => {
+          openCheckout(p, pp, totalStock);
+        };
 
-        if (totalStock <= 0) btn.disabled = true;
-
-        plansInner.appendChild(row);
+        container.appendChild(item);
       });
+    } else {
+      container.innerHTML = `<div class="text-muted small">No plans available.</div>`;
     }
 
-    productsList.appendChild(card);
+    listProducts.appendChild(card);
   }
 }
 
-// ===============================
+// ========================
 // CHECKOUT MODAL
-// ===============================
+// ========================
+let selectedProduct = null;
+let selectedPlan = null;
 
-const coProduct = document.getElementById("co-product");
-const coType = document.getElementById("co-type");
-const coPlan = document.getElementById("co-plan");
-const coPrice = document.getElementById("co-price");
-const coEmail = document.getElementById("co-email");
-const coProof = document.getElementById("co-proof");
-const coPreview = document.getElementById("co-proof-preview");
+function openCheckout(product, plan, stock) {
+  if (stock <= 0) {
+    alert("Out of stock.");
+    return;
+  }
 
-let CURRENT_ORDER = null;
-
-function openCheckout(product, plan) {
-  CURRENT_ORDER = { product, plan };
+  selectedProduct = product;
+  selectedPlan = plan;
 
   coProduct.textContent = product.name;
   coType.textContent = plan.account_type;
   coPlan.textContent = plan.duration;
   coPrice.textContent = `₱${plan.price}`;
 
-  coPreview.style.display = "none";
   coProof.value = "";
-  coEmail.value = "";
+  coProofPreview.style.display = "none";
 
-  new bootstrap.Modal(document.getElementById("modalCheckout")).show();
+  modalCheckout.show();
 }
 
 coProof.onchange = () => {
   const file = coProof.files[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  coPreview.src = url;
-  coPreview.style.display = "block";
+  if (file) {
+    coProofPreview.src = URL.createObjectURL(file);
+    coProofPreview.style.display = "block";
+  }
 };
 
-// ===============================
+// ========================
 // SUBMIT ORDER
-// ===============================
+// ========================
+btnSubmitOrder.onclick = async () => {
+  const {
+    data: { session },
+  } = await sb.auth.getSession();
 
-document.getElementById("btnSubmitOrder").onclick = async () => {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) return alert("Please log in first.");
+  if (!session) return alert("Please login first.");
 
-  const buyerEmail = data.session.user.email;
-  const file = coProof.files[0];
+  const buyer = session.user.email;
 
-  let proofUrl = null;
+  // Upload image
+  let proofURL = null;
+  if (coProof.files.length > 0) {
+    const file = coProof.files[0];
+    const filePath = `proofs/${Date.now()}_${file.name}`;
 
-  if (file) {
-    const fileName = `proof_${Date.now()}.jpg`;
-    const { data: uploaded, error: uploadErr } = await sb.storage
+    let { data, error } = await sb.storage
       .from("proofs")
-      .upload(fileName, file);
+      .upload(filePath, file);
 
-    if (!uploadErr) {
-      proofUrl =
-        `https://hnymqvkfmythdxtjqeam.supabase.co/storage/v1/object/public/proofs/${fileName}`;
+    if (error) {
+      console.error(error);
+      return alert("Failed to upload proof.");
     }
+
+    const { data: publicURL } = sb.storage.from("proofs").getPublicUrl(filePath);
+    proofURL = publicURL.publicUrl;
   }
 
+  // Insert order
   const { error } = await sb.from("orders").insert([
     {
-      buyer_email: buyerEmail,
-      product_id: CURRENT_ORDER.product.id,
-      account_type: CURRENT_ORDER.plan.account_type,
-      duration: CURRENT_ORDER.plan.duration,
-      price: CURRENT_ORDER.plan.price,
-      proof_image_url: proofUrl,
+      buyer_email: buyer,
+      product_id: selectedProduct.id,
+      account_type: selectedPlan.account_type,
+      duration: selectedPlan.duration,
+      price: selectedPlan.price,
       status: "pending",
+      proof_image: proofURL,
       created_at: new Date().toISOString(),
     },
   ]);
 
   if (error) {
-    alert("Order failed.");
     console.error(error);
+    alert("Order failed.");
   } else {
-    alert("Order submitted! Wait for admin confirmation.");
-    loadOrders();
+    alert("Order placed!");
+    modalCheckout.hide();
+    showPanel("orders");
   }
 };
 
-// ===============================
+// ========================
 // LOAD ORDERS
-// ===============================
-
+// ========================
 async function loadOrders() {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) return;
+  const { data: session } = await sb.auth.getSession();
+  if (!session?.session) return;
 
-  const email = data.session.user.email;
-  const list = document.getElementById("orders-list");
+  const email = session.session.user.email;
+
+  listOrders.innerHTML = `<div class="text-muted text-center p-3">Loading…</div>`;
 
   const { data: orders } = await sb
     .from("orders")
@@ -289,94 +272,89 @@ async function loadOrders() {
     .eq("buyer_email", email)
     .order("created_at", { ascending: false });
 
-  if (!orders?.length) {
-    list.innerHTML = `<div class="text-muted">No orders yet.</div>`;
+  if (!orders || !orders.length) {
+    listOrders.innerHTML = `<div class="text-center text-muted p-3">No orders yet.</div>`;
     return;
   }
 
-  list.innerHTML = orders
-    .map(
-      (o) => `
-      <div class="border rounded p-2 mb-2">
-        <div><strong>${o.product_id}</strong></div>
-        <div>${o.account_type} — ${o.duration}</div>
-        <div>₱${o.price}</div>
-        <span class="badge bg-warning">${o.status}</span>
+  let html = "";
+  orders.forEach((o) => {
+    html += `
+    <div class="border rounded p-2 mb-2">
+      <div><strong>${o.product_id}</strong></div>
+      <div>${o.account_type} • ${o.duration}</div>
+      <div class="text-primary fw-bold">₱${o.price}</div>
+      <div>Status: <span class="badge bg-warning">${o.status}</span></div>
+      <div class="small text-muted">
+        ${new Date(o.created_at).toLocaleString()}
       </div>
-    `
-    )
-    .join("");
+    </div>`;
+  });
+
+  listOrders.innerHTML = html;
 }
 
-// ===============================
+// ========================
 // LOAD DELIVERED ACCOUNTS
-// ===============================
-
+// ========================
 async function loadDelivered() {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) return;
+  const { data: session } = await sb.auth.getSession();
+  if (!session?.session) return;
 
-  const email = data.session.user.email;
-  const list = document.getElementById("delivered-list");
+  const email = session.session.user.email;
 
-  const { data: delivered } = await sb
+  listDelivered.innerHTML = `<div class="text-muted text-center p-3">Loading…</div>`;
+
+  const { data: rec } = await sb
     .from("records")
     .select("*")
     .eq("buyer", email)
     .order("purchase_date", { ascending: false });
 
-  if (!delivered?.length) {
-    list.innerHTML = `<div class="text-muted">No delivered accounts yet.</div>`;
+  if (!rec?.length) {
+    listDelivered.innerHTML = `<div class="text-center text-muted p-3">No delivered accounts yet.</div>`;
     return;
   }
 
-  list.innerHTML = delivered
-    .map(
-      (r) => `
-      <div class="border rounded p-2 mb-2">
-        <strong>${r.product_id}</strong><br>
-        ${r.account_type} (${r.duration})<br>
-        Email: <b>${r.account_email}</b><br>
-        Pass: <b>${r.account_password}</b><br>
-        Profile: ${r.profile || "-"}<br>
-        <small class="text-muted">Purchased: ${r.purchase_date}<br>
-        Expiry: ${r.expiry_date}</small>
+  let html = "";
+  rec.forEach((r) => {
+    html += `
+    <div class="border rounded p-2 mb-2">
+      <strong>${r.product_id}</strong><br>
+      ${r.account_type} • ${r.duration}<br>
+      Email: <strong>${r.account_email}</strong><br>
+      Pass: <strong>${r.account_password}</strong><br>
+      Profile: ${r.profile || "-"}<br>
+      <div class="small text-muted">
+        Purchased: ${new Date(r.purchase_date).toLocaleDateString()}<br>
+        Expiry: ${new Date(r.expiry_date).toLocaleDateString()}
       </div>
-    `
-    )
-    .join("");
+    </div>`;
+  });
+
+  listDelivered.innerHTML = html;
 }
 
-// ===============================
-// RULES
-// ===============================
-
+// ========================
+// LOAD RULES
+// ========================
 async function loadRules() {
-  const { data: rules } = await sb
-    .from("rules")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  rulesBody.innerHTML =
-    rules?.map((r) => `<div class="mb-2 small">• ${r.body}</div>`).join("") ||
-    `<div class="text-muted">No rules yet.</div>`;
+  const { data } = await sb.from("rules").select("*");
+  rulesBody.innerHTML = data?.map((r) => `<p>• ${r.text}</p>`).join("") || "No rules.";
 }
 
-// ===============================
-// FEEDBACK (Placeholder)
-// ===============================
-
-function loadFeedback() {
-  feedbackBody.innerHTML = `
-    <div class="text-center text-muted">
-      You can send feedback on Messenger or TikTok page.
-    </div>
-  `;
+// ========================
+// LOAD FEEDBACK
+// ========================
+async function loadFeedback() {
+  const { data } = await sb.from("feedback").select("*");
+  feedbackBody.innerHTML =
+    data?.map((f) => `<p>⭐ ${f.rating} — ${f.comment}</p>`).join("") ||
+    "No feedback yet.";
 }
 
-// ===============================
+// ========================
 // INIT
-// ===============================
-
+// ========================
 checkAuth();
 loadProducts();
