@@ -1,0 +1,208 @@
+/* ============================================
+   GLOBAL
+============================================ */
+body {
+  background: #f7f7f7;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #333;
+}
+
+h3 {
+  font-weight: 700;
+}
+
+/* ============================================
+   HEADER + NAV TABS
+============================================ */
+header {
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .8rem 1rem;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.tabs-nav a {
+  font-weight: 600;
+  color: #444;
+  text-decoration: none;
+  padding: .45rem 1rem;
+  border-radius: 6px;
+  transition: .15s;
+}
+
+.tabs-nav a:hover {
+  background: #ffe7e7;
+}
+
+.tabs-nav a.active {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+/* ============================================
+   PRODUCT LIST CARDS
+============================================ */
+#products-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+  border: 1px solid #eee;
+  transition: .2s;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.product-body {
+  margin-top: .75rem;
+}
+
+.plan-row {
+  background: #fafafa;
+  padding: .7rem .9rem;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+  margin-bottom: .5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-row button {
+  margin-left: .6rem;
+}
+
+/* Expandable */
+.plans-box {
+  background: #fcfcfc;
+  padding: .7rem;
+  border: 1px dashed #ddd;
+  border-radius: 8px;
+}
+
+/* ============================================
+   ORDERS & DELIVERED CARDS
+============================================ */
+.order-card,
+.delivered-card {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  margin-bottom: .75rem;
+  transition: .15s;
+}
+
+.order-card:hover,
+.delivered-card:hover {
+  background: #fff8f8;
+}
+
+.order-card strong,
+.delivered-card strong {
+  font-weight: 700;
+}
+
+.badge {
+  font-size: .75rem;
+  padding: .35rem .5rem;
+}
+
+/* ============================================
+   CHECKOUT MODAL
+============================================ */
+#modalCheckout .modal-content {
+  border-radius: 12px;
+  border: none;
+}
+
+#modalCheckout .modal-header {
+  background: #ff6b6b;
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+}
+
+#modalCheckout .form-label {
+  font-weight: 600;
+}
+
+/* Preview Image */
+#co-proof-preview {
+  border: 1px solid #ddd;
+  padding: 4px;
+  background: #fff;
+}
+
+/* ============================================
+   RULES + FEEDBACK
+============================================ */
+#rules-body div {
+  background: #fff;
+  padding: .7rem;
+  margin-bottom: .4rem;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+#feedback-body {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+/* ============================================
+   MOBILE
+============================================ */
+@media (max-width: 600px) {
+  .tabs-nav {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: .4rem;
+    padding-bottom: .3rem;
+  }
+
+  .tabs-nav a {
+    flex: 0 0 auto;
+  }
+
+  #products-list {
+    grid-template-columns: 1fr;
+  }
+}
