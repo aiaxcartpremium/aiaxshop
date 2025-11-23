@@ -2,1035 +2,376 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Aiaxcart Premium | Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aiaxcart Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
-  <style>
-    :root { --primary:#ff6b6b; --secondary:#ffd3d6; --dark:#382f2c; --light:#fefaf7; }
-    * { box-sizing: border-box; }
-    body { margin:0; background: linear-gradient(135deg,#fefaf7 0%,#fff5f5 100%); color:var(--dark); font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; min-height:100vh; }
-    header { background: var(--secondary); box-shadow:0 4px 20px rgba(255,107,107,0.15); position:sticky; top:0; z-index:50; backdrop-filter: blur(10px); }
-    .header-inner { max-width:1200px; margin:0 auto; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; }
-    .logo { font-size:1.5rem; font-weight:800; display:flex; align-items:center; gap:.5rem; color:var(--dark); }
-    .top-nav a { text-decoration:none; color:var(--dark); margin-left:1rem; padding:.5rem 1.3rem; border-radius:50px; font-weight:600; background: rgba(255,255,255,0.9); border:2px solid transparent; transition: all .2s; }
-    .top-nav a.active, .top-nav a:hover { background:var(--primary); color:#fff; border-color:var(--primary); transform: translateY(-2px); }
-    .admin-wrapper { max-width:1200px; margin:2rem auto 3rem; padding:0 1.5rem; }
-    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1.5rem; margin-bottom:2rem; }
-    .stat-card { background:#fff; border-radius:15px; padding:1.5rem; box-shadow:0 5px 25px rgba(0,0,0,0.08); text-align:center; border:1px solid rgba(255,107,107,0.1); position:relative; overflow:hidden; }
-    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(135deg,var(--primary) 0%,#ff8e8e 100%); }
-    .stat-card h3{ margin:0; font-size:2rem; color:var(--primary); font-weight:800; }
-    .admin-layout { display:grid; grid-template-columns:250px minmax(0,1fr); gap:1.5rem; margin-top:2rem; align-items:flex-start; }
-    .sidebar { background:#fff; border-radius:20px; padding:1rem; box-shadow:0 5px 25px rgba(0,0,0,0.08); position:sticky; top:6rem; border:1px solid rgba(255,107,107,0.1); }
-    .sidebar button { width:100%; text-align:left; border:none; background:transparent; padding:.8rem 1rem; border-radius:12px; font-size:.95rem; margin-bottom:.5rem; cursor:pointer; color:var(--dark); font-weight:600; display:flex; align-items:center; gap:.8rem; }
-    .sidebar button.active { background:var(--primary); color:#fff; transform:translateX(5px); }
-    .admin-main { min-height:500px; }
-    .panel-admin { display:none; }
-    .panel-admin.active { display:block; animation:fadeIn .25s ease; }
-    @keyframes fadeIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
-    .card-clean { background:#fff; border-radius:20px; padding:1.5rem; box-shadow:0 5px 25px rgba(0,0,0,0.08); border:1px solid rgba(255,107,107,0.1); }
-    .records-table { width:100%; border-collapse:collapse; font-size:.95rem; }
-    .records-table th, .records-table td { border-bottom:1px solid #eee; padding:.7rem; vertical-align:middle; }
-    .records-table th { background: rgba(255,107,107,0.05); font-weight:700; color:var(--dark); }
-    .hidden{ display:none !important; }
-    .btn-primary { background: linear-gradient(135deg,var(--primary) 0%,#ff8e8e 100%); border:none; border-radius:10px; font-weight:600; }
-    .toast-container { z-index:9999; position: fixed; top: 1rem; right: 1rem; }
-    @media (max-width:900px) { .admin-layout { grid-template-columns: minmax(0,1fr); } .sidebar { position:static; order:2 } .admin-main { order:1 } }
-  </style>
-</head>
-<body>
-  <div id="toastContainer" class="toast-container"></div>
-
-  <header>
-    <div class="header-inner">
-      <div class="logo"><span>ð</span><span>Aiaxcart Premium â Admin</span></div>
-      <nav class="top-nav">
-        <a href="./index.html">Home</a>
-        <a href="./admin.html" class="active">Admin</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="admin-wrapper">
-    <div id="adminGate" class="card-clean mb-3">
-      <h2 class="h4 mb-3">ð Admin Security</h2>
-      <p class="text-muted mb-3">Enter Owner UID to access the console (Owner UID required).</p>
-      <div class="row g-3 align-items-end">
-        <div class="col-md-6">
-          <label class="form-label">Owner UID</label>
-          <input id="adminUidInput" class="form-control" placeholder="Paste your Owner UID here (owner only)">
-        </div>
-        <div class="col-md-3 d-grid">
-          <button id="btnAdminLogin" class="btn btn-primary" type="button"><i class="fa fa-lock-open me-1"></i> Unlock Console</button>
-        </div>
-        <div class="col-md-3 small text-muted">
-          <i class="fa fa-shield me-1"></i> Protected access. Use Owner UID.
-        </div>
-      </div>
-    </div>
-
-    <div id="adminContent" class="hidden">
-      <h1 class="h4 mb-3">Admin Console</h1>
-
-      <div class="stats-grid">
-        <div class="stat-card"><h3 id="stat-products">0</h3><span>Products</span></div>
-        <div class="stat-card"><h3 id="stat-stock">0</h3><span>Available Stocks</span></div>
-        <div class="stat-card"><h3 id="stat-pending">0</h3><span>Pending Orders</span></div>
-        <div class="stat-card"><h3 id="stat-revenue">â±0.00</h3><span>Total Revenue</span></div>
-      </div>
-
-      <div class="admin-layout">
-        <aside class="sidebar">
-          <button class="active" data-target="panel-products"><i class="fa fa-list"></i> Products</button>
-          <button data-target="panel-product-prices"><i class="fa fa-tag"></i> Product Prices</button>
-          <button data-target="panel-add-stock"><i class="fa fa-plus-square"></i> Add Stock</button>
-          <button data-target="panel-manage-stocks"><i class="fa fa-layer-group"></i> Stocks List</button>
-          <button data-target="panel-pending-orders"><i class="fa fa-clock"></i> Pending Orders</button>
-          <button data-target="panel-records"><i class="fa fa-book"></i> Sold Accounts</button>
-          <button data-target="panel-store-rules"><i class="fa fa-scroll"></i> Store Rules</button>
-          <button data-target="panel-reports"><i class="fa fa-flag"></i> Reports</button>
-        </aside>
-
-        <section class="admin-main">
-          <!-- PRODUCTS -->
-          <div id="panel-products" class="panel-admin active">
-            <div class="card-clean">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">ð¦ Products</h3>
-              </div>
-
-              <div class="mb-4">
-                <input type="hidden" id="prod-edit-id">
-                <div class="row g-2 align-items-end">
-                  <div class="col-md-3"><label class="form-label">Product ID</label><input id="new-prod-id" class="form-control" placeholder="e.g. netflix"></div>
-                  <div class="col-md-4"><label class="form-label">Name</label><input id="new-prod-name" class="form-control" placeholder="Netflix Premium"></div>
-                  <div class="col-md-3"><label class="form-label">Category</label>
-                    <select id="new-prod-cat" class="form-select">
-                      <option value="entertainment">Entertainment</option>
-                      <option value="streaming">Streaming</option>
-                      <option value="educational">Educational</option>
-                      <option value="editing">Editing</option>
-                      <option value="ai">AI Tools</option>
-                    </select>
-                  </div>
-                  <div class="col-md-2 d-grid"><button id="btn-save-product" class="btn btn-primary" type="button"><i class="fa fa-plus me-1"></i> Add</button></div>
-                </div>
-                <div class="mt-2"><button id="btn-cancel-prod-edit" type="button" class="btn btn-link p-0 small d-none"><i class="fa fa-times me-1"></i> Cancel edit</button></div>
-                <small class="text-muted"><i class="fa fa-info-circle me-1"></i> Product IDs must match those used on the buyer site.</small>
-              </div>
-
-              <div class="table-responsive">
-                <table class="records-table">
-                  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Actions</th></tr></thead>
-                  <tbody id="products-table-body"><tr><td colspan="4" class="text-center text-muted py-3">Loading products...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- PRODUCT PRICES -->
-          <div id="panel-product-prices" class="panel-admin">
-            <div class="card-clean">
-              <h3 class="mb-3">ð° Product Prices</h3>
-              <div class="mb-4">
-                <div class="row g-2 align-items-end">
-                  <div class="col-md-3"><label class="form-label">Product</label><select id="price-product" class="form-select"><option value="">Select product</option></select></div>
-                  <div class="col-md-3"><label class="form-label">Account Type</label><input id="price-account-type" class="form-control" placeholder="e.g. invite / premium"></div>
-                  <div class="col-md-2"><label class="form-label">Duration</label><input id="price-duration" class="form-control" placeholder="e.g. 1m or 30d"></div>
-                  <div class="col-md-2"><label class="form-label">Price (â±)</label><input id="price-amount" type="number" step="0.01" class="form-control" placeholder="0.00"></div>
-                  <div class="col-md-2 d-grid"><button id="btn-add-price" class="btn btn-primary" type="button"><i class="fa fa-plus me-1"></i> Add Price</button></div>
-                </div>
-              </div>
-
-              <div class="table-responsive">
-                <table class="records-table">
-                  <thead><tr><th>Product</th><th>Account Type</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
-                  <tbody id="prices-table-body"><tr><td colspan="5" class="text-center text-muted py-3">Loading prices...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- ADD STOCK -->
-          <div id="panel-add-stock" class="panel-admin">
-            <div class="card-clean">
-              <h3 class="mb-3">ð¥ Add Stock</h3>
-              <div class="row g-3">
-                <div class="col-md-4"><label class="form-label">Product</label><select id="stock-product" class="form-select"><option value="">Select product</option></select></div>
-                <div class="col-md-4"><label class="form-label">Account Type</label><input id="stock-account-type" class="form-control" placeholder="invite / premium"></div>
-                <div class="col-md-4"><label class="form-label">Duration</label><input id="stock-duration" class="form-control" placeholder="e.g. 1m or 30d"></div>
-
-                <div class="col-md-3"><label class="form-label">Price (â±)</label><input id="stock-price" type="number" step="0.01" class="form-control" placeholder="0.00"></div>
-                <div class="col-md-3"><label class="form-label">Account Email</label><input id="stock-email" class="form-control" placeholder="account@email.com"></div>
-                <div class="col-md-3"><label class="form-label">Password</label><input id="stock-password" class="form-control" placeholder="Account password"></div>
-                <div class="col-md-3"><label class="form-label">Profile</label><input id="stock-profile" class="form-control" placeholder="Profile name"></div>
-
-                <div class="col-md-3"><label class="form-label">PIN</label><input id="stock-pin" class="form-control" placeholder="PIN code"></div>
-                <div class="col-md-3"><label class="form-label">Archive After (days)</label><input id="stock-archive-after" type="number" min="0" value="30" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">Premium Until</label><input id="stock-premium-until" type="date" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">Quantity (slots)</label><input id="stock-quantity" type="number" min="1" value="1" class="form-control"></div>
-              </div>
-
-              <button id="btn-save-stock" class="btn btn-primary mt-3" type="button"><i class="fa fa-save me-1"></i> Save Stock</button>
-              <small class="text-muted d-block mt-2"><i class="fa fa-info-circle me-1"></i> Each stock entry represents account credentials. Quantity indicates available slots.</small>
-            </div>
-          </div>
-
-          <!-- MANAGE STOCKS -->
-          <div id="panel-manage-stocks" class="panel-admin">
-            <div class="card-clean">
-              <h3 class="mb-3">ð Stocks List</h3>
-              <div class="table-responsive">
-                <table class="records-table">
-                  <thead><tr><th>ID</th><th>Product</th><th>Type</th><th>Duration</th><th>Email</th><th>Status</th><th>Premium Until</th><th>Price</th><th>Qty</th><th>Actions</th></tr></thead>
-                  <tbody id="stocks-table-body"><tr><td colspan="10" class="text-center text-muted py-3">Loading stocks...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- PENDING ORDERS -->
-          <div id="panel-pending-orders" class="panel-admin">
-            <div class="card-clean">
-              <h3 class="mb-3">â³ Pending Orders</h3>
-              <div class="table-responsive">
-                <table class="records-table">
-                  <thead><tr><th>Order ID</th><th>Buyer</th><th>Product</th><th>Type</th><th>Duration</th><th>Price</th><th>Payment</th><th>Proof</th><th>Status</th><th>Action</th></tr></thead>
-                  <tbody id="orders-table-body"><tr><td colspan="10" class="text-center text-muted py-3">Loading pending orders...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- RECORDS (SOLD) -->
-          <div id="panel-records" class="panel-admin">
-            <div class="card-clean">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">â Sold Accounts</h3>
-                <div><button id="btn-export-records" class="btn btn-sm btn-outline-secondary" type="button"><i class="fa fa-download me-1"></i> Export CSV</button></div>
-              </div>
-              <div class="table-responsive">
-                <table class="records-table">
-                  <thead><tr><th>Record ID</th><th>Order ID</th><th>Buyer</th><th>Product</th><th>Type</th><th>Duration</th><th>Purchased</th><th>Expiry</th><th>Price</th><th>Account Email</th></tr></thead>
-                  <tbody id="records-table-body"><tr><td colspan="10" class="text-center text-muted py-3">Loading records...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- STORE RULES -->
-          <div id="panel-store-rules" class="panel-admin">
-            <div class="card-clean">
-              <h3 class="mb-3">ð Store Rules</h3>
-              <div class="row g-2 mb-3">
-                <div class="col-md-3"><label class="form-label">Product ID</label><select id="rule-product-id" class="form-select"><option value="">General Rule</option></select></div>
-                <div class="col-md-7"><label class="form-label">Rule Text</label><input id="rule-text" class="form-control" placeholder="Enter rule text..."></div>
-                <div class="col-md-2 d-grid"><button id="btn-add-rule" class="btn btn-primary" type="button"><i class="fa fa-plus me-1"></i> Add Rule</button></div>
-              </div>
-              <ul id="rules-list" class="list-unstyled mb-0"><li class="text-center text-muted py-3">Loading rules...</li></ul>
-            </div>
-          </div>
-
-          <!-- REPORTS -->
-          <div id="panel-reports" class="panel-admin">
-            <div class="card-clean">
-              <h3 class="mb-3">ð© Reports</h3>
-              <div class="table-responsive">
-                <table class="records-table">
-                  <thead><tr><th>ID</th><th>Order ID</th><th>Buyer ID</th><th>Issue</th><th>Status</th><th>Created At</th><th>Action</th></tr></thead>
-                  <tbody id="reports-table-body"><tr><td colspan="7" class="text-center text-muted py-3">Loading reports...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-        </section>
-      </div>
-    </div>
-  </main>
-
-  <!-- STOCK EDIT MODAL -->
-  <div class="modal fade" id="stockModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">âï¸ Edit Stock</h5><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
-      <div class="modal-body">
-        <form id="stockForm">
-          <input type="hidden" id="stock-edit-id">
-          <div class="mb-3"><label class="form-label">Email</label><input id="stock-edit-email" class="form-control"></div>
-          <div class="mb-3"><label class="form-label">Password</label><input id="stock-edit-password" class="form-control"></div>
-          <div class="mb-3"><label class="form-label">Profile</label><input id="stock-edit-profile" class="form-control"></div>
-          <div class="mb-3"><label class="form-label">PIN</label><input id="stock-edit-pin" class="form-control"></div>
-          <div class="mb-3"><label class="form-label">Price (â±)</label><input id="stock-edit-price" type="number" step="0.01" class="form-control"></div>
-          <div class="mb-3"><label class="form-label">Status</label><select id="stock-edit-status" class="form-select"><option value="available">available</option><option value="sold">sold</option><option value="archived">archived</option></select></div>
-          <div class="mb-3"><label class="form-label">Premium Until</label><input id="stock-edit-premium" type="date" class="form-control"></div>
-          <div class="mb-3"><label class="form-label">Quantity (slots)</label><input id="stock-edit-qty" type="number" min="0" class="form-control"></div>
-          <button class="btn btn-primary w-100 mt-2" type="submit"><i class="fa fa-save me-1"></i> Save changes</button>
-        </form>
-      </div>
-    </div></div>
-  </div>
-
-  <!-- Bootstrap + Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script>
-    // ========== CONFIG ==========
-    const SUPABASE_URL = "https://hnymqvkfmythdxtjqeam.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhueW1xdmtmbXl0aGR4dGpxZWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NTUsImV4cCI6MjA3ODY5Nzc1NX0.4ww5fKNnbhNzNrkJZLa466b6BsKE_yYMO2YH6-auFlI";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // OWNER UID required (user requested this exact UID)
-    const OWNER_UID = "767e5f7d-0c7a-4c32-80e3-b9613e0d37df";
-
-    // used state
-    let allProducts = [];
-    let allRules = [];
-    let realtimeChannelStocks = null;
-    let realtimeChannelOrders = null;
-
-    function showToast(message, type='info', timeout=3500) {
-      const container = document.getElementById('toastContainer');
-      const bsType = (type==='success') ? 'success' : (type==='danger' || type==='error') ? 'danger' : (type==='warning' ? 'warning' : 'secondary');
-      const el = document.createElement('div');
-      el.className = `toast align-items-center text-bg-${bsType} border-0 mb-2`;
-      el.role = 'alert';
-      el.style.minWidth = '250px';
-      el.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-      container.appendChild(el);
-      const t = new bootstrap.Toast(el);
-      t.show();
-      setTimeout(()=>{ try{ el.remove(); }catch(e){} }, timeout+500);
+  <style>
+    body {
+      background:#f8f8f8;
+      font-family: "Segoe UI", Arial;
+    }
+    header {
+      background:white;
+      position:sticky;
+      top:0;
+      z-index:999;
+      border-bottom:1px solid #eee;
+      padding:.8rem 1rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .admin-logo {
+      font-size:1.3rem;
+      font-weight:800;
+      display:flex;
+      gap:.5rem;
+    }
+    nav .nav-btn {
+      font-weight:600;
+      margin-left:.6rem;
+      cursor:pointer;
+      padding:.45rem .9rem;
+      border-radius:6px;
+      transition:.15s;
+      text-decoration:none;
+      color:#333;
+    }
+    nav .nav-btn.active {
+      background:#ff6b6b;
+      color:white;
     }
 
-    function safeNumber(v){ const n = Number(v); return Number.isFinite(n)?n:0; }
-
-    // ========= UI helpers (panels) =========
-    document.querySelectorAll('.sidebar button').forEach(btn => {
-      btn.addEventListener('click', ()=> {
-        document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const target = btn.getAttribute('data-target');
-        document.querySelectorAll('.panel-admin').forEach(p => p.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-
-    // ========= ADMIN GATE =========
-    async function handleAdminLogin(){
-      const uid = (document.getElementById('adminUidInput').value || '').trim();
-      if(!uid) { showToast('â Paste owner UID', 'warning'); return; }
-      if(uid !== OWNER_UID) { showToast('â Owner UID mismatch', 'danger'); return; }
-
-      // optional: verify it exists in admin_uids table
-      try {
-        const { data, error } = await supabase.from('admin_uids').select('uid').eq('uid', uid).maybeSingle();
-        if(error) {
-          // If table doesn't exist or error, still allow owner UID (but warn)
-          console.warn('[admin_uids] check failed', error);
-        } else if(!data) {
-          // not found; still allow if uid === OWNER_UID but show notice
-          showToast('â ï¸ Owner UID not found in admin_uids table â proceeding because it matches OWNER_UID', 'warning', 5000);
-        }
-      } catch(e) { console.warn(e); }
-
-      localStorage.setItem('aiax_admin_uid', uid);
-      document.getElementById('adminGate').classList.add('hidden');
-      document.getElementById('adminContent').classList.remove('hidden');
-      showToast('â Admin console unlocked', 'success');
-
-      // initial loads
-      await initialLoads();
-      subscribeRealtime();
+    .panel {
+      display:none;
+      padding:1.2rem;
     }
-
-    document.getElementById('btnAdminLogin').addEventListener('click', handleAdminLogin);
-
-    // if already unlocked
-    if(localStorage.getItem('aiax_admin_uid') === OWNER_UID){
-      document.getElementById('adminGate').classList.add('hidden');
-      document.getElementById('adminContent').classList.remove('hidden');
-      // load immediately
-      window.addEventListener('DOMContentLoaded', async ()=>{ await initialLoads(); subscribeRealtime(); });
+    .panel.active {
+      display:block;
     }
-
-    // ========= INITIAL LOADS =========
-    async function initialLoads(){
-      showToast('ð Loading admin data...', 'info');
-      await refreshStats();
-      await loadProducts();
-      await loadProductPrices();
-      await loadStocks();
-      await loadPendingOrders();
-      await loadRecords();
-      await loadRules();
-      await loadReports();
-      showToast('â Admin data loaded', 'success');
+    .card-shadow {
+      border-radius:10px;
+      background:white;
+      padding:1rem;
+      box-shadow:0 4px 12px rgba(0,0,0,0.07);
     }
+    .form-label { font-weight:600; }
+  </style>
+</head>
 
-    // ========= STATS =========
-    async function refreshStats(){
-      try {
-        const [{ data:prodRows }, { data: stockRows }, { data: orderRows }, { data: recRows }] = await Promise.all([
-          supabase.from('products').select('id'),
-          supabase.from('stocks').select('id,status,quantity'),
-          supabase.from('orders').select('id,status'),
-          supabase.from('records').select('price'),
-        ]);
-        const productsCount = (prodRows||[]).length;
-        const availableStock = (stockRows||[]).reduce((s, x) => s + ((x.status==='available' && safeNumber(x.quantity)>0) ? safeNumber(x.quantity) : 0), 0);
-        const pendingOrders = (orderRows||[]).filter(o => (o.status||'').toLowerCase() === 'pending').length;
-        const totalRevenue = (recRows||[]).reduce((sum, r) => sum + safeNumber(r.price), 0);
+<body>
 
-        document.getElementById('stat-products').textContent = productsCount;
-        document.getElementById('stat-stock').textContent = availableStock;
-        document.getElementById('stat-pending').textContent = pendingOrders;
-        document.getElementById('stat-revenue').textContent = 'â±' + totalRevenue.toFixed(2);
-      } catch(err){
-        console.error('[refreshStats]', err);
-      }
-    }
+<header>
+  <div class="admin-logo">🛠️ Admin Panel</div>
 
-    // ========= PRODUCTS =========
-    async function loadProducts(){
-      const tbody = document.getElementById('products-table-body');
-      const selectStockProduct = document.getElementById('stock-product');
-      const selectPriceProduct = document.getElementById('price-product');
-      const selectRuleProduct = document.getElementById('rule-product-id');
-      const selectRecordProduct = document.getElementById('rec-product-id'); // rec-product-id may not exist in this admin file but keep safe
+  <nav>
+    <a class="nav-btn active" data-tab="products-panel">Products</a>
+    <a class="nav-btn" data-tab="stocks-panel">Stocks</a>
+    <a class="nav-btn" data-tab="orders-panel">Orders</a>
+    <a class="nav-btn" data-tab="records-panel">Records</a>
+    <a class="nav-btn" data-tab="rules-panel">Rules</a>
+    <a class="nav-btn" data-tab="feedback-panel">Feedback</a>
+    <a class="nav-btn" data-tab="reports-panel">Reports</a>
+  </nav>
+</header>
 
-      [selectStockProduct, selectPriceProduct, selectRuleProduct].forEach(s => { if(s) s.innerHTML = '<option value="">Select product</option>'; });
+<main class="container my-3">
 
-      if(!tbody) return;
-      tbody.innerHTML = '';
+<!-- ============ PRODUCTS PANEL =========== -->
+<section id="products-panel" class="panel active">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Products</h3>
+    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
+      <i class="fa fa-plus me-1"></i> Add Product
+    </button>
+  </div>
 
-      try {
-        const { data, error } = await supabase.from('products').select('id,name,category').order('name', { ascending: true });
-        if(error) throw error;
-        allProducts = data || [];
+  <div id="products-table" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading products…</div>
+  </div>
+</section>
 
-        if(!allProducts.length){
-          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No products found</td></tr>';
-          return;
-        }
+<!-- ADD PRODUCT MODAL -->
+<div class="modal fade" id="modalAddProduct" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Product</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
 
-        allProducts.forEach(p => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${p.id}</td><td>${p.name}</td><td>${p.category}</td><td>
-            <button class="btn btn-sm btn-outline-primary me-1" onclick="startEditProduct('${p.id}','${escapeHtml(p.name)}','${escapeHtml(p.category)}')"><i class="fa fa-edit me-1"></i> Edit</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p.id}')"><i class="fa fa-trash me-1"></i> Delete</button>
-          </td>`;
-          tbody.appendChild(tr);
+      <div class="modal-body">
+        <label class="form-label">Product ID</label>
+        <input id="add-product-id" class="form-control" placeholder="ex: netflix">
 
-          [selectStockProduct, selectPriceProduct, selectRuleProduct].forEach(select => {
-            if(select){
-              const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.name} (${p.category})`; select.appendChild(o);
-            }
-          });
-        });
-      } catch(err){
-        console.error('[loadProducts]', err);
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">Failed to load products</td></tr>';
-      }
-    }
+        <label class="form-label mt-3">Name</label>
+        <input id="add-product-name" class="form-control">
 
-    function escapeHtml(s){ return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+        <label class="form-label mt-3">Category</label>
+        <select id="add-product-category" class="form-select">
+          <option value="ai">AI</option>
+          <option value="editing">Editing</option>
+          <option value="entertainment">Entertainment</option>
+          <option value="streaming">Streaming</option>
+          <option value="educational">Educational</option>
+        </select>
 
-    function startEditProduct(id,name,category){
-      document.getElementById('prod-edit-id').value = id;
-      document.getElementById('new-prod-id').value = id;
-      document.getElementById('new-prod-id').disabled = true;
-      document.getElementById('new-prod-name').value = name || '';
-      document.getElementById('new-prod-cat').value = category || 'entertainment';
-      document.getElementById('btn-save-product').innerHTML = '<i class="fa fa-save me-1"></i> Update';
-      document.getElementById('btn-cancel-prod-edit').classList.remove('d-none');
-    }
+        <label class="form-label mt-3">Icon</label>
+        <input id="add-product-icon" class="form-control" placeholder="📺">
+      </div>
 
-    document.getElementById('btn-cancel-prod-edit').addEventListener('click', resetProductForm);
-    document.getElementById('btn-save-product').addEventListener('click', saveProduct);
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button id="btnSaveProduct" class="btn btn-primary">Save Product</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    function resetProductForm(){
-      document.getElementById('prod-edit-id').value = '';
-      document.getElementById('new-prod-id').value = '';
-      document.getElementById('new-prod-id').disabled = false;
-      document.getElementById('new-prod-name').value = '';
-      document.getElementById('new-prod-cat').value = 'entertainment';
-      document.getElementById('btn-save-product').innerHTML = '<i class="fa fa-plus me-1"></i> Add';
-      document.getElementById('btn-cancel-prod-edit').classList.add('d-none');
-    }
+<!-- EDIT PRODUCT MODAL -->
+<div class="modal fade" id="modalEditProduct" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Product</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
 
-    async function saveProduct(){
-      const editId = document.getElementById('prod-edit-id').value;
-      const id = (document.getElementById('new-prod-id').value || '').trim();
-      const name = (document.getElementById('new-prod-name').value || '').trim();
-      const category = document.getElementById('new-prod-cat').value || 'entertainment';
-      if(!id || !name){ showToast('â Fill product id & name', 'warning'); return; }
-      try {
-        if(editId){
-          const { error } = await supabase.from('products').update({ name, category }).eq('id', editId);
-          if(error) throw error;
-          showToast('â Product updated', 'success');
-        } else {
-          const { error } = await supabase.from('products').insert({ id, name, category });
-          if(error) throw error;
-          showToast('â Product added', 'success');
-        }
-        resetProductForm(); await loadProducts(); await refreshStats();
-      } catch(err){ console.error('[saveProduct]', err); showToast('â Failed to save product','danger'); }
-    }
+      <div class="modal-body">
+        <input type="hidden" id="edit-product-id">
 
-    async function deleteProduct(id){
-      if(!confirm(`â Delete product ${id}? This will remove related stocks & prices.`)) return;
-      try {
-        const { error } = await supabase.from('products').delete().eq('id', id);
-        if(error) throw error;
-        showToast('â Product deleted', 'success');
-        await loadProducts(); await refreshStats();
-      } catch(err){ console.error('[deleteProduct]', err); showToast('â Failed to delete product','danger'); }
-    }
+        <label class="form-label">Name</label>
+        <input id="edit-product-name" class="form-control">
 
-    // ========= PRICES =========
-    document.getElementById('btn-add-price').addEventListener('click', addProductPrice);
+        <label class="form-label mt-3">Category</label>
+        <select id="edit-product-category" class="form-select">
+          <option value="ai">AI</option>
+          <option value="editing">Editing</option>
+          <option value="entertainment">Entertainment</option>
+          <option value="streaming">Streaming</option>
+          <option value="educational">Educational</option>
+        </select>
 
-    async function loadProductPrices(){
-      const tbody = document.getElementById('prices-table-body');
-      if(!tbody) return;
-      tbody.innerHTML = '';
-      try {
-        // We treat product_prices as optional; fallback to stock combos
-        const { data: stocks, error: stocksError } = await supabase.from('stocks').select('product_id,account_type,duration,price').order('product_id');
-        if(stocksError) throw stocksError;
-        const { data: products } = await supabase.from('products').select('id,name');
+        <label class="form-label mt-3">Icon</label>
+        <input id="edit-product-icon" class="form-control">
+      </div>
 
-        const prodMap = {}; (products||[]).forEach(p=>prodMap[p.id]=p.name);
+      <div class="modal-footer">
 
-        if(!stocks || !stocks.length){
-          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No prices configured yet</td></tr>';
-          return;
-        }
+        <button id="btnDeleteProduct" class="btn btn-danger">
+          <i class="fa fa-trash me-1"></i> Delete
+        </button>
 
-        // unique combos
-        const unique = {};
-        stocks.forEach(s => {
-          const key = `${s.product_id}||${s.account_type}||${s.duration}`;
-          if(!unique[key]) unique[key] = s;
-        });
+        <button id="btnUpdateProduct" class="btn btn-primary">Update</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        Object.values(unique).forEach(c => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${prodMap[c.product_id]||c.product_id}</td><td>${c.account_type}</td><td>${c.duration}</td><td>â±${safeNumber(c.price).toFixed(2)}</td><td>
-            <button class="btn btn-sm btn-outline-primary me-1" onclick="editPriceCombo('${c.product_id}','${c.account_type}','${c.duration}', ${safeNumber(c.price)})"><i class="fa fa-edit me-1"></i> Edit</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deletePriceCombo('${c.product_id}','${c.account_type}','${c.duration}')"><i class="fa fa-trash me-1"></i> Delete</button>
-          </td>`;
-          tbody.appendChild(tr);
-        });
 
-      } catch(err){ console.error('[loadProductPrices]', err); tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Failed to load prices</td></tr>'; }
-    }
 
-    function editPriceCombo(productId, accountType, duration, price){
-      document.getElementById('price-product').value = productId;
-      document.getElementById('price-account-type').value = accountType;
-      document.getElementById('price-duration').value = duration;
-      document.getElementById('price-amount').value = price;
-      // switch to prices panel
-      document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
-      document.querySelector('[data-target="panel-product-prices"]').classList.add('active');
-      document.querySelectorAll('.panel-admin').forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-product-prices').classList.add('active');
-    }
 
-    async function deletePriceCombo(productId, accountType, duration){
-      if(!confirm(`â Delete price for ${productId} - ${accountType} - ${duration}?`)) return;
-      try {
-        const { error } = await supabase.from('stocks').update({ price: null }).eq('product_id', productId).eq('account_type', accountType).eq('duration', duration);
-        if(error) throw error;
-        showToast('â Price deleted (stocks updated)', 'success');
-        await loadProductPrices(); await loadStocks();
-      } catch(err){ console.error('[deletePriceCombo]', err); showToast('â Failed to delete price','danger'); }
-    }
+<!-- ============ STOCKS PANEL =========== -->
+<section id="stocks-panel" class="panel">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Stocks</h3>
+    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddStock">
+      <i class="fa fa-plus me-1"></i> Add Stock
+    </button>
+  </div>
 
-    async function addProductPrice(){
-      const product_id = document.getElementById('price-product').value;
-      const account_type = document.getElementById('price-account-type').value.trim();
-      const duration = document.getElementById('price-duration').value.trim();
-      const price = Number(document.getElementById('price-amount').value);
-      if(!product_id || !account_type || !duration || !price){ showToast('â Fill all price fields', 'warning'); return; }
-      try {
-        // Insert into product_prices table (good practice) and also update existing stocks
-        const { error: upsertErr } = await supabase.from('product_prices').upsert([{ product_id, account_type, duration, price }], { onConflict: ['product_id','account_type','duration'] });
-        if(upsertErr) throw upsertErr;
-        const { error: stockErr } = await supabase.from('stocks').update({ price }).eq('product_id', product_id).eq('account_type', account_type).eq('duration', duration);
-        if(stockErr) throw stockErr;
-        showToast('â Price saved', 'success');
-        document.getElementById('price-amount').value = '';
-        await loadProductPrices(); await loadStocks();
-      } catch(err){ console.error('[addProductPrice]', err); showToast('â Failed to add price','danger'); }
-    }
+  <div id="stocks-table" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading stock records…</div>
+  </div>
+</section>
 
-    // ========= STOCKS =========
-    document.getElementById('btn-save-stock').addEventListener('click', saveStock);
-    async function loadStocks(){
-      const tbody = document.getElementById('stocks-table-body');
-      if(!tbody) return;
-      tbody.innerHTML = '';
-      try {
-        const [{ data: stocks, error: sErr }, { data: products }] = await Promise.all([
-          supabase.from('stocks').select('*').order('created_at', { ascending:false }),
-          supabase.from('products').select('id,name')
-        ]);
-        if(sErr) throw sErr;
-        const prodMap = {}; (products||[]).forEach(p => prodMap[p.id] = p.name);
 
-        if(!stocks || !stocks.length){ tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">No stocks yet</td></tr>'; return; }
+<!-- ADD STOCK MODAL -->
+<div class="modal fade" id="modalAddStock" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
 
-        stocks.forEach(s => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${s.id}</td>
-            <td>${prodMap[s.product_id]||s.product_id||'-'}</td>
-            <td>${s.account_type||'-'}</td>
-            <td>${s.duration||'-'}</td>
-            <td>${s.email||'-'}</td>
-            <td><span class="badge ${s.status==='available'?'bg-success': s.status==='sold'?'bg-secondary':'bg-warning'}">${s.status||'-'}</span></td>
-            <td>${s.premium_until||'-'}</td>
-            <td>â±${safeNumber(s.price).toFixed(2)}</td>
-            <td>${safeNumber(s.quantity)}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary me-1" onclick="openStockEditModal('${s.id}')"><i class="fa fa-edit me-1"></i> Edit</button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteStock('${s.id}')"><i class="fa fa-trash me-1"></i> Delete</button>
-            </td>`;
-          tbody.appendChild(tr);
-        });
+      <div class="modal-header">
+        <h5 class="modal-title">Add Stock Entry</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
 
-      } catch(err){ console.error('[loadStocks]', err); tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-3">Failed to load stocks</td></tr>'; }
-    }
+      <div class="modal-body">
 
-    async function saveStock(){
-      const product_id = document.getElementById('stock-product').value;
-      const account_type = (document.getElementById('stock-account-type').value || '').trim();
-      const duration = (document.getElementById('stock-duration').value || '').trim();
-      const price = Number(document.getElementById('stock-price').value || 0);
-      const email = (document.getElementById('stock-email').value || '').trim();
-      const password = (document.getElementById('stock-password').value || '').trim();
-      const profile = (document.getElementById('stock-profile').value || '').trim();
-      const pin = (document.getElementById('stock-pin').value || '').trim();
-      const archive_after = Number(document.getElementById('stock-archive-after').value || 0);
-      const premium_until = document.getElementById('stock-premium-until').value || null;
-      const quantity = Number(document.getElementById('stock-quantity').value || 1);
+        <label class="form-label">Product</label>
+        <select id="stock-product" class="form-select">
+          <option value="">Loading…</option>
+        </select>
 
-      if(!product_id || !account_type || !duration){ showToast('â Select product, account type, duration', 'warning'); return; }
-      try {
-        const payload = {
-          product_id, account_type, duration, price,
-          email: email || null, password: password || null, profile: profile || null, pin: pin || null,
-          archive_after: Number.isFinite(archive_after) ? archive_after : 0,
-          premium_until: premium_until || null,
-          status: 'available',
-          quantity: Number.isFinite(quantity) && quantity>0 ? quantity : 1,
-          created_at: new Date().toISOString()
-        };
-        const { error } = await supabase.from('stocks').insert([payload]);
-        if(error) throw error;
-        showToast('â Stock saved!', 'success');
-        // clear form fields (keeping product selection)
-        ['stock-email','stock-password','stock-profile','stock-pin','stock-price'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-        await loadStocks(); await refreshStats(); await loadProductPrices();
-      } catch(err){ console.error('[saveStock]', err); showToast('â Failed to save stock', 'danger'); }
-    }
+        <label class="form-label mt-3">Account Type</label>
+        <select id="stock-type" class="form-select">
+          <option value="">Loading…</option>
+        </select>
 
-    async function deleteStock(id){
-      if(!confirm(`â Delete stock #${id}?`)) return;
-      try {
-        const { error } = await supabase.from('stocks').delete().eq('id', id);
-        if(error) throw error;
-        showToast('â Stock deleted', 'success'); await loadStocks(); await refreshStats();
-      } catch(err){ console.error('[deleteStock]', err); showToast('â Failed to delete', 'danger'); }
-    }
+        <label class="form-label mt-3">Duration</label>
+        <select id="stock-duration" class="form-select">
+          <option value="">Loading…</option>
+        </select>
 
-    // Edit stock modal handlers
-    async function openStockEditModal(stockId){
-      try {
-        const { data, error } = await supabase.from('stocks').select('*').eq('id', stockId).single();
-        if(error) throw error;
-        document.getElementById('stock-edit-id').value = data.id;
-        document.getElementById('stock-edit-email').value = data.email || '';
-        document.getElementById('stock-edit-password').value = data.password || '';
-        document.getElementById('stock-edit-profile').value = data.profile || '';
-        document.getElementById('stock-edit-pin').value = data.pin || '';
-        document.getElementById('stock-edit-price').value = safeNumber(data.price);
-        document.getElementById('stock-edit-status').value = data.status || 'available';
-        document.getElementById('stock-edit-premium').value = data.premium_until ? data.premium_until.substring(0,10) : '';
-        document.getElementById('stock-edit-qty').value = safeNumber(data.quantity);
-        const m = new bootstrap.Modal(document.getElementById('stockModal'));
-        m.show();
-      } catch(err){ console.error('[openStockEditModal]', err); showToast('â Failed to load stock data', 'danger'); }
-    }
+        <label class="form-label mt-3">Quantity</label>
+        <input id="stock-quantity" type="number" class="form-control">
 
-    document.getElementById('stockForm').addEventListener('submit', saveStockEdit);
-    async function saveStockEdit(e){
-      e.preventDefault();
-      const id = document.getElementById('stock-edit-id').value;
-      if(!id) return;
-      const payload = {
-        email: (document.getElementById('stock-edit-email').value || null),
-        password: (document.getElementById('stock-edit-password').value || null),
-        profile: (document.getElementById('stock-edit-profile').value || null),
-        pin: (document.getElementById('stock-edit-pin').value || null),
-        price: Number(document.getElementById('stock-edit-price').value) || 0,
-        status: document.getElementById('stock-edit-status').value || 'available',
-        premium_until: document.getElementById('stock-edit-premium').value || null,
-        quantity: Number(document.getElementById('stock-edit-qty').value) || 0,
-        updated_at: new Date().toISOString()
-      };
-      try {
-        const { error } = await supabase.from('stocks').update(payload).eq('id', id);
-        if(error) throw error;
-        showToast('â Stock updated', 'success');
-        bootstrap.Modal.getInstance(document.getElementById('stockModal')).hide();
-        await loadStocks(); await refreshStats();
-      } catch(err){ console.error('[saveStockEdit]', err); showToast('â Failed to update stock', 'danger'); }
-    }
+        <label class="form-label mt-3">Expiry Date</label>
+        <input id="stock-expiry" type="date" class="form-control">
 
-    // ========= AUTO-ARCHIVE (auto-drop) =========
-    // Move stocks to archived if created_at + archive_after days expired
-    async function runAutoArchive(){
-      try {
-        // Fetch available stocks that have archive_after > 0 and not already archived or sold
-        const { data: stocks } = await supabase.from('stocks').select('id,created_at,archive_after,is_archived,status').or('is_archived.eq.false,status.eq.available');
-        if(!stocks || !stocks.length) return;
-        const now = new Date();
-        const toArchive = [];
-        stocks.forEach(s => {
-          const days = Number(s.archive_after || 0);
-          if(!days) return;
-          const created = new Date(s.created_at);
-          const expiry = new Date(created.getTime() + days * 24 * 60 * 60 * 1000);
-          if(expiry <= now) toArchive.push(s.id);
-        });
-        if(toArchive.length){
-          await supabase.from('stocks').update({ is_archived:true, status:'archived' }).in('id', toArchive);
-          showToast(`â¹ï¸ Auto-archived ${toArchive.length} stock(s)`, 'info');
-          await loadStocks(); await refreshStats();
-        }
-      } catch(err){ console.error('[runAutoArchive]', err); }
-    }
-    // schedule auto-archive every 10 minutes (and run once on load)
-    setInterval(runAutoArchive, 10 * 60 * 1000);
-    window.addEventListener('load', runAutoArchive);
+        <label class="form-label mt-3">Archive After (days)</label>
+        <input id="stock-archivedays" type="number" class="form-control" placeholder="Optional">
 
-    // ========= PENDING ORDERS =========
-    async function loadPendingOrders(){
-      const tbody = document.getElementById('orders-table-body');
-      if(!tbody) return;
-      tbody.innerHTML = '';
-      try {
-        const { data, error } = await supabase.from('orders').select('*').eq('status','pending').order('created_at', { ascending:false });
-        if(error) throw error;
-        if(!data || !data.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">No pending orders.</td></tr>'; return; }
-        data.forEach(o => {
-          const tr = document.createElement('tr');
-          const proofHtml = o.proof_image_url ? `<a href="${o.proof_image_url}" target="_blank"><img src="${o.proof_image_url}" style="max-width:120px;max-height:80px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'" /></a>` : '-';
-          tr.innerHTML = `<td>${o.id || o.order_code}</td>
-            <td>${o.buyer_email || o.buyer_id}</td>
-            <td>${o.product_id}</td>
-            <td>${o.account_type}</td>
-            <td>${o.duration}</td>
-            <td>â±${safeNumber(o.price).toFixed(2)}</td>
-            <td><div class="small">${o.payment_method||'-'}<div class="text-muted small">Ref: ${o.reference_number||'-'}</div></div></td>
-            <td>${proofHtml}</td>
-            <td><span class="badge bg-warning">${o.status||'pending'}</span></td>
-            <td>
-              <button class="btn btn-sm btn-success me-1" onclick="confirmOrder('${o.id||o.order_code}')"><i class="fa fa-check me-1"></i> Confirm</button>
-              <button class="btn btn-sm btn-danger" onclick="cancelOrder('${o.id||o.order_code}')"><i class="fa fa-times me-1"></i> Cancel</button>
-            </td>`;
-          tbody.appendChild(tr);
-        });
-      } catch(err){ console.error('[loadPendingOrders]', err); tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-3">Error loading pending orders</td></tr>'; }
-    }
+      </div>
 
-    // Cancel order
-    async function cancelOrder(orderId){
-      if(!confirm('Cancel this order?')) return;
-      try {
-        const { error } = await supabase.from('orders').update({ status:'cancelled', updated_at: new Date().toISOString() }).or(`id.eq.${orderId},order_code.eq.${orderId}`);
-        if(error) throw error;
-        showToast('â Order cancelled', 'info'); await loadPendingOrders(); await refreshStats();
-      } catch(err){ console.error('[cancelOrder]', err); showToast('â Failed to cancel order', 'danger'); }
-    }
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button id="btnSaveStock" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    // Confirm order â core transactional steps:
-    // 1) fetch order details
-    // 2) find one available stock matching product/type/duration with quantity>0
-    // 3) decrement stock.quantity by 1 (or set to 0/status sold), mark as sold if needed
-    // 4) insert into records (sold account), capturing assigned account credentials
-    // 5) update orders.status -> delivered and updated_at
-    // 6) refresh UI
-    async function confirmOrder(orderId){
-      if(!confirm('Confirm this order and deliver an account?')) return;
-      try {
-        // get order
-        const { data: order, error: orderErr } = await supabase.from('orders').select('*').or(`id.eq.${orderId},order_code.eq.${orderId}`).maybeSingle();
-        if(orderErr) throw orderErr;
-        if(!order){ showToast('â Order not found', 'danger'); return; }
 
-        // ensure reference and proof exist
-        if(!order.reference_number || !order.proof_image_url){ showToast('â Order missing reference/proof', 'warning'); }
+<!-- EDIT STOCK MODAL -->
+<div class="modal fade" id="modalEditStock" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
 
-        // Find available stock that matches
-        // We attempt to find the oldest stock with quantity > 0 (FIFO)
-        const { data: stocks, error: sErr } = await supabase.from('stocks').select('*')
-          .eq('product_id', order.product_id)
-          .eq('account_type', order.account_type)
-          .eq('duration', order.duration)
-          .eq('status', 'available')
-          .gt('quantity', 0)
-          .order('created_at', { ascending: true })
-          .limit(1);
-        if(sErr) throw sErr;
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Stock</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
 
-        if(!stocks || !stocks.length){
-          showToast('â No available stock to deliver for this order', 'danger');
-          return;
-        }
-        const stock = stocks[0];
+      <div class="modal-body">
 
-        // Begin "transaction-like" sequence (client can't do DB transactions safely; try best-effort)
-        // 1) decrement stock
-        const remaining = (safeNumber(stock.quantity) - 1);
-        if(remaining <= 0){
-          // mark sold and set quantity 0
-          const { error: up1 } = await supabase.from('stocks').update({ quantity: 0, status: 'sold', updated_at: new Date().toISOString() }).eq('id', stock.id);
-          if(up1) throw up1;
-        } else {
-          const { error: up2 } = await supabase.from('stocks').update({ quantity: remaining, updated_at: new Date().toISOString() }).eq('id', stock.id);
-          if(up2) throw up2;
-        }
+        <input type="hidden" id="edit-stock-id">
 
-        // 2) insert into records
-        // compute expiry: if duration format like "1m" or "30d" we use helper
-        const purchase_date = new Date().toISOString();
-        const expiryDate = computeExpiryFromDuration(order.duration, purchase_date);
+        <label class="form-label">Quantity</label>
+        <input id="edit-stock-quantity" type="number" class="form-control">
 
-        const recordPayload = {
-          order_id: order.id || order.order_code,
-          order_code: order.order_code || order.id,
-          buyer: order.buyer_email || order.buyer_id || null,
-          product_id: order.product_id,
-          account_type: order.account_type,
-          duration: order.duration,
-          purchase_date,
-          expiry_date: expiryDate,
-          account_email: stock.email,
-          account_password: stock.password,
-          profile: stock.profile,
-          pin: stock.pin,
-          price: order.price,
-          payment_reference: order.reference_number,
-          payment_proof: order.proof_image_url,
-          source: 'premium-shop',
-          created_at: new Date().toISOString()
-        };
+        <label class="form-label mt-3">Expiry Date</label>
+        <input id="edit-stock-expiry" type="date" class="form-control">
 
-        const { error: recErr } = await supabase.from('records').insert([recordPayload]);
-        if(recErr) throw recErr;
+        <label class="form-label mt-3">Archive After (days)</label>
+        <input id="edit-stock-archive" type="number" class="form-control">
+      </div>
 
-        // 3) update order => delivered
-        const { error: ordUpErr } = await supabase.from('orders').update({ status:'delivered', updated_at: new Date().toISOString() }).or(`id.eq.${order.id},order_code.eq.${order.id}`);
-        if(ordUpErr) {
-          // try by order_code if earlier failed
-          await supabase.from('orders').update({ status:'delivered', updated_at: new Date().toISOString() }).eq('order_code', order.order_code);
-        }
+      <div class="modal-footer">
 
-        // 4) optionally mark stock as archived if 'sold' and no quantity; already handled
-        showToast('â Order confirmed â account delivered and recorded.', 'success');
+        <button id="btnArchiveStock" class="btn btn-warning">
+          <i class="fa fa-box-archive me-1"></i> Archive
+        </button>
 
-        // refresh UI
-        await loadPendingOrders(); await loadStocks(); await loadRecords(); await refreshStats();
-      } catch(err){
-        console.error('[confirmOrder]', err);
-        showToast('â Failed to confirm order: ' + (err.message || String(err)), 'danger');
-      }
-    }
+        <button id="btnDeleteStock" class="btn btn-danger">
+          <i class="fa fa-trash me-1"></i> Delete
+        </button>
 
-    // helper to compute expiry from duration strings like "1m", "30d", "3w", "1y" or "30 days" or "1 month"
-    function computeExpiryFromDuration(duration, startISO){
-      if(!duration) return null;
-      const start = startISO ? new Date(startISO) : new Date();
-      const d = String(duration).trim().toLowerCase();
-      // try common formats
-      // examples: "1m", "30d", "3w", "1y", "30 days", "1 month"
-      const numMatch = d.match(/(\d+)/);
-      const unitMatch = d.match(/[a-z]+/);
-      let num = numMatch ? parseInt(numMatch[1]) : null;
-      let unit = unitMatch ? unitMatch[0] : null;
-      if(!num || !unit){ // fallback: try to parse like '1 month'
-        // if no unit, default to days
-        if(!num) return null;
-        unit = 'd';
-      }
-      // normalize unit
-      if(unit.startsWith('day')) unit='d';
-      else if(unit.startsWith('m') && !unit.startsWith('mo') ? false : unit.startsWith('mo') || unit==='m') unit='m'; // month
-      else if(unit.startsWith('w')) unit='w';
-      else if(unit.startsWith('y')) unit='y';
-      else if(unit==='m') unit='m';
+        <button id="btnUpdateStock" class="btn btn-primary">Update</button>
+      </div>
 
-      const date = new Date(start);
-      switch(unit){
-        case 'd': date.setDate(date.getDate() + num); break;
-        case 'w': date.setDate(date.getDate() + (num*7)); break;
-        case 'm': date.setMonth(date.getMonth() + num); break;
-        case 'y': date.setFullYear(date.getFullYear() + num); break;
-        default: date.setDate(date.getDate() + num);
-      }
-      return date.toISOString().split('T')[0];
-    }
+    </div>
+  </div>
+</div>
 
-    // ========= RECORDS (sold) =========
-    async function loadRecords(){
-      const tbody = document.getElementById('records-table-body');
-      if(!tbody) return;
-      tbody.innerHTML = '';
-      try {
-        const { data, error } = await supabase.from('records').select('*').order('purchase_date', { ascending:false }).limit(500);
-        if(error) throw error;
-        if(!data || !data.length){ tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">No sold records yet</td></tr>'; return; }
-        data.forEach(r => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${r.id||'-'}</td><td>${r.order_id||r.order_code||'-'}</td><td>${r.buyer||'-'}</td><td>${r.product_id||'-'}</td><td>${r.account_type||'-'}</td><td>${r.duration||'-'}</td><td>${r.purchase_date? new Date(r.purchase_date).toLocaleString() : '-'}</td><td>${r.expiry_date||'-'}</td><td>â±${safeNumber(r.price).toFixed(2)}</td><td>${r.account_email||'-'}</td>`;
-          tbody.appendChild(tr);
-        });
-      } catch(err){ console.error('[loadRecords]', err); tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-3">Failed to load records</td></tr>'; }
-    }
 
-    // ========= RULES =========
-    async function loadRules(){
-      try {
-        const { data, error } = await supabase.from('rules').select('*').order('created_at',{ ascending:false });
-        if(error) throw error;
-        allRules = data || [];
-        renderRules();
-      } catch(err){ console.error('[loadRules]', err); }
-    }
-    function renderRules(){
-      const ul = document.getElementById('rules-list');
-      const sel = document.getElementById('rule-product-id');
-      ul.innerHTML = '';
-      sel.innerHTML = '<option value="">General Rule</option>';
-      allProducts.forEach(p => { const opt=document.createElement('option'); opt.value=p.id; opt.textContent = `${p.name} (${p.category})`; sel.appendChild(opt); });
-      if(!allRules.length){ ul.innerHTML = '<li class="text-center text-muted py-3">No rules yet</li>'; return; }
-      allRules.forEach(r => {
-        const li = document.createElement('li'); li.className='mb-2';
-        li.innerHTML = `<div class="small"><strong>${r.product_id? '['+r.product_id+'] ' : ''}</strong>${r.body || r.rule_text || ''}</div>
-          <div class="mt-1"><button class="btn btn-sm btn-outline-danger" onclick="deleteRule('${r.id}')"><i class="fa fa-trash me-1"></i> Delete</button></div>`;
-        ul.appendChild(li);
-      });
-    }
-    document.getElementById('btn-add-rule').addEventListener('click', async ()=>{
-      const product_id = document.getElementById('rule-product-id').value || null;
-      const text = (document.getElementById('rule-text').value || '').trim();
-      if(!text){ showToast('â Enter rule text', 'warning'); return; }
-      try {
-        const { error } = await supabase.from('rules').insert([{ product_id, body: text, created_at: new Date().toISOString() }]);
-        if(error) throw error;
-        document.getElementById('rule-text').value = '';
-        await loadRules();
-        showToast('â Rule added', 'success');
-      } catch(err){ console.error('[addRule]', err); showToast('â Failed to add rule','danger'); }
-    });
-    async function deleteRule(id){
-      if(!confirm('Delete this rule?')) return;
-      try {
-        const { error } = await supabase.from('rules').delete().eq('id', id);
-        if(error) throw error;
-        await loadRules(); showToast('â Rule deleted','success');
-      } catch(err){ console.error('[deleteRule]', err); showToast('â Failed to delete rule','danger'); }
-    }
 
-    // ========= REPORTS =========
-    async function loadReports(){
-      const tbody = document.getElementById('reports-table-body');
-      if(!tbody) return;
-      tbody.innerHTML = '';
-      try {
-        const { data, error } = await supabase.from('reports').select('*').order('created_at',{ ascending:false }).limit(500);
-        if(error) throw error;
-        if(!data || !data.length){ tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">No reports</td></tr>'; return; }
-        data.forEach(r => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${r.id}</td><td>${r.order_id||'-'}</td><td>${r.buyer_id||'-'}</td><td>${r.issue_description||r.issue||'-'}</td><td>${r.status||'-'}</td><td>${r.created_at? new Date(r.created_at).toLocaleString() : '-'}</td><td><button class="btn btn-sm btn-outline-success" onclick="markReportResolved('${r.id}')">Resolve</button></td>`;
-          tbody.appendChild(tr);
-        });
-      } catch(err){ console.error('[loadReports]', err); tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-3">Failed to load reports</td></tr>'; }
-    }
-    async function markReportResolved(id){
-      try {
-        const { error } = await supabase.from('reports').update({ status:'resolved' }).eq('id', id);
-        if(error) throw error; showToast('â Report marked resolved','success'); await loadReports();
-      } catch(err){ console.error('[markReportResolved]', err); showToast('â Failed to update report','danger'); }
-    }
 
-    // ========= SUBSCRIPTIONS & REALTIME =========
-    function subscribeRealtime(){
-      try {
-        // clean up previous
-        if(realtimeChannelStocks) supabase.removeChannel(realtimeChannelStocks);
-        if(realtimeChannelOrders) supabase.removeChannel(realtimeChannelOrders);
+<!-- ============ ORDERS PANEL =========== -->
+<section id="orders-panel" class="panel">
+  <h3 class="fw-bold mb-3">Orders</h3>
+  <div id="orders-table" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading orders…</div>
+  </div>
+</section>
 
-        realtimeChannelStocks = supabase.channel('stocks_changes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'stocks' }, payload => {
-            console.log('realtime stocks', payload);
-            loadStocks(); loadProductPrices(); refreshStats();
-          }).subscribe();
 
-        realtimeChannelOrders = supabase.channel('orders_changes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
-            console.log('realtime orders', payload);
-            loadPendingOrders(); refreshStats();
-          }).subscribe();
 
-      } catch(err){ console.warn('Realtime subscription failed', err); }
-    }
 
-    // ========= REPORT: export records CSV =========
-    document.getElementById('btn-export-records').addEventListener('click', async ()=>{
-      try {
-        const { data } = await supabase.from('records').select('*').order('purchase_date',{ ascending:false }).limit(1000);
-        if(!data || !data.length){ showToast('No records to export', 'warning'); return; }
-        const headers = Object.keys(data[0]);
-        const csv = [headers.join(',')].concat(data.map(row => headers.map(h => `"${String(row[h]||'').replace(/"/g,'""')}"`).join(','))).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download = `records_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-      } catch(err){ console.error('[exportRecords]', err); showToast('â Failed to export', 'danger'); }
-    });
+<!-- ============ RECORDS PANEL =========== -->
+<section id="records-panel" class="panel">
+  <h3 class="fw-bold mb-3">Records</h3>
+  <div id="records-table" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading records…</div>
+  </div>
+</section>
 
-    // ========= LOAD INITIAL WHEN DOM READY =========
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      // wire sidebar clicks already set above
-      // wire other initial actions
-      document.getElementById('btnAdminLogin').addEventListener('click', handleAdminLogin);
 
-      // If admin unlocked already, initialLoads already invoked earlier (guard path)
-      // otherwise nothing happens until owner logs in
-    });
 
-    // expose some functions for inline onclick
-    window.openStockEditModal = openStockEditModal;
-    window.deleteStock = deleteStock;
-    window.confirmOrder = confirmOrder;
-    window.cancelOrder = cancelOrder;
-    window.editPriceCombo = editPriceCombo;
-    window.deletePriceCombo = deletePriceCombo;
-    window.startEditProduct = startEditProduct;
-    window.deleteProduct = deleteProduct;
-    window.deleteRule = deleteRule;
-    window.markReportResolved = markReportResolved;
-    window.deletePriceCombo = deletePriceCombo;
-  </script>
-  </body>
-  </html>
+
+<!-- ============ RULES PANEL =========== -->
+<section id="rules-panel" class="panel">
+  <h3 class="fw-bold mb-3">Rules (Auto-Archive & Pricing)</h3>
+
+  <div id="rules-box" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading rules…</div>
+  </div>
+
+  <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalRules">
+    <i class="fa fa-edit me-1"></i> Edit Rules
+  </button>
+</section>
+
+<!-- RULES MODAL -->
+<div class="modal fade" id="modalRules" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Store Rules</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <label class="form-label">Automatic Archive After (days)</label>
+        <input id="rule-archive-days" type="number" class="form-control">
+
+        <label class="form-label mt-3">Default Pricing Formula</label>
+        <input id="rule-formula" class="form-control" placeholder="ex: base_price + 10">
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="btnSaveRules" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- ============ FEEDBACK PANEL =========== -->
+<section id="feedback-panel" class="panel">
+  <h3 class="fw-bold mb-3">Feedback</h3>
+  <div id="feedback-table" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading feedback…</div>
+  </div>
+</section>
+
+
+
+
+<!-- ============ REPORTS PANEL =========== -->
+<section id="reports-panel" class="panel">
+  <h3 class="fw-bold mb-3">Reports & Analytics</h3>
+  <div id="reports-box" class="card-shadow">
+    <div class="text-center text-muted py-4">Loading analytics…</div>
+  </div>
+</section>
+
+
+
+</main>
+
+<script src="admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
